@@ -1,0 +1,1113 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ZombAi-Doc — Smart Health Booking</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --card: #162032;
+    --accent: #00e5c0;
+    --accent2: #4f8eff;
+    --accent3: #ff6b6b;
+    --text: #e8f0fe;
+    --text2: #8a9bb8;
+    --border: rgba(79,142,255,0.15);
+    --radius: 18px;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* SCREENS */
+  .screen { display: none; min-height: 100vh; flex-direction: column; animation: fadeIn .3s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    background: rgba(17,24,39,.96);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex; z-index: 100;
+    padding: 8px 0 20px;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 6px 0;
+    color: var(--text2); font-size: 10px; font-family: var(--font-body); font-weight: 500;
+    transition: color .2s;
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-item svg { width: 22px; height: 22px; }
+
+  /* HEADER */
+  .header {
+    padding: 56px 20px 20px;
+    background: linear-gradient(180deg, rgba(0,229,192,.08) 0%, transparent 100%);
+  }
+  .header-row { display: flex; justify-content: space-between; align-items: center; }
+  .logo { font-family: var(--font-display); font-size: 22px; font-weight: 800; }
+  .logo span { color: var(--accent); }
+  .avatar-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; cursor: pointer; color: #fff;
+  }
+
+  /* LOGIN SCREEN */
+  #loginScreen {
+    background: radial-gradient(ellipse at 20% 20%, rgba(0,229,192,.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(79,142,255,.1) 0%, transparent 60%),
+                var(--bg);
+    justify-content: center; align-items: center; padding: 40px 28px;
+  }
+  .login-logo { text-align: center; margin-bottom: 40px; }
+  .login-logo h1 { font-family: var(--font-display); font-size: 36px; font-weight: 800; line-height: 1; }
+  .login-logo h1 span { color: var(--accent); }
+  .login-logo p { color: var(--text2); margin-top: 8px; font-size: 14px; }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px 24px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  }
+  .login-card h2 { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .login-card p { color: var(--text2); font-size: 13px; margin-bottom: 24px; }
+  .field { margin-bottom: 16px; }
+  .field label { font-size: 12px; color: var(--text2); font-weight: 500; display: block; margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
+  .field input {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; color: var(--text); font-family: var(--font-body); font-size: 15px;
+    outline: none; transition: border-color .2s;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #0a0f1e; font-family: var(--font-display); font-weight: 700;
+    font-size: 15px; border: none; border-radius: 14px;
+    padding: 16px; cursor: pointer; margin-top: 8px;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-primary:active { opacity: .85; transform: scale(.98); }
+  .login-footer { text-align: center; margin-top: 20px; color: var(--text2); font-size: 13px; }
+  .login-footer a { color: var(--accent); cursor: pointer; text-decoration: none; }
+  .demo-hint { background: rgba(0,229,192,.08); border: 1px solid rgba(0,229,192,.2); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: var(--accent); margin-bottom: 20px; }
+
+  /* HOME SCREEN */
+  .greeting { padding: 0 20px 20px; }
+  .greeting h2 { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+  .greeting h2 span { color: var(--accent); }
+  .greeting p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+  .search-bar {
+    margin: 0 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  }
+  .search-bar svg { color: var(--text2); flex-shrink: 0; }
+  .search-bar input { background: none; border: none; outline: none; color: var(--text); font-family: var(--font-body); font-size: 14px; flex: 1; }
+  .search-bar input::placeholder { color: var(--text2); }
+
+  .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-bottom: 14px; }
+  .section-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+  .see-all { font-size: 12px; color: var(--accent); cursor: pointer; }
+
+  .category-row { display: flex; gap: 10px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; margin-bottom: 28px; }
+  .category-row::-webkit-scrollbar { display: none; }
+  .cat-chip {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 14px 16px; cursor: pointer; flex-shrink: 0; min-width: 76px;
+    transition: all .2s;
+  }
+  .cat-chip.active, .cat-chip:active { border-color: var(--accent); background: rgba(0,229,192,.1); }
+  .cat-icon { font-size: 22px; }
+  .cat-name { font-size: 11px; color: var(--text2); font-weight: 500; }
+
+  .doctor-scroll { display: flex; gap: 14px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; margin-bottom: 28px; }
+  .doctor-scroll::-webkit-scrollbar { display: none; }
+  .doctor-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 16px; flex-shrink: 0; width: 180px; cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    position: relative; overflow: hidden;
+  }
+  .doctor-card::before {
+    content: ''; position: absolute; top: -30px; right: -30px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,192,.15), transparent);
+  }
+  .doctor-card:active { transform: scale(.97); }
+  .doc-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--accent2)33, var(--accent)33);
+  }
+  .doc-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+  .doc-spec { font-size: 11px; color: var(--text2); margin: 2px 0 8px; }
+  .doc-rating { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #ffd166; }
+  .doc-book-btn {
+    margin-top: 10px; width: 100%; background: rgba(0,229,192,.15);
+    color: var(--accent); border: 1px solid rgba(0,229,192,.3);
+    border-radius: 10px; padding: 8px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: var(--font-body);
+    transition: background .2s;
+  }
+  .doc-book-btn:active { background: rgba(0,229,192,.3); }
+
+  .promo-banner {
+    margin: 0 20px 24px;
+    background: linear-gradient(135deg, #162032, #1a2a4a);
+    border: 1px solid rgba(79,142,255,.25);
+    border-radius: 20px; padding: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .promo-text h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+  .promo-text p { font-size: 12px; color: var(--text2); margin: 4px 0 12px; }
+  .promo-btn { background: var(--accent2); color: #fff; border: none; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+  .promo-emoji { font-size: 48px; }
+
+  /* BOOKING SCREEN */
+  .page-header { padding: 56px 20px 16px; display: flex; align-items: center; gap: 14px; }
+  .back-btn { width: 38px; height: 38px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .page-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+
+  .doctor-profile-card {
+    margin: 0 20px 24px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .doc-avatar-lg {
+    width: 70px; height: 70px; border-radius: 18px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+    background: linear-gradient(135deg, var(--accent2)44, var(--accent)44);
+  }
+  .doc-info-lg h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+  .doc-info-lg p { font-size: 12px; color: var(--text2); margin: 3px 0; }
+  .doc-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+  .badge-green { background: rgba(0,229,192,.15); color: var(--accent); }
+  .badge-blue { background: rgba(79,142,255,.15); color: var(--accent2); }
+
+  .calendar-wrapper { padding: 0 20px 20px; }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .cal-month { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+  .cal-nav { display: flex; gap: 8px; }
+  .cal-nav button { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; width: 32px; height: 32px; cursor: pointer; font-size: 14px; }
+  .cal-days-header { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 8px; }
+  .cal-days-header span { font-size: 11px; color: var(--text2); font-weight: 600; padding: 4px 0; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; cursor: pointer; transition: all .15s;
+    border: 1px solid transparent;
+  }
+  .cal-day:empty { cursor: default; }
+  .cal-day.today { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .cal-day.selected { background: var(--accent); color: #0a0f1e; font-weight: 700; }
+  .cal-day.past { color: var(--text2); opacity: .4; cursor: not-allowed; }
+  .cal-day.available:hover { background: rgba(0,229,192,.15); }
+
+  .time-slots { padding: 0 20px 20px; }
+  .time-slots h4 { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .slots-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .slot {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 6px; text-align: center; font-size: 12px; cursor: pointer;
+    transition: all .15s;
+  }
+  .slot.selected { background: rgba(0,229,192,.15); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .slot.booked { opacity: .35; cursor: not-allowed; text-decoration: line-through; }
+  .slot:not(.booked):hover { border-color: var(--accent); }
+
+  .type-toggle { display: flex; gap: 10px; padding: 0 20px 20px; }
+  .type-btn {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; text-align: center; cursor: pointer; transition: all .15s;
+  }
+  .type-btn.active { border-color: var(--accent); background: rgba(0,229,192,.1); }
+  .type-btn .type-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .type-btn span { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .type-btn.active span { color: var(--accent); }
+
+  .confirm-btn-wrap { padding: 0 20px 120px; }
+
+  /* HEALTH RECORDS */
+  .records-list { padding: 0 20px; flex: 1; }
+  .record-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 16px; margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start;
+    cursor: pointer; transition: border-color .2s;
+  }
+  .record-item:active { border-color: var(--accent); }
+  .record-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .record-icon.lab { background: rgba(79,142,255,.15); }
+  .record-icon.rx { background: rgba(0,229,192,.15); }
+  .record-icon.scan { background: rgba(255,107,107,.15); }
+  .record-icon.visit { background: rgba(255,209,102,.15); }
+  .record-meta h4 { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+  .record-meta p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .record-meta .record-date { font-size: 11px; color: var(--text2); margin-top: 6px; }
+  .record-badge { margin-left: auto; }
+
+  .add-record-fab {
+    position: fixed; bottom: 90px; right: calc(50% - 200px);
+    width: 54px; height: 54px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(0,229,192,.4);
+    cursor: pointer; z-index: 50; font-size: 24px; color: #0a0f1e; font-weight: 300;
+  }
+
+  /* ADD RECORD MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: var(--surface); border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 430px; padding: 24px 24px 40px;
+    animation: slideUp .3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: none; } }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 20px; }
+  .modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+
+  /* PACKAGES */
+  .packages-list { padding: 0 20px 120px; }
+  .package-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 20px; margin-bottom: 16px; position: relative; overflow: hidden;
+    cursor: pointer; transition: transform .2s;
+  }
+  .package-card:active { transform: scale(.98); }
+  .package-card.featured { border-color: rgba(0,229,192,.4); }
+  .package-card.featured::before {
+    content: '⭐ POPULAR'; position: absolute; top: 14px; right: 14px;
+    font-size: 10px; font-weight: 700; color: var(--accent);
+    background: rgba(0,229,192,.12); padding: 3px 10px; border-radius: 20px;
+    letter-spacing: .5px;
+  }
+  .pkg-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .pkg-icon { font-size: 28px; }
+  .pkg-info h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+  .pkg-info p { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .pkg-tests { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .pkg-test { font-size: 11px; background: var(--surface2); border-radius: 20px; padding: 3px 10px; color: var(--text2); }
+  .pkg-footer { display: flex; justify-content: space-between; align-items: center; }
+  .pkg-price { font-family: var(--font-display); font-size: 22px; font-weight: 800; }
+  .pkg-price span { font-size: 12px; color: var(--text2); font-weight: 400; }
+  .pkg-old-price { font-size: 12px; color: var(--text2); text-decoration: line-through; margin-left: 6px; }
+  .pkg-book { background: rgba(0,229,192,.15); color: var(--accent); border: 1px solid rgba(0,229,192,.3); border-radius: 12px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+  .pkg-book:active { background: rgba(0,229,192,.3); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    background: var(--accent); color: #0a0f1e;
+    padding: 12px 24px; border-radius: 100px;
+    font-size: 13px; font-weight: 700; font-family: var(--font-display);
+    opacity: 0; transition: all .3s; pointer-events: none; z-index: 999; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* UPCOMING APPOINTMENTS */
+  .apt-card {
+    margin: 0 20px 14px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .apt-date-box {
+    background: rgba(0,229,192,.12); border: 1px solid rgba(0,229,192,.2);
+    border-radius: 14px; padding: 10px 12px; text-align: center; flex-shrink: 0;
+  }
+  .apt-date-box .day { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .apt-date-box .month { font-size: 10px; color: var(--text2); font-weight: 600; text-transform: uppercase; }
+  .apt-info h4 { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+  .apt-info p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .apt-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .apt-action { font-size: 11px; padding: 5px 12px; border-radius: 8px; cursor: pointer; border: none; font-family: var(--font-body); font-weight: 600; }
+  .apt-action.join { background: var(--accent); color: #0a0f1e; }
+  .apt-action.cancel { background: var(--surface2); color: var(--text2); }
+
+  .scroll-container { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+  .scroll-container::-webkit-scrollbar { display: none; }
+
+  /* PROFILE section */
+  .profile-section { padding: 0 20px 120px; }
+  .profile-hero {
+    background: linear-gradient(135deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 24px; text-align: center; margin-bottom: 20px;
+  }
+  .profile-avatar-lg {
+    width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 700; color: #fff;
+  }
+  .profile-name { font-family: var(--font-display); font-size: 20px; font-weight: 800; }
+  .profile-email { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .profile-stats { display: flex; gap: 0; margin-top: 16px; }
+  .stat-item { flex: 1; text-align: center; padding: 12px 0; border-left: 1px solid var(--border); }
+  .stat-item:first-child { border-left: none; }
+  .stat-num { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+  .menu-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; cursor: pointer;
+    transition: border-color .2s;
+  }
+  .menu-item:active { border-color: var(--accent); }
+  .menu-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .menu-icon.teal { background: rgba(0,229,192,.15); }
+  .menu-icon.blue { background: rgba(79,142,255,.15); }
+  .menu-icon.red { background: rgba(255,107,107,.15); }
+  .menu-text h4 { font-size: 14px; font-weight: 600; }
+  .menu-text p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .menu-arrow { margin-left: auto; color: var(--text2); }
+
+  .status-bar { height: 44px; }
+  .powered-by { text-align: center; padding: 8px; font-size: 10px; color: var(--text2); letter-spacing: .5px; }
+  .powered-by span { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- =================== LOGIN SCREEN =================== -->
+<div class="screen active" id="loginScreen">
+  <div class="login-logo">
+    <div style="font-size:52px;margin-bottom:12px">🧬</div>
+    <h1>Zomb<span>Ai</span>-Doc</h1>
+    <p>Your AI-powered health companion</p>
+  </div>
+  <div class="login-card">
+    <h2>Welcome back 👋</h2>
+    <p>Sign in to manage your health journey</p>
+    <div class="demo-hint">💡 Demo: use any email & password to login</div>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" value="demo@zombaidoc.com">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" value="demo1234">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+    <div class="login-footer">New here? <a onclick="showRegister()">Create an account</a></div>
+  </div>
+  <div class="powered-by" style="margin-top:24px">Powered by <span>ZombAi-Doc</span></div>
+</div>
+
+<!-- =================== REGISTER SCREEN =================== -->
+<div class="screen" id="registerScreen">
+  <div class="status-bar"></div>
+  <div class="page-header">
+    <div class="back-btn" onclick="showLogin()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <h1 class="page-title">Create Account</h1>
+  </div>
+  <div style="padding:0 20px;flex:1">
+    <div class="field"><label>Full Name</label><input type="text" id="regName" placeholder="Dr. John Doe"></div>
+    <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com"></div>
+    <div class="field"><label>Phone</label><input type="tel" id="regPhone" placeholder="+91 98765 43210"></div>
+    <div class="field"><label>Date of Birth</label><input type="date" id="regDob"></div>
+    <div class="field"><label>Password</label><input type="password" id="regPass" placeholder="Create a strong password"></div>
+    <button class="btn-primary" style="margin-top:8px" onclick="doRegister()">Create Account →</button>
+  </div>
+  <div class="powered-by" style="padding:20px">Powered by <span>ZombAi-Doc</span></div>
+</div>
+
+<!-- =================== HOME SCREEN =================== -->
+<div class="screen" id="homeScreen">
+  <div class="scroll-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="logo">Zomb<span>Ai</span>-Doc</div>
+        <div class="avatar-btn" id="homeAvatar" onclick="goTo('profileScreen')">JD</div>
+      </div>
+    </div>
+    <div class="greeting">
+      <h2>Hello, <span id="greetName">John</span> 👋</h2>
+      <p>How are you feeling today?</p>
+    </div>
+    <div class="search-bar">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input placeholder="Search doctors, specialties…" readonly onclick="goTo('bookingListScreen')">
+    </div>
+
+    <!-- Upcoming appointment teaser -->
+    <div class="section-header"><span class="section-title">Upcoming</span><span class="see-all" onclick="goTo('bookingListScreen')">See all</span></div>
+    <div id="homeUpcoming" style="margin-bottom:20px">
+      <div style="margin:0 20px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:16px;text-align:center;color:var(--text2);font-size:13px">
+        No appointments yet — <span style="color:var(--accent);cursor:pointer" onclick="goTo('bookingListScreen')">book one!</span>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="section-header"><span class="section-title">Specialties</span></div>
+    <div class="category-row">
+      <div class="cat-chip active" onclick="filterDoctors('all')"><span class="cat-icon">🏥</span><span class="cat-name">All</span></div>
+      <div class="cat-chip" onclick="filterDoctors('general')"><span class="cat-icon">👨‍⚕️</span><span class="cat-name">General</span></div>
+      <div class="cat-chip" onclick="filterDoctors('cardio')"><span class="cat-icon">❤️</span><span class="cat-name">Cardio</span></div>
+      <div class="cat-chip" onclick="filterDoctors('neuro')"><span class="cat-icon">🧠</span><span class="cat-name">Neuro</span></div>
+      <div class="cat-chip" onclick="filterDoctors('ortho')"><span class="cat-icon">🦴</span><span class="cat-name">Ortho</span></div>
+      <div class="cat-chip" onclick="filterDoctors('derm')"><span class="cat-icon">🌿</span><span class="cat-name">Derm</span></div>
+      <div class="cat-chip" onclick="filterDoctors('pedia')"><span class="cat-icon">👶</span><span class="cat-name">Pediatrics</span></div>
+    </div>
+
+    <!-- Doctors -->
+    <div class="section-header"><span class="section-title">Top Doctors</span><span class="see-all" onclick="goTo('bookingListScreen')">See all</span></div>
+    <div class="doctor-scroll" id="doctorScroll">
+      <!-- dynamically rendered -->
+    </div>
+
+    <!-- Promo banner -->
+    <div class="promo-banner">
+      <div class="promo-text">
+        <h3>Health Packages</h3>
+        <p>Full body check-up from ₹999</p>
+        <button class="promo-btn" onclick="goTo('packagesScreen')">Explore →</button>
+      </div>
+      <div class="promo-emoji">🩺</div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== BOOKING LIST SCREEN =================== -->
+<div class="screen" id="bookingListScreen">
+  <div class="scroll-container">
+    <div class="page-header">
+      <div class="back-btn" onclick="goTo('homeScreen')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <h1 class="page-title">Book Appointment</h1>
+    </div>
+    <div id="bookingDoctorList" style="padding:0 20px">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- =================== BOOKING SCREEN =================== -->
+<div class="screen" id="bookingScreen">
+  <div class="scroll-container">
+    <div class="page-header">
+      <div class="back-btn" onclick="goTo('bookingListScreen')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <h1 class="page-title">Book Appointment</h1>
+    </div>
+
+    <div id="bookingDocProfile"></div>
+
+    <div class="type-toggle">
+      <div class="type-btn active" id="typeVideo" onclick="selectType('video')">
+        <span class="type-icon">📹</span><span>Video Consult</span>
+      </div>
+      <div class="type-btn" id="typeClinic" onclick="selectType('clinic')">
+        <span class="type-icon">🏥</span><span>In-Clinic</span>
+      </div>
+      <div class="type-btn" id="typeHome" onclick="selectType('home')">
+        <span class="type-icon">🏠</span><span>Home Visit</span>
+      </div>
+    </div>
+
+    <div class="calendar-wrapper">
+      <div class="cal-header">
+        <span class="cal-month" id="calMonth">March 2026</span>
+        <div class="cal-nav">
+          <button onclick="prevMonth()">‹</button>
+          <button onclick="nextMonth()">›</button>
+        </div>
+      </div>
+      <div class="cal-days-header">
+        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="time-slots">
+      <h4>Available Slots <span id="slotDateLabel" style="font-size:12px;color:var(--accent);font-weight:400"></span></h4>
+      <div class="slots-grid" id="slotsGrid">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text2);font-size:13px;padding:20px">Select a date to see available slots</div>
+      </div>
+    </div>
+
+    <div style="padding:0 20px 16px">
+      <div class="field"><label>Reason for Visit</label><input type="text" id="visitReason" placeholder="e.g. Routine checkup, Fever…"></div>
+    </div>
+
+    <div class="confirm-btn-wrap">
+      <button class="btn-primary" onclick="confirmBooking()">Confirm Booking →</button>
+    </div>
+  </div>
+</div>
+
+<!-- =================== RECORDS SCREEN =================== -->
+<div class="screen" id="recordsScreen">
+  <div class="scroll-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="logo">Health <span>Records</span></div>
+        <div style="font-size:13px;color:var(--text2)">Secure & Private 🔒</div>
+      </div>
+    </div>
+    <div class="records-list" id="recordsList"></div>
+  </div>
+  <div class="add-record-fab" onclick="openAddRecord()">＋</div>
+</div>
+
+<!-- ADD RECORD MODAL -->
+<div class="modal-overlay" id="addRecordModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Health Record</div>
+    <div class="field">
+      <label>Record Type</label>
+      <select id="recType" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-family:var(--font-body);font-size:15px;outline:none">
+        <option value="lab">🔬 Lab Report</option>
+        <option value="rx">💊 Prescription</option>
+        <option value="scan">🩻 Scan / Imaging</option>
+        <option value="visit">🏥 Doctor Visit</option>
+      </select>
+    </div>
+    <div class="field"><label>Title</label><input type="text" id="recTitle" placeholder="e.g. Blood CBC Report"></div>
+    <div class="field"><label>Doctor / Hospital</label><input type="text" id="recDoctor" placeholder="e.g. Dr. Priya, Apollo Chennai"></div>
+    <div class="field"><label>Date</label><input type="date" id="recDate"></div>
+    <div class="field"><label>Notes</label><input type="text" id="recNotes" placeholder="Any notes…"></div>
+    <button class="btn-primary" onclick="saveRecord()">Save Record →</button>
+    <button onclick="closeAddRecord()" style="width:100%;background:none;border:none;color:var(--text2);padding:14px;cursor:pointer;font-size:14px;margin-top:8px">Cancel</button>
+  </div>
+</div>
+
+<!-- =================== PACKAGES SCREEN =================== -->
+<div class="screen" id="packagesScreen">
+  <div class="scroll-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="logo">Health <span>Packages</span></div>
+        <div style="font-size:12px;background:rgba(0,229,192,.12);color:var(--accent);padding:4px 12px;border-radius:20px;border:1px solid rgba(0,229,192,.2)">Save up to 40%</div>
+      </div>
+    </div>
+    <div class="packages-list" id="packagesList"></div>
+  </div>
+</div>
+
+<!-- =================== PROFILE SCREEN =================== -->
+<div class="screen" id="profileScreen">
+  <div class="scroll-container">
+    <div class="header">
+      <div class="header-row">
+        <div class="logo">My <span>Profile</span></div>
+        <div style="cursor:pointer;font-size:13px;color:var(--accent3)" onclick="doLogout()">Logout</div>
+      </div>
+    </div>
+    <div class="profile-section">
+      <div class="profile-hero">
+        <div class="profile-avatar-lg" id="profileAvatarLg">JD</div>
+        <div class="profile-name" id="profileFullName">John Doe</div>
+        <div class="profile-email" id="profileEmail">demo@zombaidoc.com</div>
+        <div class="profile-stats">
+          <div class="stat-item"><div class="stat-num" id="statVisits">0</div><div class="stat-label">Visits</div></div>
+          <div class="stat-item"><div class="stat-num" id="statRecords">0</div><div class="stat-label">Records</div></div>
+          <div class="stat-item"><div class="stat-num" id="statPackages">0</div><div class="stat-label">Packages</div></div>
+        </div>
+      </div>
+      <div class="menu-item" onclick="goTo('bookingListScreen')">
+        <div class="menu-icon teal">📅</div>
+        <div class="menu-text"><h4>My Appointments</h4><p>View and manage bookings</p></div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="goTo('recordsScreen')">
+        <div class="menu-icon blue">📋</div>
+        <div class="menu-text"><h4>Health Records</h4><p>Lab reports, prescriptions</p></div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="goTo('packagesScreen')">
+        <div class="menu-icon teal">🩺</div>
+        <div class="menu-text"><h4>My Packages</h4><p>Booked health packages</p></div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-icon blue">🔔</div>
+        <div class="menu-text"><h4>Notifications</h4><p>Reminders & alerts</p></div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="doLogout()">
+        <div class="menu-icon red">🚪</div>
+        <div class="menu-text"><h4>Logout</h4><p>Sign out of your account</p></div>
+        <div class="menu-arrow" style="color:var(--accent3)">›</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav" style="display:none">
+  <div class="nav-item active" id="nav-home" onclick="goTo('homeScreen')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </div>
+  <div class="nav-item" id="nav-booking" onclick="goTo('bookingListScreen')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Book
+  </div>
+  <div class="nav-item" id="nav-records" onclick="goTo('recordsScreen')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Records
+  </div>
+  <div class="nav-item" id="nav-packages" onclick="goTo('packagesScreen')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+    Packages
+  </div>
+  <div class="nav-item" id="nav-profile" onclick="goTo('profileScreen')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profile
+  </div>
+</nav>
+
+<script>
+// ========================= DATA STORE (flat file via localStorage) =========================
+const DB = {
+  save(key, value) { try { localStorage.setItem('zad_'+key, JSON.stringify(value)); } catch(e) {} },
+  load(key, fallback=[]) { try { return JSON.parse(localStorage.getItem('zad_'+key)) || fallback; } catch(e) { return fallback; } },
+  // Export as JSON "flat file"
+  exportAll() {
+    const data = {};
+    ['user','appointments','records','packages'].forEach(k => { data[k] = this.load(k, null); });
+    return JSON.stringify(data, null, 2);
+  }
+};
+
+// ========================= DOCTORS DATA =========================
+const DOCTORS = [
+  { id:1, name:'Dr. Priya Ramesh', spec:'Cardiologist', cat:'cardio', exp:'12 yrs', rating:'4.9', fee:'₹800', emoji:'👩‍⚕️', slots:['9:00 AM','9:30 AM','11:00 AM','2:00 PM','4:30 PM'] },
+  { id:2, name:'Dr. Arjun Nair', spec:'Neurologist', cat:'neuro', exp:'8 yrs', rating:'4.8', fee:'₹1000', emoji:'🧑‍⚕️', slots:['10:00 AM','10:30 AM','12:00 PM','3:00 PM'] },
+  { id:3, name:'Dr. Meena Iyer', spec:'Dermatologist', cat:'derm', exp:'6 yrs', rating:'4.7', fee:'₹600', emoji:'👩‍⚕️', slots:['9:00 AM','11:00 AM','1:00 PM','5:00 PM'] },
+  { id:4, name:'Dr. Ravi Kumar', spec:'General Physician', cat:'general', exp:'15 yrs', rating:'4.9', fee:'₹400', emoji:'🧑‍⚕️', slots:['8:30 AM','9:00 AM','10:00 AM','11:30 AM','2:00 PM','3:30 PM'] },
+  { id:5, name:'Dr. Shalini Mohan', spec:'Orthopedist', cat:'ortho', exp:'10 yrs', rating:'4.8', fee:'₹900', emoji:'👩‍⚕️', slots:['10:00 AM','12:00 PM','3:00 PM','5:30 PM'] },
+  { id:6, name:'Dr. Karan Singh', spec:'Pediatrician', cat:'pedia', exp:'9 yrs', rating:'4.9', fee:'₹700', emoji:'🧑‍⚕️', slots:['9:00 AM','10:30 AM','12:30 PM','4:00 PM'] },
+];
+
+// ========================= PACKAGES DATA =========================
+const PACKAGES = [
+  { id:'p1', name:'Basic Health Screen', icon:'🩸', desc:'Essential blood tests for regular monitoring', price:'₹999', oldPrice:'₹1,499', tests:['CBC','Blood Sugar','Lipid Profile','Kidney Function'], featured:false },
+  { id:'p2', name:'Complete Body Checkup', icon:'🏥', desc:'Comprehensive head-to-toe health assessment', price:'₹2,499', oldPrice:'₹3,999', tests:['40+ Tests','ECG','Chest X-Ray','Thyroid','Liver Function','Diabetes Panel'], featured:true },
+  { id:'p3', name:'Cardiac Care Package', icon:'❤️', desc:'In-depth heart health evaluation', price:'₹3,499', oldPrice:'₹5,500', tests:['Echo','TMT','Lipid Profile','ECG','Troponin','CRP'], featured:false },
+  { id:'p4', name:'Women\'s Wellness', icon:'🌸', desc:'Tailored for women\'s health needs', price:'₹1,799', oldPrice:'₹2,800', tests:['Pap Smear','Mammogram','Thyroid','Iron Studies','Vitamin D','Pelvic USG'], featured:false },
+  { id:'p5', name:'Diabetes Care Panel', icon:'💉', desc:'Complete diabetes monitoring package', price:'₹1,299', oldPrice:'₹1,999', tests:['HbA1c','Fasting Glucose','Insulin','Kidney','Urine Microalbumin'], featured:false },
+];
+
+// ========================= STATE =========================
+let currentUser = DB.load('user', null);
+let currentDoctor = null;
+let selectedDate = null;
+let selectedSlot = null;
+let selectedType = 'video';
+let calYear = 2026, calMonth = 2; // 0-indexed, March = 2
+
+// ========================= ROUTING =========================
+const NAV_MAP = { homeScreen:'nav-home', bookingListScreen:'nav-booking', bookingScreen:'nav-booking', recordsScreen:'nav-records', packagesScreen:'nav-packages', profileScreen:'nav-profile' };
+const AUTH_SCREENS = ['loginScreen','registerScreen'];
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const nav = document.getElementById('bottomNav');
+  nav.style.display = AUTH_SCREENS.includes(id) ? 'none' : 'flex';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navId = NAV_MAP[id];
+  if (navId) document.getElementById(navId)?.classList.add('active');
+  if (id === 'homeScreen') renderHome();
+  if (id === 'bookingListScreen') renderBookingList();
+  if (id === 'recordsScreen') renderRecords();
+  if (id === 'packagesScreen') renderPackages();
+  if (id === 'profileScreen') renderProfile();
+  window.scrollTo(0,0);
+}
+
+// ========================= AUTH =========================
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value.trim();
+  if (!email || !pass) { showToast('Please fill all fields'); return; }
+  const name = email.split('@')[0].replace(/[^a-z]/gi,' ').replace(/\b\w/g,c=>c.toUpperCase()) || 'User';
+  const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  currentUser = { name, email, initials };
+  DB.save('user', currentUser);
+  showToast('Welcome back, ' + name.split(' ')[0] + '! 🎉');
+  goTo('homeScreen');
+}
+
+function showRegister() { goTo('registerScreen'); }
+function showLogin() { goTo('loginScreen'); }
+
+function doRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  if (!name || !email) { showToast('Please fill required fields'); return; }
+  const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  currentUser = { name, email, initials, phone: document.getElementById('regPhone').value, dob: document.getElementById('regDob').value };
+  DB.save('user', currentUser);
+  showToast('Account created! Welcome 🎉');
+  goTo('homeScreen');
+}
+
+function doLogout() {
+  currentUser = null;
+  goTo('loginScreen');
+}
+
+// ========================= HOME =========================
+function renderHome() {
+  if (!currentUser) return;
+  const first = currentUser.name.split(' ')[0];
+  document.getElementById('greetName').textContent = first;
+  document.getElementById('homeAvatar').textContent = currentUser.initials;
+  renderDoctorCards('all');
+  renderUpcoming();
+}
+
+function renderDoctorCards(cat) {
+  const list = cat === 'all' ? DOCTORS : DOCTORS.filter(d => d.cat === cat);
+  const scroll = document.getElementById('doctorScroll');
+  scroll.innerHTML = list.map(d => `
+    <div class="doctor-card" onclick="openBooking(${d.id})">
+      <div class="doc-avatar">${d.emoji}</div>
+      <div class="doc-name">${d.name}</div>
+      <div class="doc-spec">${d.spec}</div>
+      <div class="doc-rating">⭐ ${d.rating} · ${d.exp}</div>
+      <div style="font-size:12px;color:var(--accent);margin-top:4px;font-weight:600">${d.fee} / visit</div>
+      <button class="doc-book-btn" onclick="event.stopPropagation();openBooking(${d.id})">Book Now</button>
+    </div>
+  `).join('');
+}
+
+function filterDoctors(cat) {
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  renderDoctorCards(cat);
+}
+
+function renderUpcoming() {
+  const apts = DB.load('appointments', []).slice(-2).reverse();
+  const el = document.getElementById('homeUpcoming');
+  if (!apts.length) {
+    el.innerHTML = `<div style="margin:0 20px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:16px;text-align:center;color:var(--text2);font-size:13px">No appointments yet — <span style="color:var(--accent);cursor:pointer" onclick="goTo('bookingListScreen')">book one!</span></div>`;
+    return;
+  }
+  el.innerHTML = apts.map(a => `
+    <div class="apt-card">
+      <div class="apt-date-box">
+        <div class="day">${new Date(a.date).getDate()}</div>
+        <div class="month">${new Date(a.date).toLocaleString('default',{month:'short'})}</div>
+      </div>
+      <div class="apt-info">
+        <h4>${a.doctor}</h4>
+        <p>${a.spec} · ${a.time}</p>
+        <p style="color:var(--accent);font-size:11px">${a.type} · ${a.status}</p>
+        <div class="apt-actions">
+          <button class="apt-action join">Join</button>
+          <button class="apt-action cancel" onclick="cancelApt('${a.id}')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function cancelApt(id) {
+  let apts = DB.load('appointments', []);
+  apts = apts.filter(a => a.id !== id);
+  DB.save('appointments', apts);
+  renderHome();
+  showToast('Appointment cancelled');
+}
+
+// ========================= BOOKING LIST =========================
+function renderBookingList() {
+  const cont = document.getElementById('bookingDoctorList');
+  const apts = DB.load('appointments', []);
+  cont.innerHTML = DOCTORS.map(d => {
+    const count = apts.filter(a => a.doctorId === d.id).length;
+    return `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;cursor:pointer" onclick="openBooking(${d.id})">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div class="doc-avatar-lg">${d.emoji}</div>
+        <div style="flex:1">
+          <div style="font-family:var(--font-display);font-size:16px;font-weight:700">${d.name}</div>
+          <div style="font-size:12px;color:var(--text2);margin:3px 0">${d.spec} · ${d.exp} experience</div>
+          <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+            <span class="badge badge-green">⭐ ${d.rating}</span>
+            <span class="badge badge-blue">${d.fee}</span>
+            ${count ? `<span class="badge" style="background:rgba(255,209,102,.15);color:#ffd166">${count} booking${count>1?'s':''}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" style="margin-top:14px" onclick="event.stopPropagation();openBooking(${d.id})">Book Appointment →</button>
+    </div>`;
+  }).join('');
+}
+
+// ========================= BOOKING =========================
+function openBooking(doctorId) {
+  currentDoctor = DOCTORS.find(d => d.id === doctorId);
+  selectedDate = null; selectedSlot = null; selectedType = 'video';
+  renderBookingDocProfile();
+  renderCalendar();
+  renderSlots();
+  goTo('bookingScreen');
+}
+
+function renderBookingDocProfile() {
+  document.getElementById('bookingDocProfile').innerHTML = `
+    <div class="doctor-profile-card">
+      <div class="doc-avatar-lg">${currentDoctor.emoji}</div>
+      <div class="doc-info-lg">
+        <h3>${currentDoctor.name}</h3>
+        <p>${currentDoctor.spec}</p>
+        <p style="color:var(--accent);">${currentDoctor.fee} per consultation</p>
+        <div class="doc-badges">
+          <span class="badge badge-green">⭐ ${currentDoctor.rating}</span>
+          <span class="badge badge-blue">${currentDoctor.exp}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function selectType(t) {
+  selectedType = t;
+  ['video','clinic','home'].forEach(x => document.getElementById('type'+x.charAt(0).toUpperCase()+x.slice(1)).classList.remove('active'));
+  document.getElementById('type'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active');
+}
+
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonth').textContent = months[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('calGrid');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const days = new Date(calYear, calMonth+1, 0).getDate();
+  let html = '';
+  for (let i=0;i<first;i++) html += '<div class="cal-day"></div>';
+  for (let d=1;d<=days;d++) {
+    const date = new Date(calYear, calMonth, d);
+    const dateStr = date.toISOString().split('T')[0];
+    const isPast = date < today;
+    const isToday = date.getTime() === today.getTime();
+    const isSel = selectedDate === dateStr;
+    let cls = 'cal-day';
+    if (isPast) cls += ' past';
+    else cls += ' available';
+    if (isToday) cls += ' today';
+    if (isSel) cls += ' selected';
+    html += `<div class="${cls}" ${!isPast ? `onclick="selectDate('${dateStr}')"` : ''}>${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function selectDate(d) {
+  selectedDate = d;
+  renderCalendar();
+  renderSlots();
+  const label = new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  document.getElementById('slotDateLabel').textContent = '— '+label;
+}
+
+function prevMonth() {
+  calMonth--; if (calMonth<0){calMonth=11;calYear--;} renderCalendar();
+}
+function nextMonth() {
+  calMonth++; if (calMonth>11){calMonth=0;calYear++;} renderCalendar();
+}
+
+function renderSlots() {
+  const grid = document.getElementById('slotsGrid');
+  if (!selectedDate) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text2);font-size:13px;padding:20px">Select a date to see available slots</div>'; return; }
+  const booked = DB.load('appointments',[]).filter(a=>a.doctorId===currentDoctor.id && a.date===selectedDate).map(a=>a.time);
+  grid.innerHTML = currentDoctor.slots.map(s => {
+    const isBooked = booked.includes(s);
+    const isSel = selectedSlot === s;
+    return `<div class="slot ${isBooked?'booked':''} ${isSel?'selected':''}" ${!isBooked?`onclick="selectSlot('${s}')"`:''}>${s}</div>`;
+  }).join('');
+}
+
+function selectSlot(s) { selectedSlot = s; renderSlots(); }
+
+function confirmBooking() {
+  if (!selectedDate) { showToast('Please select a date'); return; }
+  if (!selectedSlot) { showToast('Please select a time slot'); return; }
+  const reason = document.getElementById('visitReason').value || 'General consultation';
+  const apt = {
+    id: Date.now().toString(),
+    doctorId: currentDoctor.id,
+    doctor: currentDoctor.name,
+    spec: currentDoctor.spec,
+    date: selectedDate,
+    time: selectedSlot,
+    type: selectedType === 'video' ? 'Video Consult' : selectedType === 'clinic' ? 'In-Clinic' : 'Home Visit',
+    reason, status: 'Confirmed', fee: currentDoctor.fee,
+    bookedAt: new Date().toISOString()
+  };
+  const apts = DB.load('appointments', []);
+  apts.push(apt);
+  DB.save('appointments', apts);
+  showToast('Appointment confirmed! 🎉');
+  setTimeout(() => goTo('homeScreen'), 600);
+}
+
+// ========================= RECORDS =========================
+const REC_ICONS = { lab:'🔬', rx:'💊', scan:'🩻', visit:'🏥' };
+const REC_COLORS = { lab:'lab', rx:'rx', scan:'scan', visit:'visit' };
+
+function renderRecords() {
+  const records = DB.load('records', []);
+  const el = document.getElementById('recordsList');
+  if (!records.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text2)"><div style="font-size:48px;margin-bottom:12px">📋</div><p style="font-size:14px">No health records yet</p><p style="font-size:12px;margin-top:6px">Tap <strong style="color:var(--accent)">+</strong> to add your first record</p></div>`;
+    return;
+  }
+  el.innerHTML = records.slice().reverse().map(r => `
+    <div class="record-item">
+      <div class="record-icon ${REC_COLORS[r.type]}">${REC_ICONS[r.type]}</div>
+      <div class="record-meta" style="flex:1">
+        <h4>${r.title}</h4>
+        <p>${r.doctor || 'Unknown provider'}</p>
+        ${r.notes ? `<p style="color:var(--text2);font-size:11px;margin-top:2px">${r.notes}</p>` : ''}
+        <div class="record-date">📅 ${r.date ? new Date(r.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : 'No date'}</div>
+      </div>
+      <div class="record-badge">
+        <span class="badge badge-blue" style="font-size:10px">${r.type.toUpperCase()}</span>
+      </div>
+    </div>`).join('');
+}
+
+function openAddRecord() {
+  document.getElementById('recDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('addRecordModal').classList.add('open');
+}
+function closeAddRecord() { document.getElementById('addRecordModal').classList.remove('open'); }
+
+function saveRecord() {
+  const r = {
+    id: Date.now().toString(),
+    type: document.getElementById('recType').value,
+    title: document.getElementById('recTitle').value.trim(),
+    doctor: document.getElementById('recDoctor').value.trim(),
+    date: document.getElementById('recDate').value,
+    notes: document.getElementById('recNotes').value.trim(),
+    addedAt: new Date().toISOString()
+  };
+  if (!r.title) { showToast('Please enter a title'); return; }
+  const records = DB.load('records', []);
+  records.push(r);
+  DB.save('records', records);
+  closeAddRecord();
+  renderRecords();
+  showToast('Record saved securely 🔒');
+  // Clear fields
+  ['recTitle','recDoctor','recNotes'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ========================= PACKAGES =========================
+function renderPackages() {
+  const bookedPkgs = DB.load('packages', []);
+  document.getElementById('packagesList').innerHTML = PACKAGES.map(p => {
+    const isBooked = bookedPkgs.some(b => b.id === p.id);
+    return `
+    <div class="package-card ${p.featured ? 'featured' : ''}">
+      <div class="pkg-header">
+        <div class="pkg-icon">${p.icon}</div>
+        <div class="pkg-info">
+          <h3>${p.name}</h3>
+          <p>${p.desc}</p>
+        </div>
+      </div>
+      <div class="pkg-tests">
+        ${p.tests.map(t => `<span class="pkg-test">${t}</span>`).join('')}
+      </div>
+      <div class="pkg-footer">
+        <div>
+          <span class="pkg-price">${p.price}<span> / person</span></span>
+          <span class="pkg-old-price">${p.oldPrice}</span>
+        </div>
+        <button class="pkg-book" ${isBooked ? 'style="background:rgba(0,229,192,.3);cursor:default"' : ''} onclick="bookPackage('${p.id}')">${isBooked ? '✓ Booked' : 'Book Now'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function bookPackage(id) {
+  const pkgs = DB.load('packages', []);
+  if (pkgs.some(p => p.id === id)) { showToast('Already booked!'); return; }
+  const pkg = PACKAGES.find(p => p.id === id);
+  pkgs.push({ id, name: pkg.name, bookedAt: new Date().toISOString() });
+  DB.save('packages', pkgs);
+  renderPackages();
+  showToast(pkg.name + ' booked! 🎉');
+}
+
+// ========================= PROFILE =========================
+function renderProfile() {
+  if (!currentUser) return;
+  const initials = currentUser.initials || currentUser.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('profileAvatarLg').textContent = initials;
+  document.getElementById('profileFullName').textContent = currentUser.name;
+  document.getElementById('profileEmail').textContent = currentUser.email;
+  document.getElementById('statVisits').textContent = DB.load('appointments',[]).length;
+  document.getElementById('statRecords').textContent = DB.load('records',[]).length;
+  document.getElementById('statPackages').textContent = DB.load('packages',[]).length;
+}
+
+// ========================= TOAST =========================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ========================= INIT =========================
+function init() {
+  const saved = DB.load('user', null);
+  if (saved) { currentUser = saved; goTo('homeScreen'); }
+  else { goTo('loginScreen'); }
+}
+
+init();
+</script>
+</body>
+</html>
