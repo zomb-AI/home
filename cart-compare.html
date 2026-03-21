@@ -1,0 +1,982 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CartCompare – Best Grocery Price Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --white:#ffffff;
+  --bg:#f4f5f7;
+  --bg2:#e9ebee;
+  --bg3:#dde0e5;
+  --surface:#f8f9fb;
+  --border:#dde1e8;
+  --border2:#c8cdd6;
+  --text:#1a1d23;
+  --text2:#3d4250;
+  --text3:#6b7280;
+  --text4:#a0a8b5;
+  --accent:#4a6fa5;
+  --accent-light:#eef2f8;
+  --accent-mid:#6b8fc7;
+  --blinkit:#e8b800;
+  --blinkit-bg:#fdf8e1;
+  --blinkit-text:#8a6c00;
+  --zepto:#7c3aed;
+  --zepto-bg:#f0ebfd;
+  --zepto-text:#5b21b6;
+  --instamart:#e84d00;
+  --instamart-bg:#fff0eb;
+  --instamart-text:#b83700;
+  --best:#15803d;
+  --best-bg:#f0fdf6;
+  --best-border:#a7f3c8;
+  --shadow-xs:0 1px 3px rgba(20,25,40,0.07);
+  --shadow-sm:0 2px 8px rgba(20,25,40,0.08),0 1px 3px rgba(20,25,40,0.05);
+  --shadow-md:0 6px 24px rgba(20,25,40,0.10),0 2px 8px rgba(20,25,40,0.06);
+  --r:14px;--r-sm:9px;--r-xs:6px;
+  --font:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+/* ── NAV ── */
+nav{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;height:54px;
+  display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:200;
+  box-shadow:var(--shadow-xs);
+}
+.nav-logo{display:flex;align-items:center;gap:8px}
+.nav-logo-icon{font-size:20px;line-height:1}
+.nav-logo-text{font-family:'DM Serif Display',serif;font-size:1.18rem;color:var(--text);letter-spacing:-0.02em}
+.nav-logo-text em{color:var(--accent);font-style:normal}
+.nav-pill{
+  margin-left:10px;
+  font-size:0.70rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--accent-light);color:var(--accent);
+  padding:3px 9px;border-radius:20px;
+  display:none;
+}
+@media(min-width:440px){.nav-pill{display:inline-block}}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.p-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+/* ── PAGE WRAP ── */
+.page{max-width:880px;margin:0 auto;padding:24px 14px 70px;flex:1;width:100%}
+@media(min-width:600px){.page{padding:32px 22px 80px}}
+
+/* ── CARD BASE ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm)}
+
+/* ── LOCATION BAR ── */
+.location-bar{
+  display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+  padding:13px 16px;margin-bottom:18px;
+}
+.loc-icon{font-size:1.15rem;flex-shrink:0}
+.loc-label{font-size:0.74rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.location-select{
+  flex:1;min-width:150px;max-width:240px;
+  border:1.5px solid var(--border2);border-radius:var(--r-sm);
+  padding:8px 32px 8px 11px;
+  font-family:var(--font);font-size:0.90rem;font-weight:500;
+  color:var(--text);background:var(--surface);outline:none;cursor:pointer;
+  transition:border-color .18s,box-shadow .18s;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='%236b7280' d='M5.5 7L0 0h11z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;
+}
+.location-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,111,165,.13)}
+.platform-pills{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.ppill{
+  font-size:0.72rem;font-weight:600;padding:4px 10px;border-radius:20px;
+  display:inline-flex;align-items:center;gap:4px;white-space:nowrap;
+  transition:opacity .2s;
+}
+.ppill.blinkit{background:var(--blinkit-bg);color:var(--blinkit-text)}
+.ppill.zepto{background:var(--zepto-bg);color:var(--zepto-text)}
+.ppill.instamart{background:var(--instamart-bg);color:var(--instamart-text)}
+.ppill.off{background:var(--bg2);color:var(--text4);text-decoration:line-through;opacity:.65}
+
+/* ── SECTION TITLE ── */
+.sec-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sec-title{font-size:1rem;font-weight:700;color:var(--text)}
+.sec-badge{font-size:0.76rem;color:var(--text3);background:var(--bg2);padding:2px 8px;border-radius:10px;font-weight:500}
+
+/* ── SEARCH ROW (FIXED) ── */
+.search-row{display:flex;gap:8px;margin-bottom:10px;position:relative}
+.search-field-wrap{flex:1;position:relative}
+.search-field-wrap input{
+  width:100%;
+  border:1.5px solid var(--border2);border-radius:var(--r-sm);
+  padding:10px 13px 10px 36px;
+  font-family:var(--font);font-size:0.91rem;color:var(--text);
+  background:var(--white);outline:none;
+  transition:border-color .18s,box-shadow .18s;
+}
+.search-field-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,111,165,.12)}
+.search-field-wrap input::placeholder{color:var(--text4)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.92rem;pointer-events:none;color:var(--text3)}
+.btn-add-item{
+  padding:10px 18px;
+  background:var(--text);color:var(--white);
+  border:none;border-radius:var(--r-sm);
+  font-family:var(--font);font-size:0.86rem;font-weight:600;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:background .18s,transform .14s,box-shadow .18s;
+  box-shadow:var(--shadow-xs);
+}
+.btn-add-item:hover{background:#2d3142;transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.btn-add-item:active{transform:translateY(0)}
+
+/* ── SUGGESTIONS DROPDOWN ── */
+.suggestions-drop{
+  background:var(--white);
+  border:1.5px solid var(--border2);border-radius:var(--r-sm);
+  box-shadow:var(--shadow-md);
+  position:absolute;top:calc(100% + 5px);left:0;
+  width:calc(100% - 90px); /* leave room for Add button */
+  z-index:150;overflow:hidden;
+  max-height:230px;overflow-y:auto;
+  display:none;
+}
+.sug-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 13px;cursor:pointer;
+  transition:background .12s;font-size:0.87rem;
+}
+.sug-item:hover,.sug-item.active{background:var(--accent-light)}
+.sug-em{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+.sug-name{flex:1;color:var(--text);font-weight:500}
+.sug-sub{font-size:0.74rem;color:var(--text3)}
+.sug-in-cart{font-size:0.70rem;background:var(--best-bg);color:var(--best);padding:1px 6px;border-radius:8px;font-weight:600}
+
+/* ── QUICK ADD CHIPS ── */
+.quick-label{font-size:0.72rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.quick-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.q-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:0.73rem;font-weight:600;padding:4px 10px;
+  border-radius:20px;border:1.5px solid var(--border);
+  color:var(--text2);background:var(--white);cursor:pointer;
+  transition:background .14s,border-color .14s,transform .12s;white-space:nowrap;
+}
+.q-chip:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+
+/* ── CART LIST ── */
+.cart-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;min-height:10px}
+.cart-empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:36px 20px;gap:8px;
+  border:2px dashed var(--border2);border-radius:var(--r);
+  color:var(--text3);font-size:0.87rem;text-align:center;
+}
+.cart-empty-state .ce-icon{font-size:2.2rem}
+.cart-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 13px;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);
+  transition:background .14s,box-shadow .14s;
+}
+.cart-item:hover{background:var(--surface);box-shadow:var(--shadow-xs)}
+.ci-em{font-size:1.3rem;width:30px;text-align:center;flex-shrink:0;line-height:1}
+.ci-info{flex:1;min-width:0;overflow:hidden}
+.ci-name{font-size:0.88rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-meta{font-size:0.73rem;color:var(--text3);margin-top:1px}
+.ci-controls{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.q-btn{
+  width:27px;height:27px;border-radius:50%;
+  border:1.5px solid var(--border2);background:var(--white);
+  color:var(--text2);font-size:1rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .13s,border-color .13s,transform .1s;
+  flex-shrink:0;line-height:1;padding:0;
+}
+.q-btn:hover{background:var(--bg2);border-color:var(--border2);transform:scale(1.1)}
+.q-btn:active{transform:scale(.95)}
+.q-num{font-size:0.85rem;font-weight:700;color:var(--text);min-width:20px;text-align:center}
+.rm-btn{
+  width:26px;height:26px;border-radius:50%;
+  border:none;background:transparent;
+  color:var(--text4);font-size:.85rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .13s,color .13s;flex-shrink:0;margin-left:2px;
+}
+.rm-btn:hover{background:#fee2e2;color:#dc2626}
+
+/* ── COMPARE BTN ── */
+.compare-btn{
+  width:100%;padding:14px;
+  background:var(--text);color:var(--white);
+  border:none;border-radius:var(--r);
+  font-family:var(--font);font-size:0.97rem;font-weight:700;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:var(--shadow-sm);margin-bottom:24px;
+  transition:background .2s,transform .15s,box-shadow .18s;
+  letter-spacing:.01em;
+}
+.compare-btn:hover:not(:disabled){background:#2c3040;transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.compare-btn:active:not(:disabled){transform:translateY(0)}
+.compare-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── PROGRESS BAR ── */
+.prog-bar{height:3px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-bottom:26px;display:none}
+.prog-bar.on{display:block}
+.prog-fill{
+  height:100%;width:0%;border-radius:3px;
+  background:linear-gradient(90deg,var(--accent),var(--blinkit),var(--zepto),var(--instamart));
+  transition:width .38s cubic-bezier(.4,0,.2,1);
+}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.65}}
+.prog-bar.on .prog-fill{animation:shimmer 1.4s ease-in-out infinite}
+
+/* ── RESULTS ── */
+#results{display:none}
+#results.show{display:block;animation:riseIn .38s ease both}
+@keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── WINNER BANNER ── */
+.winner-card{
+  background:var(--best-bg);
+  border:2px solid var(--best-border);
+  border-radius:var(--r);padding:18px 18px;
+  margin-bottom:18px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.wc-icon{font-size:1.9rem;flex-shrink:0}
+.wc-body{flex:1;min-width:0}
+.wc-label{font-size:0.70rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#166534;margin-bottom:3px}
+.wc-name{font-size:1.15rem;font-weight:700;color:var(--text)}
+.wc-sub{font-size:0.80rem;color:#166534;margin-top:3px}
+.wc-save{text-align:right;flex-shrink:0}
+.wcs-label{font-size:0.70rem;color:#166534;font-weight:600}
+.wcs-amount{font-size:1.35rem;font-weight:700;color:#16a34a;line-height:1.1}
+.wc-btn{
+  padding:9px 18px;border:none;border-radius:var(--r-sm);
+  font-family:var(--font);font-size:0.85rem;font-weight:700;
+  cursor:pointer;white-space:nowrap;
+  transition:filter .18s,transform .14s;
+}
+.wc-btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+
+/* ── PLATFORM CARDS ── */
+.plat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+@media(max-width:500px){.plat-grid{grid-template-columns:1fr}}
+.plat-card{
+  background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:14px 14px 13px;position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+}
+.plat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.plat-card.w-blinkit{border-color:var(--blinkit)}
+.plat-card.w-zepto{border-color:var(--zepto)}
+.plat-card.w-instamart{border-color:var(--instamart)}
+.plat-card.winner::before{
+  content:'BEST';
+  position:absolute;top:0;right:0;
+  font-size:.60rem;font-weight:800;letter-spacing:.1em;
+  padding:3px 9px;border-radius:0 var(--r) 0 var(--r-xs);
+}
+.plat-card.w-blinkit.winner::before{background:var(--blinkit);color:var(--blinkit-text)}
+.plat-card.w-zepto.winner::before{background:var(--zepto-bg);color:var(--zepto-text)}
+.plat-card.w-instamart.winner::before{background:var(--instamart-bg);color:var(--instamart-text)}
+.plat-logo{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.plat-logo-em{font-size:1.3rem;line-height:1}
+.plat-logo-name{font-weight:700;font-size:0.86rem;color:var(--text)}
+.plat-total{font-size:1.45rem;font-weight:700;color:var(--text);line-height:1}
+.plat-meta{font-size:0.72rem;color:var(--text3);margin-top:4px}
+.plat-delivery{font-size:0.71rem;margin-top:4px;font-weight:500}
+.plat-bar{height:3px;border-radius:3px;margin-top:10px}
+.w-blinkit .plat-bar{background:var(--blinkit)}
+.w-zepto   .plat-bar{background:var(--zepto)}
+.w-instamart .plat-bar{background:var(--instamart)}
+.plat-na{color:var(--text3);font-size:.81rem;margin-top:8px}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;margin-bottom:24px;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow-xs)}
+.cmp-table{width:100%;border-collapse:collapse;font-size:0.84rem;background:var(--white)}
+.cmp-table th{
+  text-align:left;padding:10px 13px;
+  background:var(--surface);border-bottom:1.5px solid var(--border);
+  font-size:0.72rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--text3);white-space:nowrap;
+}
+.cmp-table td{padding:11px 13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.cmp-table tbody tr:last-child td{border-bottom:none}
+.cmp-table tbody tr:hover td{background:var(--surface)}
+.td-prod{display:flex;align-items:center;gap:8px;min-width:130px}
+.td-em{font-size:1.15rem;flex-shrink:0}
+.td-pname{font-weight:600;color:var(--text);font-size:0.83rem}
+.td-pqty{font-size:0.72rem;color:var(--text3)}
+.price-val{font-weight:600;color:var(--text);white-space:nowrap}
+.price-val.cheap{color:var(--best)}
+.price-val.pricey{color:#b91c1c}
+.price-val.na-val{color:var(--text4);font-weight:400;font-style:italic;font-size:.79rem}
+.pbadge{
+  display:inline-block;font-size:.67rem;font-weight:700;
+  padding:1px 5px;border-radius:5px;margin-left:4px;vertical-align:middle;
+}
+.pbadge.b{background:#dcfce7;color:#166534}
+.pbadge.h{background:#fee2e2;color:#b91c1c}
+
+/* ── AI BLOCK ── */
+.ai-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px 18px;margin-bottom:26px;
+}
+.ai-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.ai-em{font-size:1.1rem}
+.ai-ttl{font-weight:700;font-size:0.88rem;color:var(--text)}
+.ai-tag{font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--accent-light);color:var(--accent)}
+.ai-body{font-size:0.85rem;color:var(--text2);line-height:1.65}
+.ai-body b{color:var(--text);font-weight:700}
+
+/* ── DISCLAIMER ── */
+.disclaimer{
+  font-size:0.71rem;color:var(--text4);
+  border-top:1px solid var(--border);padding-top:12px;margin-top:4px;
+  line-height:1.55;text-align:center;
+}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--white);border-top:1px solid var(--border);
+  padding:18px 24px;text-align:center;
+  font-size:0.78rem;color:var(--text3);
+}
+footer strong{color:var(--text)}
+.ft-sub{font-size:.69rem;color:var(--text4);margin-top:3px}
+
+/* ── UTIL ── */
+.mb-18{margin-bottom:18px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <span class="nav-logo-icon">🛒</span>
+    <span class="nav-logo-text">Cart<em>Compare</em></span>
+    <span class="nav-pill">Price Finder</span>
+  </div>
+  <div class="nav-right">
+    <span class="p-dot" style="background:#e8b800" title="Blinkit"></span>
+    <span class="p-dot" style="background:#7c3aed" title="Zepto"></span>
+    <span class="p-dot" style="background:#e84d00" title="Instamart"></span>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- LOCATION -->
+  <div class="card location-bar mb-18">
+    <span class="loc-icon">📍</span>
+    <span class="loc-label">Deliver to</span>
+    <select class="location-select" id="citySelect" onchange="onCityChange()">
+      <option value="">— Choose city —</option>
+      <optgroup label="Tamil Nadu">
+        <option value="Chennai">Chennai</option>
+        <option value="Coimbatore">Coimbatore</option>
+        <option value="Madurai">Madurai</option>
+        <option value="Trichy">Trichy</option>
+        <option value="Salem">Salem</option>
+      </optgroup>
+      <optgroup label="Karnataka">
+        <option value="Bengaluru">Bengaluru</option>
+        <option value="Mysuru">Mysuru</option>
+      </optgroup>
+      <optgroup label="Maharashtra">
+        <option value="Mumbai">Mumbai</option>
+        <option value="Pune">Pune</option>
+        <option value="Nagpur">Nagpur</option>
+      </optgroup>
+      <optgroup label="Delhi NCR">
+        <option value="Delhi">Delhi</option>
+        <option value="Gurgaon">Gurgaon</option>
+        <option value="Noida">Noida</option>
+      </optgroup>
+      <optgroup label="Telangana / AP">
+        <option value="Hyderabad">Hyderabad</option>
+        <option value="Vizag">Vizag</option>
+      </optgroup>
+      <optgroup label="West Bengal">
+        <option value="Kolkata">Kolkata</option>
+      </optgroup>
+      <optgroup label="Gujarat">
+        <option value="Ahmedabad">Ahmedabad</option>
+        <option value="Surat">Surat</option>
+      </optgroup>
+    </select>
+    <div class="platform-pills" id="platformPills">
+      <span class="ppill blinkit">⚡ Blinkit</span>
+      <span class="ppill zepto">🟣 Zepto</span>
+      <span class="ppill instamart">🟠 Instamart</span>
+    </div>
+  </div>
+
+  <!-- CART BUILD -->
+  <div class="sec-row">
+    <span class="sec-title">🧺 Your Cart</span>
+    <span class="sec-badge" id="cartCountBadge">0 items</span>
+  </div>
+
+  <!-- SEARCH ROW — fixed: no nested .search-wrap -->
+  <div class="search-row">
+    <div class="search-field-wrap" id="searchFieldWrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput"
+        placeholder="Search tomato, milk, rice…"
+        autocomplete="off"
+        oninput="onSearchInput()"
+        onkeydown="onSearchKey(event)"
+      />
+      <div class="suggestions-drop" id="suggestionsBox"></div>
+    </div>
+    <button class="btn-add-item" onclick="addTopMatch()">+ Add</button>
+  </div>
+
+  <div class="quick-label">Quick Add</div>
+  <div class="quick-chips" id="quickChips"></div>
+
+  <!-- CART ITEMS — never destroyed, always re-rendered in place -->
+  <div class="cart-list" id="cartList"></div>
+
+  <button class="compare-btn" id="compareBtn" onclick="runCompare()" disabled>
+    ⚡ &nbsp;Compare Prices Across All Platforms
+  </button>
+
+  <!-- LOADING -->
+  <div class="prog-bar" id="progBar">
+    <div class="prog-fill" id="progFill"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="winner-card" id="winnerCard"></div>
+    <div class="plat-grid"   id="platGrid"></div>
+    <div class="sec-row"><span class="sec-title">📊 Item-wise Comparison</span></div>
+    <div class="tbl-wrap">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th><span style="color:var(--blinkit-text)">⚡</span> Blinkit</th>
+            <th><span style="color:var(--zepto-text)">🟣</span> Zepto</th>
+            <th><span style="color:var(--instamart-text)">🟠</span> Instamart</th>
+            <th>Cheapest</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+    <div class="ai-card">
+      <div class="ai-head">
+        <span class="ai-em">🤖</span>
+        <span class="ai-ttl">Smart Suggestion</span>
+        <span class="ai-tag">AI</span>
+      </div>
+      <div class="ai-body" id="aiBody"></div>
+    </div>
+    <div class="disclaimer">
+      ⚠️ Prices are modelled estimates based on typical market rates per city. Actual prices vary by pincode, flash sales, and stock. Live data requires official platform APIs.
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer>
+  <strong>CartCompare</strong> — Find the best grocery deal in seconds
+  <div class="ft-sub">Powered by <strong>Zomb-AI</strong> · balram3429</div>
+</footer>
+
+<script>
+/* ================================================================
+   DATA
+================================================================ */
+const PRODUCTS = [
+  {id:'tomato',     name:'Tomato',              cat:'Vegetable', emoji:'🍅', unit:'500g',  base:25},
+  {id:'onion',      name:'Onion',               cat:'Vegetable', emoji:'🧅', unit:'1kg',   base:40},
+  {id:'potato',     name:'Potato',              cat:'Vegetable', emoji:'🥔', unit:'1kg',   base:35},
+  {id:'spinach',    name:'Spinach',             cat:'Leafy',     emoji:'🥬', unit:'250g',  base:20},
+  {id:'coriander',  name:'Coriander',           cat:'Leafy',     emoji:'🌿', unit:'100g',  base:15},
+  {id:'carrot',     name:'Carrot',              cat:'Vegetable', emoji:'🥕', unit:'500g',  base:30},
+  {id:'beans',      name:'Beans',               cat:'Vegetable', emoji:'🫘', unit:'500g',  base:45},
+  {id:'cauliflower',name:'Cauliflower',         cat:'Vegetable', emoji:'🥦', unit:'500g',  base:40},
+  {id:'brinjal',    name:'Brinjal',             cat:'Vegetable', emoji:'🍆', unit:'500g',  base:30},
+  {id:'ladyfinger', name:'Lady\'s Finger',      cat:'Vegetable', emoji:'🫛', unit:'500g',  base:35},
+  {id:'cucumber',   name:'Cucumber',            cat:'Vegetable', emoji:'🥒', unit:'500g',  base:25},
+  {id:'capsicum',   name:'Capsicum',            cat:'Vegetable', emoji:'🫑', unit:'500g',  base:55},
+  {id:'garlic',     name:'Garlic',              cat:'Spice',     emoji:'🧄', unit:'100g',  base:30},
+  {id:'ginger',     name:'Ginger',              cat:'Spice',     emoji:'🫚', unit:'100g',  base:20},
+  {id:'cabbage',    name:'Cabbage',             cat:'Vegetable', emoji:'🥬', unit:'1pc',   base:35},
+  {id:'banana',     name:'Banana',              cat:'Fruit',     emoji:'🍌', unit:'6pcs',  base:40},
+  {id:'apple',      name:'Apple',               cat:'Fruit',     emoji:'🍎', unit:'4pcs',  base:120},
+  {id:'mango',      name:'Mango',               cat:'Fruit',     emoji:'🥭', unit:'4pcs',  base:80},
+  {id:'orange',     name:'Orange',              cat:'Fruit',     emoji:'🍊', unit:'4pcs',  base:60},
+  {id:'papaya',     name:'Papaya',              cat:'Fruit',     emoji:'🍈', unit:'1kg',   base:55},
+  {id:'grapes',     name:'Grapes',              cat:'Fruit',     emoji:'🍇', unit:'500g',  base:70},
+  {id:'rice',       name:'Rice (Sona Masoori)', cat:'Staple',    emoji:'🍚', unit:'1kg',   base:65},
+  {id:'atta',       name:'Wheat Flour (Atta)',  cat:'Staple',    emoji:'🫓', unit:'1kg',   base:55},
+  {id:'dal',        name:'Toor Dal',            cat:'Staple',    emoji:'🫘', unit:'500g',  base:80},
+  {id:'sugar',      name:'Sugar',               cat:'Staple',    emoji:'🍬', unit:'1kg',   base:45},
+  {id:'salt',       name:'Salt',                cat:'Staple',    emoji:'🧂', unit:'1kg',   base:20},
+  {id:'oil',        name:'Sunflower Oil',       cat:'Staple',    emoji:'🫙', unit:'1L',    base:130},
+  {id:'milk',       name:'Milk',                cat:'Dairy',     emoji:'🥛', unit:'1L',    base:28},
+  {id:'curd',       name:'Curd',                cat:'Dairy',     emoji:'🥣', unit:'400g',  base:35},
+  {id:'butter',     name:'Butter',              cat:'Dairy',     emoji:'🧈', unit:'100g',  base:55},
+  {id:'paneer',     name:'Paneer',              cat:'Dairy',     emoji:'🧀', unit:'200g',  base:75},
+  {id:'eggs',       name:'Eggs',                cat:'Protein',   emoji:'🥚', unit:'6pcs',  base:55},
+];
+
+const CITY_AVAIL = {
+  Chennai:    {blinkit:true,  zepto:true,  instamart:true},
+  Coimbatore: {blinkit:false, zepto:true,  instamart:true},
+  Madurai:    {blinkit:false, zepto:false, instamart:true},
+  Trichy:     {blinkit:false, zepto:false, instamart:true},
+  Salem:      {blinkit:false, zepto:false, instamart:true},
+  Bengaluru:  {blinkit:true,  zepto:true,  instamart:true},
+  Mysuru:     {blinkit:false, zepto:true,  instamart:true},
+  Mumbai:     {blinkit:true,  zepto:true,  instamart:true},
+  Pune:       {blinkit:true,  zepto:true,  instamart:true},
+  Nagpur:     {blinkit:false, zepto:true,  instamart:true},
+  Delhi:      {blinkit:true,  zepto:true,  instamart:true},
+  Gurgaon:    {blinkit:true,  zepto:true,  instamart:true},
+  Noida:      {blinkit:true,  zepto:true,  instamart:true},
+  Hyderabad:  {blinkit:true,  zepto:true,  instamart:true},
+  Vizag:      {blinkit:false, zepto:false, instamart:true},
+  Kolkata:    {blinkit:true,  zepto:true,  instamart:true},
+  Ahmedabad:  {blinkit:true,  zepto:true,  instamart:true},
+  Surat:      {blinkit:false, zepto:true,  instamart:true},
+};
+
+const PLAT_CFG = {
+  blinkit:   {mean:1.00, var:0.08, delivery:20, freeAt:200,  name:'Blinkit',          em:'⚡', colorCls:'blinkit',   textColor:'var(--blinkit-text)'},
+  zepto:     {mean:0.97, var:0.10, delivery:25, freeAt:150,  name:'Zepto',            em:'🟣', colorCls:'zepto',     textColor:'var(--zepto-text)'},
+  instamart: {mean:1.03, var:0.07, delivery:30, freeAt:250,  name:'Swiggy Instamart', em:'🟠', colorCls:'instamart', textColor:'var(--instamart-text)'},
+};
+
+const CITY_FACTOR = {
+  Mumbai:1.12,Delhi:1.08,Bengaluru:1.10,Gurgaon:1.10,Noida:1.07,
+  Chennai:1.05,Hyderabad:1.03,Pune:1.05,Kolkata:0.97,
+  Ahmedabad:0.98,Coimbatore:0.98,Madurai:0.95,Trichy:0.93,
+  Salem:0.92,Mysuru:0.97,Vizag:0.95,Nagpur:0.96,Surat:0.97,
+};
+
+const QUICK_IDS = ['tomato','onion','potato','milk','eggs','banana','rice','curd','apple','paneer'];
+
+/* ================================================================
+   STATE
+================================================================ */
+// cart is a plain array of {id, qty}  — product looked up by id
+let cart = [];
+let suggestionsVisible = false;
+let activeSugIdx = -1;
+let currentSuggestions = [];
+
+/* ================================================================
+   INIT
+================================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  renderQuickChips();
+  renderCart();
+});
+
+/* ================================================================
+   LOCATION
+================================================================ */
+function onCityChange() {
+  const city = document.getElementById('citySelect').value;
+  const pills = document.getElementById('platformPills');
+  const avail = city ? (CITY_AVAIL[city] || {blinkit:true,zepto:true,instamart:true}) : null;
+
+  pills.innerHTML = [
+    {k:'blinkit',  label:'⚡ Blinkit'},
+    {k:'zepto',    label:'🟣 Zepto'},
+    {k:'instamart',label:'🟠 Instamart'},
+  ].map(p => {
+    const on = !avail || avail[p.k];
+    return `<span class="ppill ${on ? p.k : 'off'}">${p.label}${on ? ' ✓':''}</span>`;
+  }).join('');
+
+  hideResults();
+}
+
+/* ================================================================
+   SEARCH — fixed: suggestions attached to search-field-wrap only
+================================================================ */
+function onSearchInput() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) { closeSuggestions(); return; }
+
+  currentSuggestions = PRODUCTS.filter(p =>
+    p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  activeSugIdx = -1;
+  if (!currentSuggestions.length) { closeSuggestions(); return; }
+  renderSuggestions();
+}
+
+function renderSuggestions() {
+  const box = document.getElementById('suggestionsBox');
+  box.innerHTML = currentSuggestions.map((p, i) => {
+    const inCart = cart.some(c => c.id === p.id);
+    return `<div class="sug-item${i === activeSugIdx ? ' active':''}" data-idx="${i}"
+      onmousedown="addById('${p.id}')"
+      onmouseover="setActiveSug(${i})">
+      <span class="sug-em">${p.emoji}</span>
+      <span class="sug-name">${p.name}</span>
+      <span class="sug-sub">${p.cat} · ${p.unit}</span>
+      ${inCart ? '<span class="sug-in-cart">in cart</span>' : ''}
+    </div>`;
+  }).join('');
+  box.style.display = 'block';
+  suggestionsVisible = true;
+}
+
+function setActiveSug(i) {
+  activeSugIdx = i;
+  renderSuggestions();
+}
+
+function closeSuggestions() {
+  document.getElementById('suggestionsBox').style.display = 'none';
+  suggestionsVisible = false;
+  activeSugIdx = -1;
+  currentSuggestions = [];
+}
+
+function onSearchKey(e) {
+  if (!suggestionsVisible) {
+    if (e.key === 'Enter') addTopMatch();
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    activeSugIdx = Math.min(activeSugIdx + 1, currentSuggestions.length - 1);
+    renderSuggestions();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    activeSugIdx = Math.max(activeSugIdx - 1, 0);
+    renderSuggestions();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (activeSugIdx >= 0 && currentSuggestions[activeSugIdx]) {
+      addById(currentSuggestions[activeSugIdx].id);
+    } else {
+      addTopMatch();
+    }
+  } else if (e.key === 'Escape') {
+    closeSuggestions();
+  }
+}
+
+function addTopMatch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) return;
+  const match = PRODUCTS.find(p =>
+    p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)
+  );
+  if (match) addById(match.id);
+}
+
+// Close suggestions on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#searchFieldWrap')) closeSuggestions();
+});
+
+/* ================================================================
+   CART — all mutations through addById / changeQty / removeById
+   renderCart always rebuilds from scratch using event delegation
+================================================================ */
+function addById(id) {
+  const existing = cart.find(c => c.id === id);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ id, qty: 1 });
+  }
+  // clear search
+  document.getElementById('searchInput').value = '';
+  closeSuggestions();
+  renderCart();
+  hideResults();
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(c => c.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  renderCart();
+  hideResults();
+}
+
+function removeById(id) {
+  cart = cart.filter(c => c.id !== id);
+  renderCart();
+  hideResults();
+}
+
+/* renderCart: rebuilds #cartList innerHTML. Event listeners use
+   data-id attributes and a single delegated listener — no inline
+   onclick strings with potentially unsafe product names.          */
+function renderCart() {
+  const list = document.getElementById('cartList');
+  document.getElementById('cartCountBadge').textContent =
+    cart.length + ' item' + (cart.length !== 1 ? 's' : '');
+  document.getElementById('compareBtn').disabled = cart.length === 0;
+
+  if (cart.length === 0) {
+    list.innerHTML = `
+      <div class="cart-empty-state">
+        <div class="ce-icon">🧺</div>
+        <div>Add items above to compare prices across Blinkit, Zepto &amp; Instamart</div>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = cart.map(c => {
+    const p = PRODUCTS.find(x => x.id === c.id);
+    if (!p) return '';
+    // Use data-id instead of inline JS strings — safe for any product name
+    return `
+    <div class="cart-item">
+      <span class="ci-em">${p.emoji}</span>
+      <div class="ci-info">
+        <div class="ci-name">${p.name}</div>
+        <div class="ci-meta">${p.cat} · ${p.unit}</div>
+      </div>
+      <div class="ci-controls">
+        <button class="q-btn" data-action="dec" data-id="${c.id}" title="Decrease">−</button>
+        <span class="q-num">${c.qty}</span>
+        <button class="q-btn" data-action="inc" data-id="${c.id}" title="Increase">+</button>
+      </div>
+      <button class="rm-btn" data-action="rm" data-id="${c.id}" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+}
+
+/* Single delegated event listener on the list — no closure issues */
+document.getElementById('cartList').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const id     = btn.dataset.id;
+  const action = btn.dataset.action;
+  if (action === 'inc') changeQty(id, +1);
+  else if (action === 'dec') changeQty(id, -1);
+  else if (action === 'rm')  removeById(id);
+});
+
+/* ================================================================
+   QUICK CHIPS
+================================================================ */
+function renderQuickChips() {
+  document.getElementById('quickChips').innerHTML = QUICK_IDS.map(id => {
+    const p = PRODUCTS.find(x => x.id === id);
+    return `<span class="q-chip" data-id="${p.id}">${p.emoji} ${p.name}</span>`;
+  }).join('');
+}
+
+document.getElementById('quickChips').addEventListener('click', e => {
+  const chip = e.target.closest('[data-id]');
+  if (chip) addById(chip.dataset.id);
+});
+
+/* ================================================================
+   PRICE ENGINE
+================================================================ */
+function simPrice(base, plat, city, qty) {
+  const cfg = PLAT_CFG[plat];
+  const cf  = CITY_FACTOR[city] || 1.0;
+  const rand = (Math.random() * 2 - 1) * cfg.var;
+  return Math.round(base * cf * (cfg.mean + rand)) * qty;
+}
+
+function buildPriceMatrix(city) {
+  const avail = CITY_AVAIL[city] || {blinkit:true,zepto:true,instamart:true};
+  const rows = cart.map(c => {
+    const p = PRODUCTS.find(x => x.id === c.id);
+    const row = { product: p, qty: c.qty };
+    ['blinkit','zepto','instamart'].forEach(pl => {
+      row[pl] = avail[pl] ? simPrice(p.base, pl, city, c.qty) : null;
+    });
+    return row;
+  });
+  return { rows, avail };
+}
+
+/* ================================================================
+   COMPARE — run with animated progress bar
+================================================================ */
+async function runCompare() {
+  const city = document.getElementById('citySelect').value;
+  if (!city) { alert('Please choose your city first 📍'); return; }
+
+  const bar  = document.getElementById('progBar');
+  const fill = document.getElementById('progFill');
+  hideResults();
+  bar.classList.add('on');
+  document.getElementById('compareBtn').disabled = true;
+
+  for (const pct of [0, 18, 40, 62, 80, 94, 100]) {
+    await delay(220);
+    fill.style.width = pct + '%';
+  }
+  await delay(280);
+  bar.classList.remove('on');
+  fill.style.width = '0%';
+  document.getElementById('compareBtn').disabled = false;
+
+  const { rows, avail } = buildPriceMatrix(city);
+  renderResults(rows, avail, city);
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ================================================================
+   RENDER RESULTS
+================================================================ */
+function renderResults(rows, avail, city) {
+  // ─ totals per platform
+  const raw = {blinkit:0, zepto:0, instamart:0};
+  const cnt = {blinkit:0, zepto:0, instamart:0};
+  rows.forEach(r => {
+    ['blinkit','zepto','instamart'].forEach(pl => {
+      if (r[pl] !== null) { raw[pl] += r[pl]; cnt[pl]++; }
+    });
+  });
+
+  // ─ final totals with delivery
+  const final = {};
+  ['blinkit','zepto','instamart'].forEach(pl => {
+    if (!avail[pl]) { final[pl] = null; return; }
+    const cfg = PLAT_CFG[pl];
+    final[pl] = raw[pl] + (raw[pl] >= cfg.freeAt ? 0 : cfg.delivery);
+  });
+
+  // ─ winner
+  const sorted = Object.entries(final)
+    .filter(([,v]) => v !== null)
+    .sort((a,b) => a[1]-b[1]);
+  const [winPlat, winTotal] = sorted[0] || ['instamart', 0];
+  const secondTotal = sorted[1]?.[1];
+  const savings = secondTotal ? secondTotal - winTotal : 0;
+  const maxTotal = Math.max(...sorted.map(([,v])=>v));
+
+  // ── WINNER CARD
+  const wc = PLAT_CFG[winPlat];
+  const freeShip = raw[winPlat] >= wc.freeAt;
+  document.getElementById('winnerCard').innerHTML = `
+    <div class="wc-icon">${wc.em}</div>
+    <div class="wc-body">
+      <div class="wc-label">Best Deal in ${city}</div>
+      <div class="wc-name">${wc.name}</div>
+      <div class="wc-sub">${cnt[winPlat]} of ${cart.length} items · ${freeShip ? 'Free delivery 🎉' : 'Delivery included'}</div>
+    </div>
+    ${savings > 0 ? `<div class="wc-save"><div class="wcs-label">You save</div><div class="wcs-amount">₹${savings}</div></div>` : ''}
+    <button class="wc-btn" style="background:var(--${wc.colorCls}-bg);color:${wc.textColor};border:2px solid ${wc.textColor}30"
+      onclick="alert('In a live version this would open ${wc.name} with your cart 🛒')">
+      Order on ${wc.name} →
+    </button>
+  `;
+
+  // ── PLATFORM CARDS
+  document.getElementById('platGrid').innerHTML = ['blinkit','zepto','instamart'].map(pl => {
+    const cfg = PLAT_CFG[pl];
+    const tot = final[pl];
+    const isW = pl === winPlat;
+    const barPct = tot ? Math.round((tot / maxTotal) * 100) : 0;
+    const freeD = tot !== null && raw[pl] >= cfg.freeAt;
+    return `
+    <div class="plat-card w-${pl} ${isW ? 'winner':''}">
+      <div class="plat-logo">
+        <span class="plat-logo-em">${cfg.em}</span>
+        <span class="plat-logo-name">${cfg.name}</span>
+      </div>
+      ${tot !== null ? `
+        <div class="plat-total">₹${tot}</div>
+        <div class="plat-meta">${cnt[pl]} items · incl. delivery</div>
+        <div class="plat-delivery" style="color:${freeD ? 'var(--best)':'var(--text3)'}">
+          ${freeD ? '🎉 Free delivery' : `+₹${cfg.delivery} delivery`}
+        </div>
+        <div class="plat-bar" style="width:${barPct}%"></div>
+      ` : `<div class="plat-na">Not available in ${city}</div>`}
+    </div>`;
+  }).join('');
+
+  // ── ITEM TABLE
+  document.getElementById('tblBody').innerHTML = rows.map(r => {
+    const vals = ['blinkit','zepto','instamart'].map(pl => r[pl]).filter(v => v !== null);
+    const minP = vals.length ? Math.min(...vals) : null;
+    const maxP = vals.length > 1 ? Math.max(...vals) : null;
+    const cheapPl = minP !== null
+      ? ['blinkit','zepto','instamart'].find(pl => r[pl] === minP)
+      : null;
+
+    return `<tr>
+      <td>
+        <div class="td-prod">
+          <span class="td-em">${r.product.emoji}</span>
+          <div>
+            <div class="td-pname">${r.product.name}</div>
+            <div class="td-pqty">×${r.qty} · ${r.product.unit}</div>
+          </div>
+        </div>
+      </td>
+      ${['blinkit','zepto','instamart'].map(pl => {
+        const v = r[pl];
+        if (v === null) return `<td><span class="price-val na-val">Unavailable</span></td>`;
+        const isCheap = v === minP;
+        const isHigh  = maxP !== null && v === maxP && !isCheap;
+        return `<td>
+          <span class="price-val ${isCheap?'cheap':''} ${isHigh?'pricey':''}">
+            ₹${v}
+            ${isCheap ? `<span class="pbadge b">✓</span>` : ''}
+            ${isHigh  ? `<span class="pbadge h">↑</span>` : ''}
+          </span>
+        </td>`;
+      }).join('')}
+      <td>
+        ${cheapPl
+          ? `<span class="ppill ${cheapPl}" style="font-size:.71rem">${PLAT_CFG[cheapPl].em} ${PLAT_CFG[cheapPl].name}</span>`
+          : '—'}
+      </td>
+    </tr>`;
+  }).join('');
+
+  // ── AI TEXT
+  const notAvail = ['blinkit','zepto','instamart'].filter(pl => !avail[pl]);
+  document.getElementById('aiBody').innerHTML =
+    `For your <b>${cart.length}-item cart</b> in <b>${city}</b>, <b>${wc.name}</b> offers the lowest total of <b>₹${winTotal}</b>.`
+    + (savings > 0 ? ` That's <b>₹${savings} less</b> than the next cheapest option.` : '')
+    + (freeShip ? ` Your cart value qualifies for <b>free delivery</b> on ${wc.name}. ` : ' ')
+    + `Where an item is cheaper on another platform, consider a <b>split order</b> to save even more.`
+    + (notAvail.length ? ` <b>${notAvail.map(pl=>PLAT_CFG[pl].name).join(', ')}</b> ${notAvail.length===1?'does':'do'} not currently operate in ${city}.` : '');
+
+  const resultsEl = document.getElementById('results');
+  resultsEl.classList.add('show');
+  resultsEl.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function hideResults() {
+  const el = document.getElementById('results');
+  el.classList.remove('show');
+  el.style.display = '';          // let CSS class control display
+}
+
+// Override show class to also set display:block
+const style = document.createElement('style');
+style.textContent = '#results.show{display:block}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
