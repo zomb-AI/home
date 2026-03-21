@@ -1,0 +1,779 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZombAI-Congestion | Chennai Traffic Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --panel: #111418;
+    --panel2: #161b22;
+    --border: #1e2530;
+    --accent: #ff3c38;
+    --green: #00e676;
+    --yellow: #ffd600;
+    --red: #ff3c38;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --cyan: #00e5ff;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+  /* HEADER */
+  header {
+    position:fixed; top:0; left:0; right:0; z-index:1000;
+    background:rgba(10,12,15,0.92); backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);
+    padding:0 24px; height:60px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-icon {
+    width:32px; height:32px; background:var(--accent); border-radius:6px;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100%{box-shadow:0 0 0 0 rgba(255,60,56,0.4);}
+    50%{box-shadow:0 0 0 8px rgba(255,60,56,0);}
+  }
+  .logo-text { font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:2px; }
+  .logo-text span { color:var(--accent); }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  .live-badge {
+    display:flex; align-items:center; gap:6px;
+    font-family:'Space Mono',monospace; font-size:11px; color:var(--muted);
+  }
+  .live-dot { width:7px; height:7px; background:var(--green); border-radius:50%; animation:blink 1.2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+  .city-badge {
+    font-family:'Space Mono',monospace; font-size:10px;
+    background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.25);
+    color:var(--cyan); padding:3px 10px; border-radius:20px; letter-spacing:1px;
+  }
+
+  /* LAYOUT */
+  .app { display:grid; grid-template-columns:380px 1fr; height:100vh; padding-top:60px; }
+
+  /* SIDE PANEL */
+  .side-panel {
+    background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden;
+  }
+  .side-panel::-webkit-scrollbar{width:4px;}
+  .side-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+  .search-section { padding:20px; border-bottom:1px solid var(--border); }
+  .section-label {
+    font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px;
+    color:var(--muted); text-transform:uppercase; margin-bottom:14px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .input-wrapper { position:relative; display:flex; align-items:center; margin-bottom:8px; }
+  .route-dot { position:absolute; left:14px; width:10px; height:10px; border-radius:50%; z-index:2; }
+  .dot-origin { background:var(--green); box-shadow:0 0 8px var(--green); }
+  .dot-dest   { background:var(--accent); box-shadow:0 0 8px var(--accent); }
+
+  .search-input {
+    width:100%; background:var(--panel2); border:1px solid var(--border);
+    color:var(--text); padding:12px 14px 12px 36px;
+    border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; outline:none;
+    transition:border-color 0.2s,box-shadow 0.2s;
+  }
+  .search-input:focus { border-color:rgba(255,60,56,0.5); box-shadow:0 0 0 3px rgba(255,60,56,0.08); }
+  .search-input::placeholder { color:var(--muted); }
+
+  .swap-btn {
+    display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px; background:var(--panel2); border:1px solid var(--border);
+    border-radius:8px; cursor:pointer; margin:0px auto 8px; color:var(--muted); font-size:16px;
+    transition:all 0.2s; position:relative; z-index:3;
+  }
+  .swap-btn:hover { background:var(--accent); border-color:var(--accent); color:#fff; transform:rotate(180deg); }
+
+  .mode-row { display:flex; gap:8px; margin-bottom:14px; }
+  .mode-btn {
+    flex:1; background:var(--panel2); border:1px solid var(--border);
+    color:var(--muted); padding:8px 4px; border-radius:8px;
+    cursor:pointer; font-size:18px; text-align:center; transition:all 0.2s;
+  }
+  .mode-btn.active { background:rgba(255,60,56,0.12); border-color:var(--accent); color:var(--accent); }
+  .mode-btn:hover  { border-color:var(--accent); color:var(--accent); }
+
+  .go-btn {
+    width:100%; background:var(--accent); color:#fff; border:none;
+    padding:13px; border-radius:10px; font-family:'Bebas Neue',cursive;
+    font-size:18px; letter-spacing:2px; cursor:pointer; transition:all 0.2s;
+    box-shadow:0 4px 20px rgba(255,60,56,0.3);
+  }
+  .go-btn:hover { background:#ff5450; box-shadow:0 6px 28px rgba(255,60,56,0.5); transform:translateY(-1px); }
+  .go-btn:active { transform:translateY(0); }
+
+  /* RESULTS */
+  .results-section { padding:20px; flex:1; }
+
+  .route-card {
+    background:var(--panel2); border:1px solid var(--border);
+    border-radius:12px; padding:16px; margin-bottom:10px;
+    cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden;
+  }
+  .route-card::before {
+    content:''; position:absolute; left:0; top:0; bottom:0;
+    width:3px; background:var(--muted); border-radius:3px 0 0 3px;
+  }
+  .route-card.best::before     { background:var(--green); }
+  .route-card.moderate::before { background:var(--yellow); }
+  .route-card.heavy::before    { background:var(--accent); }
+  .route-card.active-route { border-color:rgba(255,60,56,0.4); background:rgba(255,60,56,0.06); }
+  .route-card:hover { border-color:rgba(255,60,56,0.3); transform:translateX(2px); }
+
+  .route-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+  .route-name { font-size:13px; font-weight:600; color:var(--text); max-width:200px; }
+  .route-time { font-family:'Bebas Neue',cursive; font-size:26px; letter-spacing:1px; line-height:1; }
+  .route-time.green  { color:var(--green); }
+  .route-time.yellow { color:var(--yellow); }
+  .route-time.red    { color:var(--accent); }
+  .route-meta { display:flex; gap:12px; font-size:12px; color:var(--muted); margin-top:6px; flex-wrap:wrap; }
+
+  .congestion-bar { height:4px; border-radius:2px; background:var(--border); margin-top:10px; overflow:hidden; }
+  .congestion-fill { height:100%; border-radius:2px; width:0; transition:width 0.8s ease; }
+
+  .tag {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:10px; font-family:'Space Mono',monospace;
+    padding:2px 8px; border-radius:20px; margin-top:8px;
+  }
+  .tag-fast { background:rgba(0,230,118,0.1); color:var(--green); border:1px solid rgba(0,230,118,0.2); }
+  .tag-mod  { background:rgba(255,214,0,0.1); color:var(--yellow); border:1px solid rgba(255,214,0,0.2); }
+  .tag-slow { background:rgba(255,60,56,0.1); color:var(--accent); border:1px solid rgba(255,60,56,0.2); }
+
+  /* QUICK LOCALITIES */
+  .localities-section { padding:16px 20px; border-top:1px solid var(--border); }
+  .locality-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .chip {
+    background:var(--panel2); border:1px solid var(--border);
+    color:var(--muted); padding:5px 12px; border-radius:20px;
+    font-size:12px; cursor:pointer; transition:all 0.18s; white-space:nowrap;
+  }
+  .chip:hover { border-color:var(--cyan); color:var(--cyan); background:rgba(0,229,255,0.05); }
+
+  /* STATS */
+  .stats-strip { padding:14px 20px; border-top:1px solid var(--border); display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .stat-box { background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 12px; text-align:center; }
+  .stat-value { font-family:'Bebas Neue',cursive; font-size:20px; color:var(--text); }
+  .stat-label { font-size:10px; color:var(--muted); font-family:'Space Mono',monospace; margin-top:2px; }
+
+  /* MAP */
+  .map-container { position:relative; background:#0d1117; }
+  #map { width:100%; height:100%; }
+
+  .map-overlay { position:absolute; top:16px; right:16px; z-index:100; display:flex; flex-direction:column; gap:8px; }
+  .map-btn {
+    background:rgba(10,12,15,0.88); backdrop-filter:blur(12px);
+    border:1px solid var(--border); color:var(--text);
+    width:40px; height:40px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:15px; transition:all 0.2s;
+  }
+  .map-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .map-btn.active { background:rgba(255,60,56,0.15); border-color:var(--accent); color:var(--accent); }
+
+  .map-info-card {
+    position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+    background:rgba(10,12,15,0.92); backdrop-filter:blur(16px);
+    border:1px solid var(--border); border-radius:14px;
+    padding:14px 22px; min-width:320px; max-width:520px;
+    z-index:100; display:none; animation:slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from{opacity:0;transform:translateX(-50%) translateY(12px);}
+    to{opacity:1;transform:translateX(-50%) translateY(0);}
+  }
+  .map-info-card.visible { display:block; }
+  .map-info-row { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+  .map-info-metric { text-align:center; }
+  .map-info-metric .val { font-family:'Bebas Neue',cursive; font-size:26px; }
+  .map-info-metric .lbl { font-size:10px; color:var(--muted); font-family:'Space Mono',monospace; }
+  .divider { width:1px; background:var(--border); height:40px; flex-shrink:0; }
+
+  .loading-overlay {
+    display:none; position:absolute; inset:0;
+    background:rgba(10,12,15,0.7); backdrop-filter:blur(4px);
+    z-index:200; align-items:center; justify-content:center;
+    flex-direction:column; gap:14px;
+  }
+  .loading-overlay.visible { display:flex; }
+  .loading-text { font-family:'Space Mono',monospace; font-size:12px; color:var(--muted); }
+
+  /* TOAST */
+  .toast {
+    position:fixed; bottom:24px; right:24px;
+    padding:12px 18px; border-radius:10px; font-size:13px;
+    font-family:'Space Mono',monospace; z-index:9999;
+    display:none; animation:fadeInUp 0.3s ease; max-width:320px;
+  }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  .toast.visible { display:block; }
+  .toast.error { background:rgba(255,60,56,0.12); border:1px solid rgba(255,60,56,0.35); color:var(--accent); }
+  .toast.info  { background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); color:var(--cyan); }
+
+  /* API KEY MODAL */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.82);
+    backdrop-filter:blur(8px); z-index:9000;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .modal {
+    background:var(--panel); border:1px solid var(--border); border-radius:16px;
+    padding:32px; width:480px; max-width:96vw; animation:modalIn 0.3s ease;
+  }
+  @keyframes modalIn { from{opacity:0;transform:scale(0.94);} to{opacity:1;transform:scale(1);} }
+  .modal-title { font-family:'Bebas Neue',cursive; font-size:28px; letter-spacing:2px; margin-bottom:6px; }
+  .modal-title span { color:var(--accent); }
+  .modal-sub { color:var(--muted); font-size:13px; margin-bottom:24px; line-height:1.6; }
+  .modal-input {
+    width:100%; background:var(--panel2); border:1px solid var(--border);
+    color:var(--text); padding:12px 16px; border-radius:10px;
+    font-family:'Space Mono',monospace; font-size:13px; outline:none;
+    margin-bottom:12px; transition:border-color 0.2s;
+  }
+  .modal-input:focus { border-color:rgba(255,60,56,0.5); }
+  .modal-hint {
+    font-size:12px; color:var(--muted); margin-bottom:20px; line-height:1.7;
+    padding:12px 14px; background:var(--panel2); border-radius:8px;
+    border-left:3px solid var(--cyan);
+  }
+  .modal-hint a { color:var(--cyan); text-decoration:none; }
+  .modal-hint a:hover { text-decoration:underline; }
+  .modal-hint code { background:rgba(255,255,255,0.07); padding:1px 5px; border-radius:3px; font-size:11px; }
+  .modal-btn {
+    width:100%; background:var(--accent); color:#fff; border:none;
+    padding:13px; border-radius:10px; font-family:'Bebas Neue',cursive;
+    font-size:18px; letter-spacing:2px; cursor:pointer; transition:all 0.2s;
+  }
+  .modal-btn:hover { background:#ff5450; }
+
+  .no-results { text-align:center; padding:30px 20px; color:var(--muted); font-size:13px; font-family:'Space Mono',monospace; }
+  .no-results .icon { font-size:32px; margin-bottom:10px; }
+
+  /* Google autocomplete override */
+  .pac-container { background:var(--panel)!important; border:1px solid var(--border)!important; border-radius:10px!important; box-shadow:0 8px 32px rgba(0,0,0,0.5)!important; font-family:'DM Sans',sans-serif!important; margin-top:4px!important; }
+  .pac-item { background:transparent!important; border-top:1px solid var(--border)!important; color:var(--text)!important; padding:10px 14px!important; cursor:pointer!important; font-size:13px!important; }
+  .pac-item:hover { background:var(--panel2)!important; }
+  .pac-item-query { color:var(--text)!important; font-weight:600!important; }
+  .pac-matched { color:var(--accent)!important; }
+  .pac-icon, .hdpi .pac-icon { display:none!important; }
+
+  @media(max-width:768px){
+    .app{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
+    .side-panel{max-height:55vh;overflow-y:auto;}
+    .map-container{min-height:45vh;}
+    .city-badge{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <div class="modal-title">ZOMBAI <span>CONGESTION</span></div>
+    <p class="modal-sub">Chennai's real-time traffic intelligence system. Enter your Google Maps API key to activate live traffic data, multi-route analysis, and congestion scoring.</p>
+    <input class="modal-input" id="apiKeyInput" type="text" placeholder="AIzaSy... (Google Maps API key)" autocomplete="off"/>
+    <div class="modal-hint">
+      🔑 Get a free API key → <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a><br/>
+      Enable these APIs: <code>Maps JavaScript API</code> · <code>Directions API</code> · <code>Places API</code><br/>
+      Your key is only used in this browser session — never stored on any server.
+    </div>
+    <button class="modal-btn" onclick="initWithKey()">ACTIVATE → LAUNCH TRAFFIC INTELLIGENCE</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🧟</div>
+    <div class="logo-text">ZOMBAI <span>CONGESTION</span></div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div><span id="clockLabel">LIVE TRAFFIC</span></div>
+    <div class="city-badge">CHENNAI METRO</div>
+  </div>
+</header>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+
+    <div class="search-section">
+      <div class="section-label">Route Planner</div>
+
+      <!-- Origin -->
+      <div class="input-wrapper">
+        <div class="route-dot dot-origin"></div>
+        <input class="search-input" id="originInput" type="text" placeholder="From — T. Nagar, Anna Nagar…"/>
+      </div>
+
+      <!-- Swap -->
+      <div style="display:flex;justify-content:center;">
+        <button class="swap-btn" onclick="swapLocations()" title="Swap">⇅</button>
+      </div>
+
+      <!-- Destination -->
+      <div class="input-wrapper" style="margin-bottom:16px;">
+        <div class="route-dot dot-dest"></div>
+        <input class="search-input" id="destInput" type="text" placeholder="To — OMR, Guindy, Velachery…"/>
+      </div>
+
+      <!-- Travel Mode -->
+      <div class="mode-row">
+        <button class="mode-btn active" data-mode="DRIVING"   title="Car"       onclick="setMode(this)">🚗</button>
+        <button class="mode-btn"        data-mode="DRIVING"   title="Bike"      onclick="setMode(this)">🛵</button>
+        <button class="mode-btn"        data-mode="TRANSIT"   title="Transit"   onclick="setMode(this)">🚌</button>
+        <button class="mode-btn"        data-mode="WALKING"   title="Walk"      onclick="setMode(this)">🚶</button>
+        <button class="mode-btn"        data-mode="BICYCLING" title="Cycle"     onclick="setMode(this)">🚲</button>
+      </div>
+
+      <button class="go-btn" id="goBtn" onclick="searchRoutes()">FIND ROUTES →</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-section" id="resultsSection">
+      <div id="resultsContainer">
+        <div class="no-results" id="noResults">
+          <div class="icon">🗺️</div>
+          Search a route to see live<br>Chennai traffic intelligence
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK LOCALITIES -->
+    <div class="localities-section">
+      <div class="section-label">Quick Pick</div>
+      <div class="locality-chips">
+        <div class="chip" onclick="quickFill('origin','T. Nagar, Chennai')">T. Nagar</div>
+        <div class="chip" onclick="quickFill('origin','Anna Nagar, Chennai')">Anna Nagar</div>
+        <div class="chip" onclick="quickFill('dest','OMR, Chennai')">OMR</div>
+        <div class="chip" onclick="quickFill('dest','Velachery, Chennai')">Velachery</div>
+        <div class="chip" onclick="quickFill('dest','Guindy, Chennai')">Guindy</div>
+        <div class="chip" onclick="quickFill('origin','Adyar, Chennai')">Adyar</div>
+        <div class="chip" onclick="quickFill('dest','Tambaram, Chennai')">Tambaram</div>
+        <div class="chip" onclick="quickFill('origin','Porur, Chennai')">Porur</div>
+        <div class="chip" onclick="quickFill('dest','Sholinganallur, Chennai')">Sholinganallur</div>
+        <div class="chip" onclick="quickFill('origin','Perambur, Chennai')">Perambur</div>
+        <div class="chip" onclick="quickFill('dest','Chromepet, Chennai')">Chromepet</div>
+        <div class="chip" onclick="quickFill('origin','Nungambakkam, Chennai')">Nungambakkam</div>
+        <div class="chip" onclick="quickFill('dest','Medavakkam, Chennai')">Medavakkam</div>
+        <div class="chip" onclick="quickFill('origin','Mylapore, Chennai')">Mylapore</div>
+        <div class="chip" onclick="quickFill('dest','Ambattur, Chennai')">Ambattur</div>
+        <div class="chip" onclick="quickFill('origin','Pallavaram, Chennai')">Pallavaram</div>
+        <div class="chip" onclick="quickFill('dest','Thoraipakkam, Chennai')">Thoraipakkam</div>
+        <div class="chip" onclick="quickFill('origin','Avadi, Chennai')">Avadi</div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-strip">
+      <div class="stat-box"><div class="stat-value" id="statSpeed">–</div><div class="stat-label">AVG SPEED</div></div>
+      <div class="stat-box"><div class="stat-value" id="statDelay">–</div><div class="stat-label">DELAY</div></div>
+      <div class="stat-box"><div class="stat-value" id="statCongestion">–</div><div class="stat-label">CONGESTION</div></div>
+    </div>
+
+  </div><!-- /side-panel -->
+
+  <!-- MAP -->
+  <div class="map-container">
+    <div id="map"></div>
+
+    <div class="map-overlay">
+      <button class="map-btn active" id="trafficBtn" onclick="toggleTraffic()" title="Traffic Layer">🚦</button>
+      <button class="map-btn"        id="transitBtn" onclick="toggleTransit()" title="Transit Layer">🚌</button>
+      <button class="map-btn"                        onclick="locateMe()"      title="My Location">📍</button>
+      <button class="map-btn"                        onclick="resetView()"     title="Reset Map">⟳</button>
+    </div>
+
+    <div class="map-info-card" id="mapInfoCard">
+      <div class="map-info-row" id="mapInfoRow"></div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+      <div style="font-size:36px;animation:pulse 1s infinite;">🧟</div>
+      <div class="loading-text">FETCHING LIVE TRAFFIC DATA…</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── GLOBALS ── */
+let map, directionsService, directionsRenderer;
+let trafficLayer, transitLayer;
+let autocompleteOrigin, autocompleteDest;
+let travelMode = 'DRIVING';
+let trafficOn = true, transitOn = false;
+let apiKey = '';
+let currentResult = null;
+let userMarker = null;
+
+const CHENNAI = { lat: 13.0827, lng: 80.2707 };
+
+/* ── API KEY ── */
+function initWithKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key || key.length < 25) { showToast('Enter a valid API key (starts with AIza…)', 'error'); return; }
+  apiKey = key;
+  sessionStorage.setItem('gmaps_key_zombai', key);
+  document.getElementById('apiModal').style.display = 'none';
+  loadGoogleMaps();
+}
+
+window.addEventListener('load', () => {
+  const saved = sessionStorage.getItem('gmaps_key_zombai');
+  if (saved) {
+    apiKey = saved;
+    document.getElementById('apiKeyInput').value = saved;
+    document.getElementById('apiModal').style.display = 'none';
+    loadGoogleMaps();
+  }
+});
+
+function loadGoogleMaps() {
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+  s.async = true; s.defer = true;
+  s.onerror = () => {
+    showToast('Failed to load Google Maps. Check API key.', 'error');
+    document.getElementById('apiModal').style.display = 'flex';
+  };
+  document.head.appendChild(s);
+}
+
+/* ── INIT MAP ── */
+window.initMap = function () {
+  const styles = [
+    {elementType:'geometry',           stylers:[{color:'#1a1f2e'}]},
+    {elementType:'labels.text.fill',   stylers:[{color:'#8896a5'}]},
+    {elementType:'labels.text.stroke', stylers:[{color:'#1a1f2e'}]},
+    {featureType:'road',elementType:'geometry',       stylers:[{color:'#2a3d55'}]},
+    {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#1a2d3f'}]},
+    {featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#9ca5b3'}]},
+    {featureType:'road.highway',elementType:'geometry',       stylers:[{color:'#3a5a7a'}]},
+    {featureType:'road.highway',elementType:'geometry.stroke', stylers:[{color:'#263d4f'}]},
+    {featureType:'road.highway',elementType:'labels.text.fill',stylers:[{color:'#f3d19c'}]},
+    {featureType:'water',elementType:'geometry',stylers:[{color:'#0d1b2a'}]},
+    {featureType:'poi',elementType:'geometry',stylers:[{color:'#1e293b'}]},
+    {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#162016'}]},
+    {featureType:'transit',elementType:'geometry',stylers:[{color:'#2f3948'}]},
+    {featureType:'administrative',elementType:'geometry',stylers:[{color:'#243442'}]}
+  ];
+
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: CHENNAI, zoom: 12,
+    styles, disableDefaultUI: true,
+    zoomControl: true, gestureHandling: 'greedy'
+  });
+
+  directionsService  = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({
+    map,
+    suppressMarkers: false,
+    polylineOptions: { strokeColor: '#ff3c38', strokeWeight: 5, strokeOpacity: 0.9 }
+  });
+
+  trafficLayer = new google.maps.TrafficLayer();
+  trafficLayer.setMap(map);
+  transitLayer = new google.maps.TransitLayer();
+
+  const bounds = new google.maps.LatLngBounds(
+    new google.maps.LatLng(12.80, 79.90),
+    new google.maps.LatLng(13.35, 80.50)
+  );
+  const acOpts = { bounds, componentRestrictions: { country: 'in' }, strictBounds: false };
+
+  autocompleteOrigin = new google.maps.places.Autocomplete(document.getElementById('originInput'), acOpts);
+  autocompleteDest   = new google.maps.places.Autocomplete(document.getElementById('destInput'),   acOpts);
+
+  updateClock();
+  setInterval(updateClock, 30000);
+};
+
+/* ── TRAVEL MODE ── */
+function setMode(btn) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  travelMode = btn.dataset.mode;
+}
+
+/* ── SWAP ── */
+function swapLocations() {
+  const a = document.getElementById('originInput').value;
+  const b = document.getElementById('destInput').value;
+  document.getElementById('originInput').value = b;
+  document.getElementById('destInput').value   = a;
+}
+
+/* ── QUICK FILL ── */
+function quickFill(field, value) {
+  const id = field === 'origin' ? 'originInput' : 'destInput';
+  document.getElementById(id).value = value;
+  showToast(`${field === 'origin' ? '🟢' : '🔴'} ${value}`, 'info');
+}
+
+/* ── SEARCH ROUTES ── */
+function searchRoutes() {
+  const origin = document.getElementById('originInput').value.trim();
+  const dest   = document.getElementById('destInput').value.trim();
+  if (!origin || !dest) { showToast('Enter both origin and destination', 'error'); return; }
+  if (!directionsService) { showToast('Maps not ready. Add your API key.', 'error'); return; }
+
+  setLoading(true);
+  document.getElementById('resultsContainer').innerHTML =
+    '<div class="no-results" id="noResults"><div class="icon">⏳</div>Calculating routes…</div>';
+
+  const appendChennai = loc =>
+    loc.toLowerCase().includes('chennai') || loc.toLowerCase().includes('tamil') ? loc : loc + ', Chennai, Tamil Nadu';
+
+  const request = {
+    origin:      appendChennai(origin),
+    destination: appendChennai(dest),
+    travelMode:  google.maps.TravelMode[travelMode],
+    provideRouteAlternatives: true,
+    drivingOptions: { departureTime: new Date(), trafficModel: 'bestguess' },
+    unitSystem: google.maps.UnitSystem.METRIC
+  };
+
+  directionsService.route(request, (result, status) => {
+    setLoading(false);
+    if (status === 'OK') {
+      currentResult = result;
+      renderRoutes(result);
+    } else {
+      let msg = 'Could not find route. ';
+      if (status === 'NOT_FOUND')     msg += 'Location not found. Try adding ", Chennai".';
+      else if (status === 'ZERO_RESULTS')    msg += 'No route available between these points.';
+      else if (status === 'REQUEST_DENIED')  msg += 'API key denied — ensure Directions API is enabled.';
+      else msg += `Status: ${status}`;
+      showToast(msg, 'error');
+      document.getElementById('resultsContainer').innerHTML =
+        '<div class="no-results" id="noResults"><div class="icon">❌</div>' + msg + '</div>';
+    }
+  });
+}
+
+/* ── RENDER ROUTES ── */
+function renderRoutes(result) {
+  const container = document.getElementById('resultsContainer');
+  container.innerHTML = '';
+
+  result.routes.forEach((route, i) => {
+    const leg = route.legs[0];
+    const durBase    = leg.duration.value;
+    const durTraffic = leg.duration_in_traffic ? leg.duration_in_traffic.value : durBase;
+    const ratio      = durTraffic / durBase;
+    const delay      = Math.max(0, Math.round((durTraffic - durBase) / 60));
+    const distKm     = leg.distance.value / 1000;
+    const avgSpeed   = Math.round(distKm / (durTraffic / 3600));
+    const congPct    = Math.min(100, Math.round((ratio - 1) * 100));
+
+    let level, colorClass, tagClass, tagText, fillColor;
+    if (ratio < 1.15) {
+      level='best';    colorClass='green';  tagClass='tag-fast'; tagText='✓ FREE FLOW';   fillColor='#00e676';
+    } else if (ratio < 1.40) {
+      level='moderate';colorClass='yellow'; tagClass='tag-mod';  tagText='⚠ MODERATE';    fillColor='#ffd600';
+    } else {
+      level='heavy';   colorClass='red';    tagClass='tag-slow'; tagText='✕ HEAVY TRAFFIC';fillColor='#ff3c38';
+    }
+
+    const durText  = leg.duration_in_traffic ? leg.duration_in_traffic.text : leg.duration.text;
+    const distText = leg.distance.text;
+    const summary  = route.summary || `Route ${i + 1}`;
+
+    const card = document.createElement('div');
+    card.className = `route-card ${level}${i === 0 ? ' active-route' : ''}`;
+    card.innerHTML = `
+      <div class="route-header">
+        <div>
+          ${i === 0 ? '<span style="font-size:10px;font-family:Space Mono,monospace;color:var(--green);letter-spacing:1px;">FASTEST</span><br/>' : ''}
+          <div class="route-name">${summary}</div>
+        </div>
+        <div class="route-time ${colorClass}">${durText}</div>
+      </div>
+      <div class="route-meta">
+        <span>📏 ${distText}</span>
+        <span>⚡ ${avgSpeed} km/h</span>
+        <span>⏱ ${delay > 0 ? '+' + delay + ' min delay' : 'No delay'}</span>
+      </div>
+      <div class="congestion-bar">
+        <div class="congestion-fill" id="fill${i}" style="background:${fillColor};"></div>
+      </div>
+      <div class="tag ${tagClass}">${tagText}</div>
+    `;
+    card.addEventListener('click', () => selectRoute(i, card));
+    container.appendChild(card);
+
+    setTimeout(() => {
+      const fill = document.getElementById('fill' + i);
+      if (fill) fill.style.width = Math.max(congPct, 5) + '%';
+    }, 120 * i + 80);
+  });
+
+  directionsRenderer.setDirections(result);
+  directionsRenderer.setRouteIndex(0);
+  updateMapInfoCard(result.routes[0]);
+  updateStats(result.routes[0]);
+}
+
+function selectRoute(index, card) {
+  document.querySelectorAll('.route-card').forEach(c => c.classList.remove('active-route'));
+  card.classList.add('active-route');
+  directionsRenderer.setRouteIndex(index);
+  if (currentResult) {
+    updateMapInfoCard(currentResult.routes[index]);
+    updateStats(currentResult.routes[index]);
+  }
+}
+
+/* ── MAP INFO CARD ── */
+function updateMapInfoCard(route) {
+  const leg        = route.legs[0];
+  const durVal     = (leg.duration_in_traffic || leg.duration).value;
+  const durText    = (leg.duration_in_traffic || leg.duration).text;
+  const distKm     = leg.distance.value / 1000;
+  const avgSpeed   = Math.round(distKm / (durVal / 3600));
+  const ratio      = leg.duration_in_traffic ? leg.duration_in_traffic.value / leg.duration.value : 1;
+
+  let statusColor = '#00e676', statusText = 'FREE FLOW';
+  if (ratio >= 1.40) { statusColor = '#ff3c38'; statusText = 'HEAVY'; }
+  else if (ratio >= 1.15) { statusColor = '#ffd600'; statusText = 'MODERATE'; }
+
+  document.getElementById('mapInfoRow').innerHTML = `
+    <div class="map-info-metric">
+      <div class="val" style="color:${statusColor}">${durText}</div>
+      <div class="lbl">ETA (WITH TRAFFIC)</div>
+    </div>
+    <div class="divider"></div>
+    <div class="map-info-metric">
+      <div class="val">${leg.distance.text}</div>
+      <div class="lbl">DISTANCE</div>
+    </div>
+    <div class="divider"></div>
+    <div class="map-info-metric">
+      <div class="val">${avgSpeed}</div>
+      <div class="lbl">AVG KM/H</div>
+    </div>
+    <div class="divider"></div>
+    <div class="map-info-metric">
+      <div class="val" style="color:${statusColor}">${statusText}</div>
+      <div class="lbl">CONDITION</div>
+    </div>
+  `;
+  document.getElementById('mapInfoCard').classList.add('visible');
+}
+
+/* ── STATS ── */
+function updateStats(route) {
+  const leg      = route.legs[0];
+  const durSecs  = (leg.duration_in_traffic || leg.duration).value;
+  const distKm   = leg.distance.value / 1000;
+  const speed    = Math.round(distKm / (durSecs / 3600));
+  const delay    = leg.duration_in_traffic ? Math.max(0, Math.round((leg.duration_in_traffic.value - leg.duration.value) / 60)) : 0;
+  const ratio    = leg.duration_in_traffic ? leg.duration_in_traffic.value / leg.duration.value : 1;
+  const congPct  = Math.min(100, Math.round((ratio - 1) * 100));
+
+  document.getElementById('statSpeed').textContent = speed + ' km/h';
+  document.getElementById('statDelay').textContent = delay > 0 ? '+' + delay + 'm' : '0m';
+  const cEl = document.getElementById('statCongestion');
+  cEl.textContent = congPct + '%';
+  cEl.style.color = congPct < 15 ? '#00e676' : congPct < 40 ? '#ffd600' : '#ff3c38';
+}
+
+/* ── LAYER TOGGLES ── */
+function toggleTraffic() {
+  trafficOn = !trafficOn;
+  trafficLayer.setMap(trafficOn ? map : null);
+  document.getElementById('trafficBtn').classList.toggle('active', trafficOn);
+}
+function toggleTransit() {
+  transitOn = !transitOn;
+  transitLayer.setMap(transitOn ? map : null);
+  document.getElementById('transitBtn').classList.toggle('active', transitOn);
+}
+
+/* ── LOCATE ME ── */
+function locateMe() {
+  if (!navigator.geolocation) { showToast('Geolocation not supported', 'error'); return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    map.setCenter(loc); map.setZoom(15);
+    if (userMarker) userMarker.setMap(null);
+    userMarker = new google.maps.Marker({
+      position: loc, map, title: 'You',
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale:10, fillColor:'#00e5ff', fillOpacity:1, strokeColor:'#0a0c0f', strokeWeight:2 }
+    });
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ location: loc }, (res, st) => {
+      if (st === 'OK' && res[0]) {
+        document.getElementById('originInput').value = res[0].formatted_address;
+        showToast('📍 Location set as origin', 'info');
+      }
+    });
+  }, () => showToast('Location access denied', 'error'));
+}
+
+/* ── RESET ── */
+function resetView() {
+  map.setCenter(CHENNAI); map.setZoom(12);
+  if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
+  document.getElementById('mapInfoCard').classList.remove('visible');
+  document.getElementById('resultsContainer').innerHTML =
+    '<div class="no-results" id="noResults"><div class="icon">🗺️</div>Search a route to see live<br>Chennai traffic intelligence</div>';
+  document.getElementById('originInput').value = '';
+  document.getElementById('destInput').value   = '';
+  ['statSpeed','statDelay','statCongestion'].forEach(id => document.getElementById(id).textContent = '–');
+  document.getElementById('statCongestion').style.color = '';
+  currentResult = null;
+}
+
+/* ── LOADING ── */
+function setLoading(on) {
+  document.getElementById('loadingOverlay').classList.toggle('visible', on);
+}
+
+/* ── TOAST ── */
+let _toastTimer;
+function showToast(msg, type='error') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'toast visible ' + type;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('visible'), 3200);
+}
+
+/* ── CLOCK ── */
+function updateClock() {
+  const t = new Date().toLocaleTimeString('en-IN',
+    { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' });
+  const el = document.getElementById('clockLabel');
+  if (el) el.textContent = 'LIVE · ' + t + ' IST';
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' &&
+    (document.activeElement.id === 'originInput' ||
+     document.activeElement.id === 'destInput')) { searchRoutes(); }
+});
+</script>
+</body>
+</html>
