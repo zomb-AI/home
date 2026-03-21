@@ -1,0 +1,960 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pazhamudir Cantai | பழமுதிர் சந்தை</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --green-deep:   #1a4a2e;
+    --green-dark:   #2d6a4f;
+    --green-mid:    #40916c;
+    --green-light:  #74c69d;
+    --green-pale:   #b7e4c7;
+    --green-mist:   #d8f3dc;
+    --cream:        #fdf8f0;
+    --cream-warm:   #f5ede0;
+    --gold:         #e6a817;
+    --gold-light:   #f4c842;
+    --earth:        #8b5e3c;
+    --earth-light:  #c49a6c;
+    --text-dark:    #1c1c1c;
+    --text-mid:     #3d3d3d;
+    --text-soft:    #6b6b6b;
+    --white:        #ffffff;
+    --shadow-sm: 0 2px 12px rgba(26,74,46,0.10);
+    --shadow-md: 0 8px 32px rgba(26,74,46,0.14);
+    --shadow-lg: 0 20px 60px rgba(26,74,46,0.18);
+    --radius:    16px;
+    --radius-sm: 10px;
+    --transition: 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  header {
+    background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-dark) 60%, var(--green-mid) 100%);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2374c69d' fill-opacity='0.06'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 1200px; margin: 0 auto;
+    padding: 28px 24px 32px;
+    display: flex; align-items: center; gap: 20px;
+    position: relative; z-index: 1;
+  }
+  .logo-icon {
+    width: 64px; height: 64px; flex-shrink: 0;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 4px 20px rgba(230,168,23,0.4);
+  }
+  .header-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .header-text h1 span { color: var(--gold-light); }
+  .header-text p {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    color: var(--green-pale);
+    font-size: 0.95rem;
+    margin-top: 4px;
+  }
+  .header-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--green-pale);
+    font-family: 'Lora', serif;
+    font-size: 0.78rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* ── HERO STRIP ──────────────────────────────────────── */
+  .hero-strip {
+    background: var(--green-mid);
+    color: var(--white);
+    text-align: center;
+    padding: 14px 24px;
+    font-size: 0.88rem;
+    font-family: 'Lora', serif;
+    letter-spacing: 0.04em;
+  }
+  .hero-strip span { color: var(--gold-light); font-weight: 600; }
+
+  /* ── MAIN ────────────────────────────────────────────── */
+  main { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── SECTION TITLE ───────────────────────────────────── */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--green-deep);
+    margin-bottom: 8px;
+  }
+  .section-title span { color: var(--green-mid); }
+  .section-sub {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    color: var(--text-soft);
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+  }
+
+  /* ── FORM CARD ───────────────────────────────────────── */
+  .form-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 36px 32px;
+    border: 1px solid var(--green-pale);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 52px;
+  }
+  .form-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, var(--green-deep), var(--green-light), var(--gold));
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px;
+    margin-bottom: 28px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group label {
+    font-family: 'Lora', serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--green-deep);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .form-group label .tamil {
+    display: block;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    color: var(--text-soft);
+    font-size: 0.82rem;
+    margin-top: 1px;
+  }
+  .form-group select,
+  .form-group input {
+    padding: 12px 16px;
+    border: 1.5px solid var(--green-pale);
+    border-radius: var(--radius-sm);
+    font-family: 'Lora', serif;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    background: var(--cream);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .form-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%232d6a4f' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .form-group select:focus,
+  .form-group input:focus {
+    border-color: var(--green-mid);
+    box-shadow: 0 0 0 3px rgba(64,145,108,0.15);
+    background: var(--white);
+  }
+
+  /* quantity row */
+  .qty-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .btn-search {
+    display: block; width: 100%;
+    padding: 16px 28px;
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
+    color: var(--white);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: none; border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-search::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.12));
+    pointer-events: none;
+  }
+  .btn-search:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.06); }
+  .btn-search:active { transform: translateY(0); }
+
+  /* ── RESULTS SECTION ─────────────────────────────────── */
+  #results-section { display: none; }
+  #results-section.visible { display: block; animation: fadeUp 0.5s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-meta {
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .results-meta h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--green-deep);
+    flex: 1;
+  }
+  .pill {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.80rem;
+    font-family: 'Lora', serif;
+    font-weight: 600;
+  }
+  .pill-green { background: var(--green-mist); color: var(--green-dark); }
+  .pill-gold  { background: #fff8e1; color: #9a6f00; }
+
+  /* ── MARKET CARDS ────────────────────────────────────── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+  .market-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--green-pale);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    position: relative;
+  }
+  .market-card:hover {
+    transform: translateY(-6px) scale(1.015);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--green-light);
+  }
+  .market-card .card-top {
+    background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-dark) 100%);
+    padding: 18px 20px 14px;
+    position: relative;
+  }
+  .market-card .card-top::after {
+    content: '';
+    position: absolute; bottom: -12px; left: 0; right: 0;
+    height: 24px;
+    background: var(--white);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  .market-rank {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700; font-size: 0.9rem;
+    color: var(--green-deep);
+    box-shadow: 0 2px 8px rgba(230,168,23,0.4);
+  }
+  .card-market-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .card-market-loc {
+    color: var(--green-pale);
+    font-size: 0.82rem;
+    font-family: 'Lora', serif;
+    margin-top: 4px;
+  }
+
+  .card-body { padding: 22px 20px 18px; }
+  .price-row {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .price-main {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 900;
+    color: var(--green-dark);
+    line-height: 1;
+  }
+  .price-unit {
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+  .price-range {
+    font-family: 'Lora', serif;
+    font-size: 0.80rem;
+    color: var(--text-soft);
+    margin-bottom: 14px;
+  }
+  .price-range span { color: var(--green-dark); font-weight: 600; }
+
+  .card-info-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.76rem;
+    font-family: 'Lora', serif;
+    font-weight: 600;
+  }
+  .tag-green { background: var(--green-mist); color: var(--green-dark); }
+  .tag-gold  { background: #fff8e1; color: #9a6f00; }
+  .tag-earth { background: #fdf0e8; color: var(--earth); }
+
+  .card-divider { height: 1px; background: var(--green-mist); margin-bottom: 16px; }
+
+  .card-contact-row {
+    display: flex; gap: 10px;
+  }
+  .btn-contact, .btn-call {
+    flex: 1; padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-family: 'Lora', serif;
+    font-weight: 600; font-size: 0.85rem;
+    cursor: pointer; border: none;
+    transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-contact {
+    background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+    color: var(--white);
+  }
+  .btn-call {
+    background: var(--green-mist);
+    color: var(--green-dark);
+    border: 1.5px solid var(--green-pale);
+  }
+  .btn-contact:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .btn-call:hover { background: var(--green-pale); transform: translateY(-1px); }
+
+  .best-badge {
+    position: absolute; top: 0; left: 0;
+    background: var(--gold);
+    color: var(--green-deep);
+    font-family: 'Lora', serif;
+    font-weight: 700; font-size: 0.70rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 5px 14px 5px 10px;
+    border-radius: 0 0 var(--radius-sm) 0;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+  }
+
+  /* ── INVENTORY ───────────────────────────────────────── */
+  #inventory { margin-top: 60px; }
+  .inv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 18px;
+    margin-top: 24px;
+  }
+  .inv-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--green-pale);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    text-align: center;
+  }
+  .inv-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--green-light);
+  }
+  .inv-card.selected {
+    border-color: var(--green-dark);
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.20), var(--shadow-sm);
+  }
+  .inv-img {
+    width: 100%; aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3.2rem;
+    background: linear-gradient(135deg, var(--green-mist), var(--cream-warm));
+    transition: transform var(--transition);
+  }
+  .inv-card:hover .inv-img { transform: scale(1.08); }
+  .inv-info { padding: 12px 10px 14px; }
+  .inv-name-en {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.92rem; font-weight: 700;
+    color: var(--green-deep);
+    margin-bottom: 2px;
+  }
+  .inv-name-ta {
+    font-family: 'Lora', serif;
+    font-style: italic; font-size: 0.78rem;
+    color: var(--text-soft);
+    margin-bottom: 6px;
+  }
+  .inv-type {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-family: 'Lora', serif; font-weight: 600;
+    background: var(--green-mist); color: var(--green-dark);
+  }
+
+  /* ── FILTER TABS ─────────────────────────────────────── */
+  .filter-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .tab-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1.5px solid var(--green-pale);
+    background: var(--white);
+    color: var(--green-dark);
+    font-family: 'Lora', serif; font-weight: 600; font-size: 0.85rem;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+  }
+  .tab-btn.active, .tab-btn:hover {
+    background: var(--green-dark); color: var(--white); border-color: var(--green-dark);
+  }
+
+  /* ── MODAL ───────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(26,74,46,0.55);
+    backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.25s ease;
+  }
+  .modal-overlay.open { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 36px 32px;
+    max-width: 500px; width: 100%;
+    position: relative;
+    animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--green-mist); border: none;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-size: 1.1rem; cursor: pointer; color: var(--green-dark);
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--transition);
+  }
+  .modal-close:hover { background: var(--green-pale); }
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--green-deep); margin-bottom: 6px;
+  }
+  .modal-sub { color: var(--text-soft); font-style: italic; font-size: 0.9rem; margin-bottom: 22px; }
+  .modal-info-row { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
+  .modal-info-item { display: flex; flex-direction: column; gap: 3px; }
+  .modal-info-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); font-weight: 600; }
+  .modal-info-val { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; color: var(--green-deep); }
+  .modal-contact-title {
+    font-family: 'Lora', serif; font-weight: 700; font-size: 0.9rem;
+    color: var(--green-dark); margin-bottom: 14px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .contact-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--cream);
+    margin-bottom: 10px;
+  }
+  .contact-icon { font-size: 1.3rem; }
+  .contact-text { flex: 1; }
+  .contact-label { font-size: 0.76rem; color: var(--text-soft); font-family: 'Lora', serif; }
+  .contact-val { font-family: 'Lora', serif; font-weight: 600; font-size: 0.92rem; color: var(--text-dark); }
+  .btn-modal-call {
+    display: block; width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+    color: var(--white); border: none; border-radius: var(--radius-sm);
+    font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; margin-top: 18px;
+    transition: filter var(--transition), transform var(--transition);
+  }
+  .btn-modal-call:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  /* ── FOOTER ──────────────────────────────────────────── */
+  footer {
+    background: var(--green-deep);
+    color: var(--green-pale);
+    text-align: center;
+    padding: 28px 24px;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.88rem;
+  }
+  footer strong { color: var(--gold-light); font-style: normal; }
+
+  /* ── NO RESULTS ──────────────────────────────────────── */
+  .no-results {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-soft);
+  }
+  .no-results .emoji { font-size: 3rem; margin-bottom: 14px; }
+  .no-results p { font-style: italic; font-size: 1rem; }
+
+  /* ── RESPONSIVE ──────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .header-inner { flex-wrap: wrap; }
+    .header-badge { display: none; }
+    .form-card { padding: 24px 18px; }
+    .qty-row { grid-template-columns: 1fr; }
+    .modal-box { padding: 28px 20px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .inv-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────── -->
+<header>
+  <div class="header-inner">
+    <div class="logo-icon">🌾</div>
+    <div class="header-text">
+      <h1>Pazhamudir <span>Cantai</span></h1>
+      <p>பழமுதிர் சந்தை · Tamil Nadu Farmers' Marketplace</p>
+    </div>
+    <div class="header-badge">🌱 Direct Farmer · Best Price</div>
+  </div>
+</header>
+<div class="hero-strip">
+  Sell your harvest directly to markets · <span>Best price, no middleman</span> · Updated daily 🌿
+</div>
+
+<!-- ── MAIN ───────────────────────────────────────── -->
+<main>
+
+  <!-- SELL FORM -->
+  <div style="margin-bottom:12px;">
+    <h2 class="section-title">Find the <span>Best Market Price</span></h2>
+    <p class="section-sub">உங்கள் விளைச்சலுக்கு சிறந்த விலை கண்டுபிடிக்கவும் — Find the best mandi rates for your yield</p>
+  </div>
+
+  <div class="form-card">
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Yield Type <span class="tamil">விளைச்சல் வகை</span></label>
+        <select id="yieldType" onchange="filterInventory()">
+          <option value="">-- Select Type --</option>
+          <option value="vegetable">🥦 Vegetables · காய்கறிகள்</option>
+          <option value="crop">🌾 Crops / Grains · தானியங்கள்</option>
+          <option value="fruit">🍅 Fruits · பழங்கள்</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>What to Sell <span class="tamil">என்ன விற்கணும்</span></label>
+        <select id="produce">
+          <option value="">-- Select Produce --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Market / City <span class="tamil">சந்தை நகரம்</span></label>
+        <select id="city">
+          <option value="">-- All Markets --</option>
+          <option value="Chennai">Chennai · சென்னை</option>
+          <option value="Coimbatore">Coimbatore · கோயம்புத்தூர்</option>
+          <option value="Madurai">Madurai · மதுரை</option>
+          <option value="Salem">Salem · சேலம்</option>
+          <option value="Tirupur">Tirupur · திருப்பூர்</option>
+          <option value="Trichy">Trichy · திருச்சி</option>
+          <option value="Erode">Erode · ஈரோடு</option>
+          <option value="Vellore">Vellore · வேலூர்</option>
+          <option value="Thanjavur">Thanjavur · தஞ்சாவூர்</option>
+          <option value="Dindigul">Dindigul · திண்டுக்கல்</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Quantity <span class="tamil">அளவு</span></label>
+        <div class="qty-row">
+          <input type="number" id="qty" placeholder="e.g. 10" min="0" />
+          <select id="qtyUnit">
+            <option value="Quintal">Quintals (qq)</option>
+            <option value="Tonne">Tonnes (MT)</option>
+            <option value="Kg">Kilograms</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+    <button class="btn-search" onclick="searchMarkets()">🔍 &nbsp;Find Best Market Prices · சிறந்த விலை காண்</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-section">
+    <div class="results-meta">
+      <h2 id="results-title">Market Prices</h2>
+      <span class="pill pill-green" id="result-count"></span>
+      <span class="pill pill-gold" id="result-date"></span>
+    </div>
+    <div class="cards-grid" id="cards-container"></div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div id="inventory">
+    <h2 class="section-title">Our <span>Produce Listing</span></h2>
+    <p class="section-sub">விளைச்சல் பட்டியல் — Tap a produce to select it in the form above</p>
+    <div class="filter-tabs">
+      <button class="tab-btn active" onclick="filterInventory('all',this)">All · அனைத்தும்</button>
+      <button class="tab-btn" onclick="filterInventory('vegetable',this)">Vegetables · காய்கறி</button>
+      <button class="tab-btn" onclick="filterInventory('crop',this)">Crops · தானியம்</button>
+      <button class="tab-btn" onclick="filterInventory('fruit',this)">Fruits · பழம்</button>
+    </div>
+    <div class="inv-grid" id="inv-grid"></div>
+  </div>
+
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-box" id="modal-box">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Pazhamudir Cantai · பழமுதிர் சந்தை</strong><br/>
+  Empowering Tamil Nadu Farmers · நேர் விலையில் விற்கவும் · © 2025
+</footer>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────
+const inventory = [
+  // Vegetables
+  { id:'tomato',    en:'Tomato',       ta:'தக்காளி',      type:'vegetable', emoji:'🍅', basePrice:1800 },
+  { id:'onion',     en:'Onion',        ta:'வெங்காயம்',   type:'vegetable', emoji:'🧅', basePrice:2200 },
+  { id:'potato',    en:'Potato',       ta:'உருளைக்கிழங்கு', type:'vegetable', emoji:'🥔', basePrice:1500 },
+  { id:'brinjal',   en:'Brinjal',      ta:'கத்திரிக்காய்',type:'vegetable', emoji:'🍆', basePrice:1200 },
+  { id:'ladies',    en:"Lady's Finger", ta:'வெண்டைக்காய்',type:'vegetable', emoji:'🫑', basePrice:2800 },
+  { id:'cabbage',   en:'Cabbage',      ta:'முட்டைகோஸ்',  type:'vegetable', emoji:'🥬', basePrice:900  },
+  { id:'cauliflwr', en:'Cauliflower',  ta:'காலிஃபிளவர்', type:'vegetable', emoji:'🥦', basePrice:1600 },
+  { id:'carrot',    en:'Carrot',       ta:'கேரட்',        type:'vegetable', emoji:'🥕', basePrice:2000 },
+  { id:'beans',     en:'Beans',        ta:'பீன்ஸ்',       type:'vegetable', emoji:'🫘', basePrice:3200 },
+  { id:'drumstick', en:'Drumstick',    ta:'முருங்கைக்காய்',type:'vegetable',emoji:'🌿', basePrice:4000 },
+  { id:'bittergourd',en:'Bitter Gourd',ta:'பாவக்காய்',   type:'vegetable', emoji:'🥒', basePrice:2600 },
+  { id:'ashgourd',  en:'Ash Gourd',    ta:'பூசணிக்காய்', type:'vegetable', emoji:'🪴', basePrice:700  },
+  // Crops
+  { id:'paddy',     en:'Paddy (Rice)', ta:'நெல்',         type:'crop', emoji:'🌾', basePrice:2100 },
+  { id:'maize',     en:'Maize / Corn', ta:'மக்காச்சோளம்',type:'crop', emoji:'🌽', basePrice:1800 },
+  { id:'groundnut', en:'Groundnut',    ta:'கடலை',         type:'crop', emoji:'🥜', basePrice:5500 },
+  { id:'cotton',    en:'Cotton',       ta:'பருத்தி',      type:'crop', emoji:'☁️', basePrice:6200 },
+  { id:'sugarcane', en:'Sugarcane',    ta:'கரும்பு',      type:'crop', emoji:'🌱', basePrice:3200 },
+  { id:'soybean',   en:'Soybean',      ta:'சோயா பீன்ஸ்', type:'crop', emoji:'🌿', basePrice:4800 },
+  { id:'wheat',     en:'Wheat',        ta:'கோதுமை',       type:'crop', emoji:'🌾', basePrice:2300 },
+  { id:'blackgram', en:'Black Gram (Urad)',ta:'உளுந்து',  type:'crop', emoji:'🫘', basePrice:7500 },
+  { id:'redgram',   en:'Red Gram (Tur)',ta:'துவரம் பருப்பு',type:'crop',emoji:'🫛', basePrice:7200 },
+  { id:'ragi',      en:'Ragi (Finger Millet)',ta:'ராகி', type:'crop', emoji:'🌾', basePrice:3600 },
+  // Fruits
+  { id:'banana',    en:'Banana',       ta:'வாழைப்பழம்',  type:'fruit', emoji:'🍌', basePrice:2000 },
+  { id:'mango',     en:'Mango',        ta:'மாம்பழம்',     type:'fruit', emoji:'🥭', basePrice:5000 },
+  { id:'coconut',   en:'Coconut',      ta:'தேங்காய்',     type:'fruit', emoji:'🥥', basePrice:3000 },
+  { id:'papaya',    en:'Papaya',       ta:'பப்பாளி',      type:'fruit', emoji:'🍈', basePrice:1500 },
+  { id:'guava',     en:'Guava',        ta:'கொய்யா',       type:'fruit', emoji:'🍏', basePrice:2800 },
+  { id:'jackfruit', en:'Jackfruit',    ta:'பலாப்பழம்',    type:'fruit', emoji:'🍐', basePrice:2200 },
+];
+
+const markets = [
+  { id:'koyambedu', name:'Koyambedu CMWSSB Market', nameTa:'கோயம்பேடு சந்தை', city:'Chennai', contact:'044-24716000', person:'Ravi Kumar', email:'koyambedu@tnagmark.in', timing:'4 AM – 2 PM', grade:'A' },
+  { id:'coim_main', name:'Coimbatore Main Market', nameTa:'கோயம்புத்தூர் சந்தை',city:'Coimbatore', contact:'0422-2303840', person:'Murugesan S', email:'coim.mandi@tn.gov.in', timing:'5 AM – 12 PM', grade:'A' },
+  { id:'madurai_m', name:'Madurai Surveyor Colony Market', nameTa:'மதுரை பழமுதிர் சந்தை',city:'Madurai', contact:'0452-2345678', person:'Anbazhagan', email:'madurai.mandi@tn.gov.in', timing:'4 AM – 1 PM', grade:'A' },
+  { id:'salem_m',   name:'Salem Potthaneri Market', nameTa:'சேலம் பொட்டனேரி சந்தை',city:'Salem', contact:'0427-2456789', person:'Selvam R', email:'salem.mandi@tn.gov.in', timing:'5 AM – 11 AM', grade:'B' },
+  { id:'tirupur_m', name:'Tirupur APMC Mandi', nameTa:'திருப்பூர் மண்டி',city:'Tirupur', contact:'0421-2234567', person:'Palanisamy K', email:'tirupur.mandi@tn.gov.in', timing:'4 AM – 12 PM', grade:'B' },
+  { id:'trichy_m',  name:'Trichy Ariyamangalam Mandi', nameTa:'திருச்சி சந்தை',city:'Trichy', contact:'0431-2787890', person:'Gopalakrishnan', email:'trichy.mandi@tn.gov.in', timing:'4 AM – 1 PM', grade:'A' },
+  { id:'erode_m',   name:'Erode Bhavani Market', nameTa:'ஈரோடு பவானி சந்தை',city:'Erode', contact:'0424-2256789', person:'Chandran M', email:'erode.mandi@tn.gov.in', timing:'5 AM – 12 PM', grade:'B' },
+  { id:'vellore_m', name:'Vellore APMC Market', nameTa:'வேலூர் சந்தை',city:'Vellore', contact:'0416-2234567', person:'Suresh B', email:'vellore.mandi@tn.gov.in', timing:'5 AM – 11 AM', grade:'B' },
+  { id:'tanj_m',    name:'Thanjavur Paddy Market', nameTa:'தஞ்சாவூர் சந்தை',city:'Thanjavur', contact:'04362-234567', person:'Balasubramaniam', email:'tanj.mandi@tn.gov.in', timing:'6 AM – 12 PM', grade:'A' },
+  { id:'dindi_m',   name:'Dindigul Produce Market', nameTa:'திண்டுக்கல் சந்தை',city:'Dindigul', contact:'0451-2234567', person:'Mariappan V', email:'dindi.mandi@tn.gov.in', timing:'5 AM – 12 PM', grade:'C' },
+];
+
+// ─── STATE ───────────────────────────────────────────────
+let currentFilter = 'all';
+
+// ─── INIT ────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  renderInventory('all');
+  populateProduceDefault();
+});
+
+function populateProduceDefault() {
+  const sel = document.getElementById('produce');
+  sel.innerHTML = '<option value="">-- Select Produce --</option>';
+  inventory.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = `${item.emoji} ${item.en} · ${item.ta}`;
+    sel.appendChild(opt);
+  });
+}
+
+// ─── FILTER INVENTORY BY TYPE ─────────────────────────────
+function filterInventory(type, btn) {
+  // May be called from select or tab button
+  if (btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = type;
+  } else {
+    const t = document.getElementById('yieldType').value;
+    currentFilter = t || 'all';
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const first = document.querySelector('.tab-btn');
+    if (first) first.classList.add('active');
+  }
+  renderInventory(currentFilter);
+  populateProduce(currentFilter);
+}
+
+function populateProduce(type) {
+  const sel = document.getElementById('produce');
+  sel.innerHTML = '<option value="">-- Select Produce --</option>';
+  const items = type === 'all' ? inventory : inventory.filter(i => i.type === type);
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = `${item.emoji} ${item.en} · ${item.ta}`;
+    sel.appendChild(opt);
+  });
+}
+
+function renderInventory(type) {
+  const grid = document.getElementById('inv-grid');
+  const items = type === 'all' ? inventory : inventory.filter(i => i.type === type);
+  grid.innerHTML = items.map(item => `
+    <div class="inv-card" id="inv-${item.id}" onclick="selectProduce('${item.id}')">
+      <div class="inv-img">${item.emoji}</div>
+      <div class="inv-info">
+        <div class="inv-name-en">${item.en}</div>
+        <div class="inv-name-ta">${item.ta}</div>
+        <span class="inv-type">${item.type}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectProduce(id) {
+  document.querySelectorAll('.inv-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('inv-' + id);
+  if (card) card.classList.add('selected');
+  const sel = document.getElementById('produce');
+  sel.value = id;
+  // Scroll to form
+  document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ─── SEARCH / SIMULATE MARKET PRICES ─────────────────────
+function searchMarkets() {
+  const produceId = document.getElementById('produce').value;
+  const city      = document.getElementById('city').value;
+  const qty       = document.getElementById('qty').value;
+  const unit      = document.getElementById('qtyUnit').value;
+
+  if (!produceId) { alert('Please select a produce / விளைச்சல் தேர்ந்தெடுக்கவும்'); return; }
+
+  const item = inventory.find(i => i.id === produceId);
+
+  // Filter markets
+  let filteredMarkets = city ? markets.filter(m => m.city === city) : markets;
+
+  // Simulate price variation per market (±20% from base)
+  const priced = filteredMarkets.map(m => {
+    const variation = 0.82 + Math.random() * 0.38; // 0.82 to 1.20
+    const price = Math.round(item.basePrice * variation / 10) * 10;
+    const min   = Math.round(price * 0.88 / 10) * 10;
+    const max   = Math.round(price * 1.12 / 10) * 10;
+    return { ...m, price, min, max };
+  });
+
+  // Sort by price descending (best first)
+  priced.sort((a, b) => b.price - a.price);
+
+  renderResults(item, priced, qty, unit, city);
+}
+
+function renderResults(item, priced, qty, unit, city) {
+  const section = document.getElementById('results-section');
+  const container = document.getElementById('cards-container');
+  const title = document.getElementById('results-title');
+  const countEl = document.getElementById('result-count');
+  const dateEl = document.getElementById('result-date');
+
+  title.textContent = `Markets for ${item.emoji} ${item.en} · ${item.ta}`;
+  countEl.textContent = `${priced.length} Markets Found`;
+  const now = new Date();
+  dateEl.textContent = `Updated: ${now.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}`;
+
+  if (priced.length === 0) {
+    container.innerHTML = `<div class="no-results"><div class="emoji">🏪</div><p>No markets found for the selected city. Try "All Markets".</p></div>`;
+    section.classList.add('visible');
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  container.innerHTML = priced.map((m, i) => {
+    const isBest = i === 0;
+    const totalVal = qty ? `₹ ${(m.price * parseFloat(qty)).toLocaleString('en-IN')}` : '—';
+    return `
+    <div class="market-card" onclick="openModal('${m.id}', '${item.en}', '${item.ta}', ${m.price})">
+      ${isBest ? '<div class="best-badge">⭐ Best Price</div>' : ''}
+      <div class="card-top">
+        <div class="market-rank">${i+1}</div>
+        <div class="card-market-name">${m.name}</div>
+        <div class="card-market-loc">📍 ${m.city} · ${m.nameTa}</div>
+      </div>
+      <div class="card-body">
+        <div class="price-row">
+          <span class="price-main">₹${m.price.toLocaleString('en-IN')}</span>
+          <span class="price-unit">per Quintal (100 kg)</span>
+        </div>
+        <div class="price-range">
+          Range: <span>₹${m.min.toLocaleString('en-IN')}</span> – <span>₹${m.max.toLocaleString('en-IN')}</span>
+          ${qty ? ` &nbsp;|&nbsp; <strong style="color:var(--green-dark)">Est. Total: ${totalVal}</strong>` : ''}
+        </div>
+        <div class="card-info-row">
+          <span class="tag tag-green">🕐 ${m.timing}</span>
+          <span class="tag tag-gold">Grade ${m.grade}</span>
+          ${qty ? `<span class="tag tag-earth">📦 ${qty} ${unit}</span>` : ''}
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-contact-row">
+          <button class="btn-contact" onclick="event.stopPropagation(); openModal('${m.id}','${item.en}','${item.ta}',${m.price})">
+            📋 View Details
+          </button>
+          <button class="btn-call" onclick="event.stopPropagation(); window.location.href='tel:${m.contact}'">
+            📞 Call
+          </button>
+        </div>
+      </div>
+    </div>
+    `;
+  }).join('');
+
+  section.classList.add('visible');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── MODAL ───────────────────────────────────────────────
+let _modalData = {};
+function openModal(mId, prodEn, prodTa, price) {
+  const m = markets.find(x => x.id === mId);
+  if (!m) return;
+  _modalData = { m, prodEn, prodTa, price };
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">${m.name}</div>
+    <div class="modal-sub">${m.nameTa} · ${m.city}</div>
+    <div class="modal-info-row">
+      <div class="modal-info-item">
+        <span class="modal-info-label">Produce</span>
+        <span class="modal-info-val">${prodEn} · ${prodTa}</span>
+      </div>
+      <div class="modal-info-item">
+        <span class="modal-info-label">Today's Rate</span>
+        <span class="modal-info-val" style="color:var(--green-dark)">₹${price.toLocaleString('en-IN')} /Qtl</span>
+      </div>
+      <div class="modal-info-item">
+        <span class="modal-info-label">Timing</span>
+        <span class="modal-info-val">${m.timing}</span>
+      </div>
+      <div class="modal-info-item">
+        <span class="modal-info-label">Grade</span>
+        <span class="modal-info-val">${m.grade}-Grade Mandi</span>
+      </div>
+    </div>
+    <div class="modal-contact-title">📬 Contact Market Owner</div>
+    <div class="contact-item">
+      <span class="contact-icon">👤</span>
+      <div class="contact-text">
+        <div class="contact-label">Market In-Charge</div>
+        <div class="contact-val">${m.person}</div>
+      </div>
+    </div>
+    <div class="contact-item">
+      <span class="contact-icon">📞</span>
+      <div class="contact-text">
+        <div class="contact-label">Phone / Landline</div>
+        <div class="contact-val">${m.contact}</div>
+      </div>
+    </div>
+    <div class="contact-item">
+      <span class="contact-icon">📧</span>
+      <div class="contact-text">
+        <div class="contact-label">Email</div>
+        <div class="contact-val">${m.email}</div>
+      </div>
+    </div>
+    <button class="btn-modal-call" onclick="window.location.href='tel:${m.contact}'">
+      📞 Call Market Now · இப்போதே அழைக்கவும்
+    </button>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target.id === 'modal') closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal').classList.remove('open');
+}
+</script>
+</body>
+</html>
