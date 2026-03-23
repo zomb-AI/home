@@ -1,0 +1,593 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Delivery Manager — RACI Matrix</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;0,900;1,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0f14;
+    --surface: #16181f;
+    --surface2: #1e2029;
+    --border: #2a2d3a;
+    --accent: #c8f05a;
+    --accent2: #5af0c8;
+    --accent3: #f05a8a;
+    --accent4: #f0c85a;
+    --text: #e8eaf0;
+    --muted: #7a7f94;
+    --r-color: #c8f05a;
+    --a-color: #5af0c8;
+    --c-color: #f0c85a;
+    --i-color: #a08af0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  header {
+    max-width: 1300px;
+    margin: 0 auto 40px;
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+  }
+
+  header .label {
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  header h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 10px;
+  }
+
+  /* Legend */
+  .legend {
+    max-width: 1300px;
+    margin: 0 auto 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+  }
+
+  .badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .badge.R { background: rgba(200,240,90,0.15); color: var(--r-color); border: 1px solid var(--r-color); }
+  .badge.A { background: rgba(90,240,200,0.15); color: var(--a-color); border: 1px solid var(--a-color); }
+  .badge.C { background: rgba(240,200,90,0.15); color: var(--c-color); border: 1px solid var(--c-color); }
+  .badge.I { background: rgba(160,138,240,0.15); color: var(--i-color); border: 1px solid var(--i-color); }
+
+  .legend-item span { color: var(--muted); font-size: 11px; }
+
+  /* Section headers */
+  .section-label {
+    max-width: 1300px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label .tag {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+
+  .tag.daily   { background: rgba(240,90,138,0.15); color: var(--accent3); border: 1px solid var(--accent3); }
+  .tag.weekly  { background: rgba(90,240,200,0.15); color: var(--accent2); border: 1px solid var(--accent2); }
+  .tag.sprint  { background: rgba(200,240,90,0.15); color: var(--accent);  border: 1px solid var(--accent); }
+  .tag.release { background: rgba(240,200,90,0.15); color: var(--accent4); border: 1px solid var(--accent4); }
+  .tag.adhoc   { background: rgba(160,138,240,0.15); color: var(--i-color); border: 1px solid var(--i-color); }
+
+  .section-label .line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Table wrapper */
+  .table-wrap {
+    max-width: 1300px;
+    margin: 0 auto 36px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+  }
+
+  thead th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  thead th:first-child {
+    text-align: left;
+    min-width: 240px;
+    padding-left: 18px;
+  }
+
+  thead th:nth-child(2) {
+    text-align: left;
+    min-width: 90px;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  tbody td {
+    padding: 10px 14px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  tbody td:first-child {
+    text-align: left;
+    padding-left: 18px;
+    font-size: 12.5px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  tbody td:nth-child(2) {
+    text-align: left;
+    color: var(--muted);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cell .badge {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  /* Roles header highlight */
+  .role-dm   { color: #e8eaf0 !important; }
+  .role-po   { color: #e8eaf0 !important; }
+
+  /* Footer note */
+  .footnote {
+    max-width: 1300px;
+    margin: 0 auto 20px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.8;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  .footnote strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Delivery Management · 2-Week Sprint · 4-Week Release</div>
+  <h1>Meeting <em>RACI</em> Matrix</h1>
+  <p>Roles: Delivery Manager · Product Owner · Tech Lead · QA Lead · Dev Team · QA Team · Business Analyst · Stakeholders</p>
+</header>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="badge R">R</div><span><strong>Responsible</strong> — Does the work / runs the meeting</span></div>
+  <div class="legend-item"><div class="badge A">A</div><span><strong>Accountable</strong> — Owns the outcome, final decision</span></div>
+  <div class="legend-item"><div class="badge C">C</div><span><strong>Consulted</strong> — Input sought, two-way communication</span></div>
+  <div class="legend-item"><div class="badge I">I</div><span><strong>Informed</strong> — Kept in loop, one-way communication</span></div>
+</div>
+
+<!-- ── DAILY ─────────────────────────────────────── -->
+<div class="section-label"><span class="tag daily">Daily</span><div class="line"></div></div>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Meeting</th>
+      <th>Cadence</th>
+      <th>Delivery Manager</th>
+      <th>Product Owner</th>
+      <th>Tech Lead</th>
+      <th>QA Lead</th>
+      <th>Dev Team</th>
+      <th>QA Team</th>
+      <th>Business Analyst</th>
+      <th>Stakeholders</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Daily Standup</td>
+      <td>Daily · 15 min</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+    <tr>
+      <td>Delivery Pulse Check</td>
+      <td>Daily · 10 min</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ── WEEKLY ─────────────────────────────────────── -->
+<div class="section-label"><span class="tag weekly">Weekly</span><div class="line"></div></div>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Meeting</th>
+      <th>Cadence</th>
+      <th>Delivery Manager</th>
+      <th>Product Owner</th>
+      <th>Tech Lead</th>
+      <th>QA Lead</th>
+      <th>Dev Team</th>
+      <th>QA Team</th>
+      <th>Business Analyst</th>
+      <th>Stakeholders</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Risk &amp; Dependency Review</td>
+      <td>Weekly · 30 min</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+    </tr>
+    <tr>
+      <td>Stakeholder Sync</td>
+      <td>Weekly · 45 min</td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+    </tr>
+    <tr>
+      <td>Team Health Check</td>
+      <td>Weekly · 20 min</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ── SPRINT ─────────────────────────────────────── -->
+<div class="section-label"><span class="tag sprint">Sprint · Every 2 Weeks</span><div class="line"></div></div>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Meeting</th>
+      <th>Cadence</th>
+      <th>Delivery Manager</th>
+      <th>Product Owner</th>
+      <th>Tech Lead</th>
+      <th>QA Lead</th>
+      <th>Dev Team</th>
+      <th>QA Team</th>
+      <th>Business Analyst</th>
+      <th>Stakeholders</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sprint Planning</td>
+      <td>Bi-weekly · 2 hrs</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+    </tr>
+    <tr>
+      <td>Backlog Refinement</td>
+      <td>Bi-weekly · 1 hr</td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+    <tr>
+      <td>Sprint Review / Demo</td>
+      <td>Bi-weekly · 1 hr</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+    </tr>
+    <tr>
+      <td>Sprint Retrospective</td>
+      <td>Bi-weekly · 1 hr</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+    <tr>
+      <td>QA Functional Testing Kickoff</td>
+      <td>Bi-weekly · 30 min</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ── RELEASE ─────────────────────────────────────── -->
+<div class="section-label"><span class="tag release">Release · Every 4 Weeks</span><div class="line"></div></div>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Meeting</th>
+      <th>Cadence</th>
+      <th>Delivery Manager</th>
+      <th>Product Owner</th>
+      <th>Tech Lead</th>
+      <th>QA Lead</th>
+      <th>Dev Team</th>
+      <th>QA Team</th>
+      <th>Business Analyst</th>
+      <th>Stakeholders</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Release Planning</td>
+      <td>Per release · 2 hrs</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+    </tr>
+    <tr>
+      <td>Regression Testing Kickoff</td>
+      <td>Per release · 30 min</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+    <tr>
+      <td>Release Readiness Review</td>
+      <td>Per release · 1 hr</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+    </tr>
+    <tr>
+      <td>Go / No-Go Meeting</td>
+      <td>Per release · 30 min</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+    </tr>
+    <tr>
+      <td>Post-Release Retrospective</td>
+      <td>Per release · 1 hr</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ── AD-HOC / PER CYCLE ─────────────────────────────────────── -->
+<div class="section-label"><span class="tag adhoc">Per Cycle / Ad-hoc</span><div class="line"></div></div>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>Meeting</th>
+      <th>Cadence</th>
+      <th>Delivery Manager</th>
+      <th>Product Owner</th>
+      <th>Tech Lead</th>
+      <th>QA Lead</th>
+      <th>Dev Team</th>
+      <th>QA Team</th>
+      <th>Business Analyst</th>
+      <th>Stakeholders</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Release Kick-off</td>
+      <td>Per release · 1 hr</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+    </tr>
+    <tr>
+      <td>Defect Triage</td>
+      <td>Daily (QA window)</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell"><span class="badge I">I</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+    <tr>
+      <td>Environment &amp; Infra Sync</td>
+      <td>Before regression</td>
+      <td><div class="cell"><span class="badge A">A</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge R">R</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell"><span class="badge C">C</span></div></td>
+      <td><div class="cell">—</div></td>
+      <td><div class="cell">—</div></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="footnote">
+  <strong>Key Principles</strong> &nbsp;·&nbsp;
+  Every meeting has exactly <strong>one Accountable (A)</strong> owner — the Delivery Manager holds accountability for most delivery meetings, but delegates running to relevant leads. &nbsp;·&nbsp;
+  <strong>Stakeholders</strong> are kept Informed by default; escalate to Consulted only when scope or priority decisions are required. &nbsp;·&nbsp;
+  <strong>Dev &amp; QA Teams</strong> are Responsible in execution meetings but should be shielded from governance and reporting meetings to protect focus time.
+</div>
+
+</body>
+</html>
