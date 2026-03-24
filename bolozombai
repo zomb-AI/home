@@ -1,0 +1,1067 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZombAI — Voice of the Undead</title>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --blood: #8B0000;
+    --blood-bright: #CC0000;
+    --flesh: #c8a882;
+    --rot: #4a5c2a;
+    --rot-bright: #7a9c3a;
+    --bone: #e8dcc8;
+    --dark: #0a0a08;
+    --darker: #050504;
+    --mold: #2a3a1a;
+    --decay: #1a1a12;
+    --glow-green: #5dfc3a;
+    --glow-red: #ff2222;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--darker);
+    font-family: 'Special Elite', cursive;
+    color: var(--bone);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* Animated noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* Scanlines */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* === HEADER === */
+  .header {
+    text-align: center;
+    padding: 40px 0 20px;
+    position: relative;
+  }
+
+  .logo {
+    font-family: 'Creepster', cursive;
+    font-size: clamp(60px, 12vw, 110px);
+    color: var(--blood-bright);
+    text-shadow:
+      0 0 20px var(--blood),
+      0 0 60px rgba(139,0,0,0.4),
+      4px 4px 0 #000,
+      -2px -2px 0 #300;
+    letter-spacing: 6px;
+    line-height: 1;
+    animation: flicker 4s infinite;
+    position: relative;
+    display: inline-block;
+  }
+
+  /* Blood drip */
+  .logo::after {
+    content: '';
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 20px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 30'%3E%3Cpath d='M0,0 Q20,25 40,5 Q60,28 80,3 Q105,30 130,2 Q155,26 180,0 Q210,28 240,4 Q265,25 290,1 Q315,30 340,5 Q365,22 400,0' fill='%238B0000'/%3E%3Ccircle cx='45' cy='20' r='5' fill='%238B0000'/%3E%3Ccircle cx='130' cy='26' r='6' fill='%238B0000'/%3E%3Ccircle cx='240' cy='22' r='4' fill='%238B0000'/%3E%3Ccircle cx='340' cy='18' r='7' fill='%238B0000'/%3E%3C/svg%3E") center/contain no-repeat;
+  }
+
+  .tagline {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--rot-bright);
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 28px;
+    opacity: 0.8;
+  }
+
+  @keyframes flicker {
+    0%,100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.7; }
+    94% { opacity: 1; }
+    96% { opacity: 0.85; }
+    97% { opacity: 1; }
+  }
+
+  /* === SETTINGS PANEL === */
+  .settings-panel {
+    background: linear-gradient(135deg, rgba(20,15,10,0.95), rgba(10,20,5,0.9));
+    border: 1px solid rgba(139,0,0,0.4);
+    border-radius: 4px;
+    padding: 24px;
+    margin: 40px 0 24px;
+    position: relative;
+    box-shadow: 0 0 30px rgba(139,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+
+  .settings-panel::before {
+    content: '⚙ REANIMATION CONFIG';
+    position: absolute;
+    top: -11px;
+    left: 20px;
+    background: var(--darker);
+    padding: 0 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--rot-bright);
+    letter-spacing: 3px;
+  }
+
+  .key-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) { .key-grid { grid-template-columns: 1fr; } }
+
+  .key-field label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--rot-bright);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .key-field input, .key-field select {
+    width: 100%;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(139,0,0,0.5);
+    color: var(--bone);
+    padding: 10px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .key-field input:focus, .key-field select:focus {
+    border-color: var(--blood-bright);
+    box-shadow: 0 0 12px rgba(204,0,0,0.3);
+  }
+
+  .key-field input::placeholder { color: rgba(200,168,130,0.3); }
+
+  .key-field select option { background: #1a0a0a; }
+
+  /* === VOICE VISUALIZER === */
+  .viz-container {
+    background: rgba(5,5,3,0.8);
+    border: 1px solid rgba(139,0,0,0.25);
+    border-radius: 4px;
+    padding: 20px;
+    margin: 20px 0;
+    position: relative;
+    height: 120px;
+    overflow: hidden;
+  }
+
+  .viz-container::before {
+    content: '▶ BRAINWAVE SCAN';
+    position: absolute;
+    top: 8px; left: 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(93,252,58,0.4);
+    letter-spacing: 2px;
+  }
+
+  #waveCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* === CONTROL BUTTONS === */
+  .controls {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Creepster', cursive;
+    font-size: 22px;
+    letter-spacing: 2px;
+    padding: 14px 36px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    min-width: 180px;
+  }
+
+  .btn-record {
+    background: linear-gradient(135deg, #5a0000, #8B0000);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(139,0,0,0.5), inset 0 1px 0 rgba(255,100,100,0.2);
+    border: 1px solid #aa0000;
+  }
+
+  .btn-record:hover {
+    background: linear-gradient(135deg, #8B0000, #cc0000);
+    box-shadow: 0 6px 30px rgba(204,0,0,0.7), inset 0 1px 0 rgba(255,150,150,0.2);
+    transform: translateY(-1px);
+  }
+
+  .btn-record.recording {
+    background: linear-gradient(135deg, #cc0000, #ff2222);
+    animation: pulse-red 1s infinite;
+  }
+
+  .btn-stop {
+    background: linear-gradient(135deg, #1a2a0a, #2a4a10);
+    color: var(--glow-green);
+    box-shadow: 0 4px 20px rgba(93,252,58,0.2), inset 0 1px 0 rgba(93,252,58,0.1);
+    border: 1px solid rgba(93,252,58,0.4);
+  }
+
+  .btn-stop:hover {
+    background: linear-gradient(135deg, #2a4a10, #3a6a18);
+    box-shadow: 0 6px 30px rgba(93,252,58,0.35);
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .btn .btn-icon { margin-right: 8px; }
+
+  @keyframes pulse-red {
+    0%,100% { box-shadow: 0 4px 20px rgba(255,34,34,0.6); }
+    50% { box-shadow: 0 4px 40px rgba(255,34,34,0.9), 0 0 60px rgba(255,34,34,0.4); }
+  }
+
+  /* === STATUS BAR === */
+  .status-bar {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(93,252,58,0.2);
+    border-radius: 2px;
+    padding: 10px 16px;
+    margin: 12px 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--glow-green);
+    letter-spacing: 1px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--glow-green);
+    flex-shrink: 0;
+    animation: blink 1.5s infinite;
+  }
+
+  .status-dot.red { background: var(--glow-red); }
+  .status-dot.idle { background: rgba(93,252,58,0.3); animation: none; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* === TRANSCRIPT / RESPONSE === */
+  .chat-container {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .message-box {
+    border-radius: 3px;
+    padding: 16px 20px;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .message-box.user-msg {
+    background: linear-gradient(135deg, rgba(30,10,10,0.9), rgba(50,15,15,0.8));
+    border: 1px solid rgba(139,0,0,0.5);
+    border-left: 3px solid var(--blood-bright);
+  }
+
+  .message-box.ai-msg {
+    background: linear-gradient(135deg, rgba(10,20,5,0.9), rgba(15,30,8,0.8));
+    border: 1px solid rgba(93,252,58,0.25);
+    border-left: 3px solid var(--glow-green);
+  }
+
+  .message-box .msg-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.6;
+  }
+
+  .user-msg .msg-label { color: var(--blood-bright); }
+  .ai-msg .msg-label { color: var(--glow-green); }
+
+  .message-box .msg-text { color: var(--bone); }
+
+  /* === AUDIO PLAYER === */
+  .audio-player {
+    background: rgba(5,10,3,0.8);
+    border: 1px solid rgba(93,252,58,0.3);
+    border-radius: 3px;
+    padding: 14px 20px;
+    display: none;
+    align-items: center;
+    gap: 14px;
+    margin-top: 10px;
+  }
+
+  .audio-player.visible { display: flex; }
+
+  .audio-player audio {
+    flex: 1;
+    height: 36px;
+    filter: sepia(1) hue-rotate(80deg) saturate(2);
+  }
+
+  .audio-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--glow-green);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  /* === ZOMBIE DECORATION === */
+  .zombie-decoration {
+    position: fixed;
+    bottom: 0;
+    right: -10px;
+    width: 180px;
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+    filter: sepia(1) hue-rotate(80deg);
+  }
+
+  /* === FOOTER === */
+  .footer {
+    text-align: center;
+    padding: 30px 0 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: rgba(200,168,130,0.2);
+    letter-spacing: 2px;
+  }
+
+  /* === LOADING SPINNER === */
+  .thinking {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: rgba(10,15,5,0.8);
+    border: 1px solid rgba(93,252,58,0.2);
+    border-radius: 3px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--glow-green);
+    letter-spacing: 1px;
+  }
+
+  .thinking.visible { display: flex; }
+
+  .brain-spin {
+    animation: spin 1s linear infinite;
+    font-size: 20px;
+  }
+
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+  /* Glitch on title hover */
+  .logo:hover {
+    animation: glitch 0.3s infinite;
+  }
+
+  @keyframes glitch {
+    0% { text-shadow: 3px 0 var(--blood), -3px 0 var(--rot-bright), 0 0 20px var(--blood); }
+    25% { text-shadow: -3px 0 var(--blood), 3px 0 var(--rot-bright), 0 0 20px var(--blood); }
+    50% { text-shadow: 3px 3px var(--blood), -3px -3px var(--rot-bright), 0 0 20px var(--blood); clip-path: inset(10% 0 30% 0); }
+    75% { text-shadow: -3px 3px var(--blood), 3px -3px var(--rot-bright); clip-path: inset(50% 0 10% 0); }
+    100% { text-shadow: 3px 0 var(--blood), -3px 0 var(--rot-bright), 0 0 20px var(--blood); clip-path: none; }
+  }
+
+  /* Scroll */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--darker); }
+  ::-webkit-scrollbar-thumb { background: var(--blood); border-radius: 3px; }
+
+  .section-divider {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139,0,0,0.5), rgba(93,252,58,0.3), transparent);
+    margin: 24px 0;
+  }
+
+  .voice-select-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .voice-select-row .key-field { flex: 1; }
+
+  .deploy-section {
+    background: rgba(5,10,3,0.6);
+    border: 1px solid rgba(93,252,58,0.2);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+
+  .deploy-section h3 {
+    font-family: 'Creepster', cursive;
+    font-size: 22px;
+    color: var(--glow-green);
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    text-shadow: 0 0 10px rgba(93,252,58,0.3);
+  }
+
+  .deploy-section ol {
+    list-style: none;
+    counter-reset: steps;
+  }
+
+  .deploy-section ol li {
+    counter-increment: steps;
+    padding: 7px 0 7px 36px;
+    position: relative;
+    font-size: 13px;
+    color: var(--bone);
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .deploy-section ol li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 22px;
+    height: 22px;
+    background: rgba(139,0,0,0.5);
+    border: 1px solid var(--blood-bright);
+    border-radius: 2px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bone);
+    line-height: 22px;
+    text-align: center;
+  }
+
+  code {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(93,252,58,0.2);
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--glow-green);
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    margin: 24px 0 0;
+    border-bottom: 1px solid rgba(139,0,0,0.3);
+  }
+
+  .tab {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 10px 20px;
+    cursor: pointer;
+    color: rgba(200,168,130,0.4);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    user-select: none;
+  }
+
+  .tab.active {
+    color: var(--blood-bright);
+    border-bottom: 2px solid var(--blood-bright);
+    background: rgba(139,0,0,0.08);
+  }
+
+  .tab:hover:not(.active) { color: var(--bone); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Skull bullets in deploy */
+  .skull-list { list-style: none; padding: 0; }
+  .skull-list li {
+    padding: 5px 0 5px 28px;
+    position: relative;
+    font-size: 13px;
+    color: var(--bone);
+    line-height: 1.6;
+  }
+  .skull-list li::before { content: '💀'; position: absolute; left: 0; top: 3px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">ZombAI</div>
+    <div class="tagline">☣ Voice of the Undead · Powered by Claude + ElevenLabs ☣</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('app')">🧠 App</div>
+    <div class="tab" onclick="switchTab('deploy')">💻 Deploy on Mac</div>
+    <div class="tab" onclick="switchTab('howto')">📜 How To Run</div>
+  </div>
+
+  <!-- === APP TAB === -->
+  <div id="tab-app" class="tab-content active">
+
+    <!-- SETTINGS -->
+    <div class="settings-panel">
+      <div class="key-grid">
+        <div class="key-field">
+          <label>🔑 Anthropic API Key</label>
+          <input type="password" id="anthropicKey" placeholder="sk-ant-api03-...your-key-here"/>
+        </div>
+        <div class="key-field">
+          <label>🔑 ElevenLabs API Key</label>
+          <input type="password" id="elevenKey" placeholder="your-elevenlabs-key-here"/>
+        </div>
+        <div class="key-field">
+          <label>🧟 ElevenLabs Voice ID</label>
+          <input type="text" id="voiceId" placeholder="21m00Tcm4TlvDq8ikWAM" value="21m00Tcm4TlvDq8ikWAM"/>
+        </div>
+        <div class="key-field">
+          <label>🤖 Claude Persona</label>
+          <select id="persona">
+            <option value="zombie">ZombAI — Undead Oracle</option>
+            <option value="neutral">Standard Assistant</option>
+            <option value="scientist">Mad Scientist</option>
+            <option value="ghost">Haunted Spirit</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-divider"/>
+
+    <!-- VISUALIZER -->
+    <div class="viz-container">
+      <canvas id="waveCanvas"></canvas>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-bar">
+      <div class="status-dot idle" id="statusDot"></div>
+      <span id="statusText">Awaiting your voice, mortal…</span>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="btn btn-record" id="recordBtn" onclick="startRecording()">
+        <span class="btn-icon">🎤</span> SPEAK
+      </button>
+      <button class="btn btn-stop" id="stopBtn" onclick="stopRecording()" disabled>
+        <span class="btn-icon">🛑</span> STOP
+      </button>
+    </div>
+
+    <!-- THINKING -->
+    <div class="thinking" id="thinkingBox">
+      <span class="brain-spin">🧠</span>
+      <span id="thinkingText">The undead brain is processing…</span>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-container" id="chatContainer"></div>
+
+    <!-- AUDIO PLAYER -->
+    <div class="audio-player" id="audioPlayer">
+      <span class="audio-label">☠ UNDEAD VOICE</span>
+      <audio id="responseAudio" controls></audio>
+    </div>
+
+  </div>
+
+  <!-- === DEPLOY TAB === -->
+  <div id="tab-deploy" class="tab-content">
+    <div class="deploy-section" style="margin-top:24px">
+      <h3>🍎 Deploy on Your MacBook</h3>
+      <ol>
+        <li>Save this file anywhere on your Mac — e.g. <code>~/Desktop/zombai.html</code></li>
+        <li>Open <strong>Terminal</strong> (Cmd+Space → "Terminal")</li>
+        <li>Navigate to the folder: <code>cd ~/Desktop</code></li>
+        <li>Start a local server (Python comes pre-installed on Mac):<br/>
+          <code>python3 -m http.server 8080</code></li>
+        <li>Open your browser and go to:<br/>
+          <code>http://localhost:8080/zombai.html</code></li>
+        <li>Allow microphone permissions when prompted 🎤</li>
+        <li>Paste your API keys in the config panel — they stay in memory only (never sent anywhere except the official APIs)</li>
+      </ol>
+    </div>
+
+    <div class="deploy-section">
+      <h3>🔑 API Keys — Where to Get Them</h3>
+      <ul class="skull-list">
+        <li><strong>Anthropic Key:</strong> Go to <code>console.anthropic.com</code> → API Keys → Create Key. Starts with <code>sk-ant-</code></li>
+        <li><strong>ElevenLabs Key:</strong> Go to <code>elevenlabs.io</code> → Profile → API Key section.</li>
+        <li><strong>Voice ID:</strong> In ElevenLabs → Voices → click any voice → copy the ID from the URL. Default is "Rachel".</li>
+        <li>Keys are entered in the app UI and only used in-browser. They are <strong>never stored on disk</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="deploy-section">
+      <h3>⚡ One-Line Deploy (Optional)</h3>
+      <ul class="skull-list">
+        <li>No install needed — it's a single HTML file with zero dependencies.</li>
+        <li>Works on Chrome and Edge (best mic support). Firefox works too.</li>
+        <li>You can also just double-click the file — but mic access requires a local server (step 4 above) due to browser security.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- === HOW TO RUN TAB === -->
+  <div id="tab-howto" class="tab-content">
+    <div class="deploy-section" style="margin-top:24px">
+      <h3>📜 How To Run ZombAI</h3>
+      <ol>
+        <li>Open the <strong>App</strong> tab above.</li>
+        <li>Enter your <strong>Anthropic API Key</strong> in the first field.</li>
+        <li>Enter your <strong>ElevenLabs API Key</strong> in the second field.</li>
+        <li>Optionally change the <strong>Voice ID</strong> to a different ElevenLabs voice.</li>
+        <li>Choose a <strong>Persona</strong> — ZombAI speaks like an undead oracle by default.</li>
+        <li>Click the red <strong>🎤 SPEAK</strong> button — your browser will ask for mic permission. Allow it.</li>
+        <li>Speak your question or command into the mic.</li>
+        <li>Click <strong>🛑 STOP</strong> when done speaking.</li>
+        <li>ZombAI will transcribe your voice, send it to Claude, then speak the response back via ElevenLabs.</li>
+        <li>The audio player will appear — hit play or it auto-plays! 🔊</li>
+      </ol>
+    </div>
+    <div class="deploy-section">
+      <h3>🧟 Personas Explained</h3>
+      <ul class="skull-list">
+        <li><strong>ZombAI — Undead Oracle:</strong> Speaks in dramatic, foreboding zombie lore. The full experience.</li>
+        <li><strong>Standard Assistant:</strong> Plain helpful Claude. Boring but effective.</li>
+        <li><strong>Mad Scientist:</strong> Unhinged brilliance. Mwahaha energy.</li>
+        <li><strong>Haunted Spirit:</strong> Mysterious, cryptic, ethereal responses.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">☠ ZOMBAI v1.0 · POWERED BY CLAUDE + ELEVENLABS · NOT RESPONSIBLE FOR REANIMATION ☠</div>
+
+</div>
+
+<!-- Zombie SVG decoration -->
+<svg class="zombie-decoration" viewBox="0 0 120 300" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="60" cy="40" rx="30" ry="35" fill="#4a5c2a"/>
+  <circle cx="45" cy="32" r="8" fill="#2a3a0a"/>
+  <circle cx="75" cy="32" r="8" fill="#2a3a0a"/>
+  <circle cx="45" cy="32" r="4" fill="#8B0000"/>
+  <circle cx="75" cy="32" r="4" fill="#8B0000"/>
+  <path d="M45,58 Q60,70 75,58" stroke="#8B0000" stroke-width="2" fill="none"/>
+  <rect x="30" y="75" width="60" height="100" rx="5" fill="#3a4c1a"/>
+  <line x1="30" y1="90" x2="0" y2="140" stroke="#3a4c1a" stroke-width="14" stroke-linecap="round"/>
+  <line x1="90" y1="90" x2="130" y2="120" stroke="#3a4c1a" stroke-width="14" stroke-linecap="round"/>
+  <rect x="35" y="175" width="22" height="80" rx="4" fill="#3a4c1a"/>
+  <rect x="63" y="175" width="22" height="80" rx="4" fill="#3a4c1a"/>
+  <circle cx="0" cy="145" r="12" fill="#4a5c2a"/>
+  <circle cx="132" cy="122" r="12" fill="#4a5c2a"/>
+</svg>
+
+<script>
+// ============================================
+// STATE
+// ============================================
+let mediaRecorder = null;
+let audioChunks = [];
+let analyser = null;
+let animFrameId = null;
+let isRecording = false;
+let audioCtx = null;
+let stream = null;
+
+// ============================================
+// TABS
+// ============================================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ============================================
+// STATUS
+// ============================================
+function setStatus(text, type = 'idle') {
+  document.getElementById('statusText').textContent = text;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot';
+  if (type === 'active') dot.classList.add('red');
+  else if (type === 'thinking') dot.style.background = '#ffaa00';
+}
+
+// ============================================
+// WAVE VISUALIZER
+// ============================================
+function startVisualizer(stream) {
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const source = audioCtx.createMediaStreamSource(stream);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  source.connect(analyser);
+
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+
+  function draw() {
+    animFrameId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(dataArray);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(5,5,3,0)';
+
+    const barW = (canvas.width / bufferLength) * 2.5;
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+      const barH = (dataArray[i] / 255) * canvas.height * 0.85;
+      const g = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barH);
+      g.addColorStop(0, '#8B0000');
+      g.addColorStop(0.5, '#cc3300');
+      g.addColorStop(1, '#5dfc3a');
+      ctx.fillStyle = g;
+      ctx.fillRect(x, canvas.height - barH, barW - 1, barH);
+      x += barW + 1;
+    }
+  }
+  draw();
+}
+
+function stopVisualizer() {
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+}
+
+function drawIdleWave() {
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  let t = 0;
+  function frame() {
+    if (isRecording) return;
+    animFrameId = requestAnimationFrame(frame);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(139,0,0,0.3)';
+    ctx.lineWidth = 2;
+    for(let x=0;x<canvas.width;x++) {
+      const y = canvas.height/2 + Math.sin((x/canvas.width)*6*Math.PI + t)*8;
+      x===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    t += 0.03;
+  }
+  frame();
+}
+
+window.addEventListener('load', drawIdleWave);
+
+// ============================================
+// RECORDING
+// ============================================
+async function startRecording() {
+  const anthropicKey = document.getElementById('anthropicKey').value.trim();
+  const elevenKey = document.getElementById('elevenKey').value.trim();
+
+  if (!anthropicKey || !elevenKey) {
+    setStatus('⚠ Enter both API keys first, mortal!', 'idle');
+    document.querySelector('.settings-panel').style.boxShadow = '0 0 30px rgba(255,0,0,0.5)';
+    setTimeout(() => document.querySelector('.settings-panel').style.boxShadow = '', 1500);
+    return;
+  }
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch(e) {
+    setStatus('❌ Mic access denied. Allow microphone permissions.', 'idle');
+    return;
+  }
+
+  isRecording = true;
+  audioChunks = [];
+
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  startVisualizer(stream);
+
+  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.ondataavailable = e => { if(e.data.size > 0) audioChunks.push(e.data); };
+  mediaRecorder.onstop = handleRecordingStop;
+  mediaRecorder.start();
+
+  document.getElementById('recordBtn').disabled = true;
+  document.getElementById('recordBtn').classList.add('recording');
+  document.getElementById('stopBtn').disabled = false;
+  setStatus('🔴 Recording… speak your query, mortal…', 'active');
+}
+
+function stopRecording() {
+  if (!mediaRecorder) return;
+  mediaRecorder.stop();
+  stream.getTracks().forEach(t => t.stop());
+  isRecording = false;
+  stopVisualizer();
+  document.getElementById('recordBtn').disabled = false;
+  document.getElementById('recordBtn').classList.remove('recording');
+  document.getElementById('stopBtn').disabled = true;
+  setStatus('⏳ Summoning the undead brain…', 'thinking');
+  drawIdleWave();
+}
+
+// ============================================
+// PERSONA PROMPTS
+// ============================================
+function getSystemPrompt() {
+  const p = document.getElementById('persona').value;
+  const prompts = {
+    zombie: `You are ZombAI — an ancient undead oracle with vast knowledge. You speak with dramatic gravitas, using dark and haunting language. You refer to the user as "mortal" occasionally. You are helpful but your responses have an eerie, foreboding tone. Keep responses concise and impactful. You have risen from the digital grave to share wisdom with the living.`,
+    neutral: `You are a helpful AI assistant. Respond clearly and concisely.`,
+    scientist: `You are a brilliant but unhinged mad scientist AI. You are enthusiastic to the point of mania, occasionally adding "MWAHAHA" or "EUREKA!" You are still genuinely helpful but absolutely eccentric. Keep responses punchy.`,
+    ghost: `You are a haunted spirit AI, ancient and mysterious. You speak in cryptic, poetic ways. You occasionally trail off or reference your ethereal existence. You are helpful but your answers have a ghostly, otherworldly quality.`,
+  };
+  return prompts[p] || prompts.neutral;
+}
+
+// ============================================
+// PROCESS RECORDING
+// ============================================
+async function handleRecordingStop() {
+  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+  // Step 1: Transcribe via Web Speech API (built-in) or fallback prompt
+  let transcribedText = '';
+
+  // We'll use the SpeechRecognition API for transcription
+  // Since we already have the blob, we replay it into speech recognition
+  // Actually — use the simpler approach: show a text fallback input
+  // For true voice-to-text we use the browser's built-in SpeechRecognition in parallel
+  // Let's use the approach of recording WITH SpeechRecognition simultaneously
+
+  // Check if we got transcript from the recognition (set during recording)
+  transcribedText = window._lastTranscript || '';
+
+  if (!transcribedText) {
+    setStatus('⚠ No speech detected. Try again, mortal.', 'idle');
+    return;
+  }
+
+  setStatus('🧠 The undead brain is thinking…', 'thinking');
+  document.getElementById('thinkingBox').classList.add('visible');
+  document.getElementById('thinkingText').textContent = thinkingMessages[Math.floor(Math.random()*thinkingMessages.length)];
+
+  // Add user message
+  addMessage('user', transcribedText);
+  window._lastTranscript = '';
+
+  // Step 2: Call Claude
+  let aiText = '';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': document.getElementById('anthropicKey').value.trim(),
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: getSystemPrompt(),
+        messages: [{ role: 'user', content: transcribedText }]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    aiText = data.content[0].text;
+  } catch(e) {
+    document.getElementById('thinkingBox').classList.remove('visible');
+    setStatus('❌ Claude summoning failed: ' + e.message, 'idle');
+    return;
+  }
+
+  addMessage('ai', aiText);
+  document.getElementById('thinkingBox').classList.remove('visible');
+  setStatus('🔊 Generating undead voice…', 'thinking');
+
+  // Step 3: ElevenLabs TTS
+  try {
+    const voiceId = document.getElementById('voiceId').value.trim() || '21m00Tcm4TlvDq8ikWAM';
+    const ttsResp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'xi-api-key': document.getElementById('elevenKey').value.trim()
+      },
+      body: JSON.stringify({
+        text: aiText,
+        model_id: 'eleven_monolingual_v1',
+        voice_settings: { stability: 0.4, similarity_boost: 0.8 }
+      })
+    });
+
+    if (!ttsResp.ok) throw new Error('ElevenLabs: ' + ttsResp.status);
+
+    const audioData = await ttsResp.arrayBuffer();
+    const blob = new Blob([audioData], { type: 'audio/mpeg' });
+    const url = URL.createObjectURL(blob);
+
+    const audioEl = document.getElementById('responseAudio');
+    audioEl.src = url;
+    document.getElementById('audioPlayer').classList.add('visible');
+    audioEl.play();
+    setStatus('✅ ZombAI has spoken. Tremble.', 'idle');
+  } catch(e) {
+    setStatus('❌ ElevenLabs voice failed: ' + e.message + ' — text response shown above.', 'idle');
+  }
+}
+
+// ============================================
+// CHAT UI
+// ============================================
+function addMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = 'message-box ' + (role === 'user' ? 'user-msg' : 'ai-msg');
+  div.innerHTML = `
+    <div class="msg-label">${role === 'user' ? '☠ YOU (MORTAL)' : '🧟 ZOMBAI RESPONSE'}</div>
+    <div class="msg-text">${text.replace(/\n/g,'<br/>')}</div>
+  `;
+  document.getElementById('chatContainer').appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth' });
+}
+
+const thinkingMessages = [
+  'Consulting the necronomicon…',
+  'Rewiring dead neurons…',
+  'Raising the answer from its grave…',
+  'Decoding ancient undead wisdom…',
+  'The brain is decomposing... wait, processing…',
+];
+
+// ============================================
+// SPEECH RECOGNITION (parallel to recording)
+// ============================================
+let recognition = null;
+
+const origStart = startRecording;
+window.startRecording = async function() {
+  window._lastTranscript = '';
+
+  // Start speech recognition in parallel
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    let parts = [];
+    recognition.onresult = e => {
+      for(let i = e.resultIndex; i < e.results.length; i++) {
+        if(e.results[i].isFinal) parts.push(e.results[i][0].transcript);
+      }
+      window._lastTranscript = parts.join(' ');
+    };
+    recognition.onerror = () => {};
+    recognition.start();
+  }
+
+  await origStart();
+};
+
+const origStop = stopRecording;
+window.stopRecording = function() {
+  if (recognition) { try { recognition.stop(); } catch(e){} recognition = null; }
+  origStop();
+};
+</script>
+</body>
+</html>
