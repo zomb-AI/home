@@ -1,0 +1,1027 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZombAI — Where Learning Meets Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@300;400;500;700&family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════
+   THEME VARIABLES
+═══════════════════════════════════════════════ */
+
+/* COZY — Friendly / Fun (default) */
+:root {
+  --bg:              #1b0a30;
+  --bg-card:         #230e3d;
+  --accent:          #ff6eb4;
+  --accent-alt:      #ffb3da;
+  --text:            #ffe4f5;
+  --muted:           rgba(255,228,245,0.48);
+  --border:          rgba(255,110,180,0.2);
+  --border-soft:     rgba(255,110,180,0.1);
+  --grid-line:       rgba(255,110,180,0.04);
+  --glow-color:      rgba(255,110,180,0.13);
+  --welcome-bg:      rgba(255,110,180,0.1);
+  --btn-grad:        linear-gradient(135deg,#ff6eb4 0%,#ff9ed2 100%);
+  --btn-color:       #1b0a30;
+  --btn-shadow:      rgba(255,110,180,0.45);
+  --btn-hover-shadow:rgba(255,110,180,0.65);
+  --tag-bg:          rgba(255,110,180,0.12);
+  --tag-border:      rgba(255,110,180,0.28);
+  --tag-color:       #ff9ed2;
+  --card-line:       #ff6eb4;
+  --footer-border:   rgba(255,110,180,0.14);
+  --r:               18px;
+  --r-btn:           100px;
+  --r-tag:           100px;
+  --r-action:        12px;
+  --r-icon:          12px;
+  --r-nav:           8px;
+  --logo-family:     'Pacifico', cursive;
+  --body-family:     'Poppins', sans-serif;
+  --logo-size-clamp: clamp(4rem,11vw,8.5rem);
+  --logo-weight:     400;
+  --logo-ls:         2px;
+  --logo-lh:         1.15;
+  --logo-shadow:     0 0 50px rgba(255,110,180,0.28);
+  --tagline-style:   normal;
+  --tagline-ls:      0.3px;
+  --tagline-weight:  300;
+  --pill-ls:         1px;
+  --pill-weight:     700;
+  --explore-ls:      0.5px;
+  --explore-weight:  700;
+  --explore-transform: none;
+  --section-family:  'Pacifico', cursive;
+  --section-size:    1.15rem;
+  --section-ls:      1px;
+  --section-weight:  400;
+  --count-r:         100px;
+  --card-r:          18px;
+  --stat-color:      rgba(255,228,245,0.38);
+}
+
+/* FIRM — Techno Modern */
+[data-theme="firm"] {
+  --bg:              #060b10;
+  --bg-card:         #0c1520;
+  --accent:          #00d4ff;
+  --accent-alt:      #7ef8ff;
+  --text:            #c8eaf5;
+  --muted:           rgba(0,212,255,0.45);
+  --border:          rgba(0,212,255,0.22);
+  --border-soft:     rgba(0,212,255,0.1);
+  --grid-line:       rgba(0,212,255,0.05);
+  --glow-color:      rgba(0,212,255,0.1);
+  --welcome-bg:      rgba(0,212,255,0.08);
+  --btn-grad:        linear-gradient(135deg,#00d4ff 0%,#0099bb 100%);
+  --btn-color:       #060b10;
+  --btn-shadow:      rgba(0,212,255,0.38);
+  --btn-hover-shadow:rgba(0,212,255,0.6);
+  --tag-bg:          rgba(0,212,255,0.09);
+  --tag-border:      rgba(0,212,255,0.26);
+  --tag-color:       #00d4ff;
+  --card-line:       #00d4ff;
+  --footer-border:   rgba(0,212,255,0.12);
+  --r:               3px;
+  --r-btn:           3px;
+  --r-tag:           3px;
+  --r-action:        3px;
+  --r-icon:          3px;
+  --r-nav:           2px;
+  --logo-family:     'Space Mono', monospace;
+  --body-family:     'JetBrains Mono', monospace;
+  --logo-size-clamp: clamp(3rem,9vw,7rem);
+  --logo-weight:     700;
+  --logo-ls:         -2px;
+  --logo-lh:         1;
+  --logo-shadow:     0 0 40px rgba(0,212,255,0.35), 0 0 80px rgba(0,212,255,0.15);
+  --tagline-style:   normal;
+  --tagline-ls:      2px;
+  --tagline-weight:  400;
+  --pill-ls:         2.5px;
+  --pill-weight:     700;
+  --explore-ls:      2px;
+  --explore-weight:  700;
+  --explore-transform: uppercase;
+  --section-family:  'Space Mono', monospace;
+  --section-size:    0.9rem;
+  --section-ls:      1.5px;
+  --section-weight:  700;
+  --count-r:         2px;
+  --card-r:          3px;
+  --stat-color:      rgba(0,212,255,0.38);
+}
+
+/* STRONG — Urgency / Passion */
+[data-theme="strong"] {
+  --bg:              #0c0000;
+  --bg-card:         #160303;
+  --accent:          #ff1a00;
+  --accent-alt:      #ff5533;
+  --text:            #fff5f3;
+  --muted:           rgba(255,245,243,0.5);
+  --border:          rgba(255,26,0,0.28);
+  --border-soft:     rgba(255,26,0,0.13);
+  --grid-line:       rgba(255,26,0,0.05);
+  --glow-color:      rgba(255,26,0,0.13);
+  --welcome-bg:      rgba(255,26,0,0.1);
+  --btn-grad:        linear-gradient(135deg,#ff1a00 0%,#cc1100 100%);
+  --btn-color:       #fff5f3;
+  --btn-shadow:      rgba(255,26,0,0.5);
+  --btn-hover-shadow:rgba(255,26,0,0.72);
+  --tag-bg:          rgba(255,26,0,0.1);
+  --tag-border:      rgba(255,26,0,0.3);
+  --tag-color:       #ff5533;
+  --card-line:       #ff1a00;
+  --footer-border:   rgba(255,26,0,0.15);
+  --r:               0px;
+  --r-btn:           0px;
+  --r-tag:           0px;
+  --r-action:        0px;
+  --r-icon:          0px;
+  --r-nav:           0px;
+  --logo-family:     'Bebas Neue', sans-serif;
+  --body-family:     'Barlow Condensed', sans-serif;
+  --logo-size-clamp: clamp(5rem,14vw,11rem);
+  --logo-weight:     400;
+  --logo-ls:         8px;
+  --logo-lh:         0.9;
+  --logo-shadow:     4px 4px 0 rgba(255,26,0,0.3), 8px 8px 0 rgba(255,26,0,0.12);
+  --tagline-style:   normal;
+  --tagline-ls:      4px;
+  --tagline-weight:  600;
+  --pill-ls:         3px;
+  --pill-weight:     800;
+  --explore-ls:      3px;
+  --explore-weight:  800;
+  --explore-transform: uppercase;
+  --section-family:  'Bebas Neue', sans-serif;
+  --section-size:    1.4rem;
+  --section-ls:      4px;
+  --section-weight:  400;
+  --count-r:         0px;
+  --card-r:          0px;
+  --stat-color:      rgba(255,245,243,0.38);
+}
+
+/* SOFT — Elegant / Refined */
+[data-theme="soft"] {
+  --bg:              #faf7f2;
+  --bg-card:         #ffffff;
+  --accent:          #7c5334;
+  --accent-alt:      #b07a50;
+  --text:            #2a1a0e;
+  --muted:           rgba(42,26,14,0.5);
+  --border:          rgba(124,83,52,0.2);
+  --border-soft:     rgba(124,83,52,0.1);
+  --grid-line:       rgba(124,83,52,0.04);
+  --glow-color:      rgba(176,122,80,0.1);
+  --welcome-bg:      rgba(124,83,52,0.07);
+  --btn-grad:        linear-gradient(135deg,#7c5334 0%,#9e6b45 100%);
+  --btn-color:       #faf7f2;
+  --btn-shadow:      rgba(124,83,52,0.28);
+  --btn-hover-shadow:rgba(124,83,52,0.45);
+  --tag-bg:          rgba(124,83,52,0.09);
+  --tag-border:      rgba(124,83,52,0.2);
+  --tag-color:       #7c5334;
+  --card-line:       #7c5334;
+  --footer-border:   rgba(124,83,52,0.14);
+  --r:               20px;
+  --r-btn:           100px;
+  --r-tag:           100px;
+  --r-action:        14px;
+  --r-icon:          14px;
+  --r-nav:           100px;
+  --logo-family:     'Playfair Display', serif;
+  --body-family:     'Lora', serif;
+  --logo-size-clamp: clamp(3.8rem,10vw,8rem);
+  --logo-weight:     900;
+  --logo-ls:         -1px;
+  --logo-lh:         1.05;
+  --logo-shadow:     none;
+  --tagline-style:   italic;
+  --tagline-ls:      0.2px;
+  --tagline-weight:  400;
+  --pill-ls:         0.8px;
+  --pill-weight:     600;
+  --explore-ls:      0.5px;
+  --explore-weight:  600;
+  --explore-transform: none;
+  --section-family:  'Playfair Display', serif;
+  --section-size:    1.1rem;
+  --section-ls:      0px;
+  --section-weight:  700;
+  --count-r:         100px;
+  --card-r:          20px;
+  --stat-color:      rgba(42,26,14,0.38);
+}
+
+/* ═══════════════════════════════════════════════
+   BASE LAYOUT
+═══════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body-family);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  transition:
+    background 0.5s ease,
+    color 0.5s ease;
+}
+
+/* Grid lines */
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  z-index:0;
+  pointer-events:none;
+  transition: background-image 0.5s;
+}
+/* Scanline overlay for FIRM */
+[data-theme="firm"] body::before {
+  background-image:
+    linear-gradient(rgba(0,212,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.05) 1px, transparent 1px),
+    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);
+  background-size: 32px 32px, 32px 32px, 100% 4px;
+}
+
+/* Radial glow */
+body::after {
+  content:'';
+  position:fixed;
+  top:-20%;left:50%;
+  transform:translateX(-50%);
+  width:700px;height:700px;
+  background:radial-gradient(circle,var(--glow-color) 0%,transparent 70%);
+  z-index:0;pointer-events:none;
+  animation:pulse 6s ease-in-out infinite;
+  transition: background 0.5s;
+}
+@keyframes pulse{
+  0%,100%{opacity:.6;transform:translateX(-50%) scale(1);}
+  50%{opacity:1;transform:translateX(-50%) scale(1.15);}
+}
+
+/* SOFT bg needs lighter glow */
+[data-theme="soft"] body::after { opacity:.4; }
+
+/* ── FLASH OVERLAY ─────────────────────────────────────── */
+#flash {
+  position:fixed;inset:0;
+  background:var(--bg);
+  z-index:9999;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .22s ease;
+}
+#flash.on { opacity:1; pointer-events:all; }
+
+/* ═══════════════════════════════════════════════
+   THEME SWITCHER BAR
+═══════════════════════════════════════════════ */
+.theme-bar {
+  position:relative;z-index:20;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:6px;
+  padding:12px 1rem 0;
+}
+
+.tb {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--body-family);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 5px 16px;
+  border-radius: var(--r-btn);
+  cursor: pointer;
+  transition:
+    color .22s, border-color .22s,
+    background .22s, box-shadow .22s,
+    border-radius .45s ease;
+  white-space: nowrap;
+}
+.tb:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--welcome-bg);
+}
+.tb.active {
+  background: var(--btn-grad);
+  border-color: transparent;
+  color: var(--btn-color);
+  box-shadow: 0 2px 16px var(--btn-shadow);
+}
+
+/* ═══════════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════════ */
+nav {
+  position:relative;z-index:10;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:.8rem 2rem;
+  gap:1.4rem;
+}
+nav a {
+  color:var(--muted);
+  text-decoration:none;
+  font-family:var(--body-family);
+  font-size:.82rem;
+  font-weight:600;
+  letter-spacing:.5px;
+  transition:color .2s;
+}
+nav a:hover{color:var(--accent);}
+.nav-pill {
+  border:1px solid var(--border);
+  padding:6px 18px;
+  border-radius:var(--r-nav);
+  color:var(--text)!important;
+  transition:background .2s,border-color .2s,border-radius .45s ease;
+}
+.nav-pill:hover{background:var(--welcome-bg)!important;border-color:var(--accent)!important;}
+
+/* ═══════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════ */
+.hero {
+  position:relative;z-index:5;
+  flex:1;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:2rem 1rem 2rem;
+  text-align:center;
+}
+
+/* Welcome pill */
+.welcome {
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--welcome-bg);
+  border:1px solid var(--border);
+  border-radius:var(--r-btn);
+  padding:6px 20px;
+  font-family:var(--body-family);
+  font-size:.76rem;
+  font-weight:var(--pill-weight);
+  letter-spacing:var(--pill-ls);
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:1.4rem;
+  transition:
+    background .5s, border-color .5s,
+    color .5s, border-radius .45s ease,
+    font-family .01s;
+  animation:fadeUp .6s .05s both;
+}
+.welcome .dot {
+  width:7px;height:7px;
+  background:var(--accent);
+  border-radius:50%;
+  box-shadow:0 0 8px var(--accent);
+  animation:blink 1.5s ease-in-out infinite;
+  transition:background .5s,box-shadow .5s;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Logo */
+.logo {
+  font-family:var(--logo-family);
+  font-size:var(--logo-size-clamp);
+  font-weight:var(--logo-weight);
+  line-height:var(--logo-lh);
+  letter-spacing:var(--logo-ls);
+  margin-bottom:.5rem;
+  text-shadow:var(--logo-shadow);
+  user-select:none;
+  transition:
+    text-shadow .5s,
+    letter-spacing .45s ease,
+    font-weight .3s;
+  animation:logoIn .75s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes logoIn{
+  from{opacity:0;transform:translateY(-26px) scale(.93);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+.lz { color: var(--accent); transition:color .5s; }
+.lo { color: var(--accent-alt); transition:color .5s; }
+.lm { color: var(--accent); transition:color .5s; filter:brightness(.85); }
+.lb { color: var(--accent-alt); transition:color .5s; filter:brightness(1.1); }
+.lai{
+  color:var(--accent);
+  position:relative;
+  transition:color .5s;
+}
+.lai::after {
+  content:'';
+  position:absolute;
+  bottom:4px;left:0;right:0;
+  height:4px;
+  background:var(--accent);
+  border-radius:2px;
+  box-shadow:0 0 14px var(--accent);
+  transition:background .5s,box-shadow .5s;
+}
+[data-theme="firm"] .lai::after   { bottom:2px; border-radius:0; }
+[data-theme="strong"] .lai::after { bottom:2px; border-radius:0; height:5px; }
+[data-theme="soft"] .lai::after   { bottom:6px; height:3px; border-radius:2px; }
+
+/* Tagline */
+.tagline {
+  font-family:var(--body-family);
+  font-size:clamp(.85rem,2vw,1.05rem);
+  font-style:var(--tagline-style);
+  font-weight:var(--tagline-weight);
+  letter-spacing:var(--tagline-ls);
+  color:var(--muted);
+  margin-bottom:2.4rem;
+  transition:
+    color .5s, letter-spacing .45s,
+    font-style .3s, font-family .01s;
+  animation:fadeUp .7s .2s both;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* Explore button */
+.explore-btn {
+  position:relative;
+  display:inline-flex;align-items:center;gap:.55rem;
+  background:var(--btn-grad);
+  color:var(--btn-color);
+  font-family:var(--body-family);
+  font-size:1rem;
+  font-weight:var(--explore-weight);
+  letter-spacing:var(--explore-ls);
+  text-transform:var(--explore-transform);
+  padding:14px 40px;
+  border:none;
+  border-radius:var(--r-btn);
+  cursor:pointer;
+  box-shadow:0 4px 26px var(--btn-shadow);
+  transition:
+    transform .18s, box-shadow .18s,
+    border-radius .45s ease,
+    background .5s, font-family .01s;
+  animation:fadeUp .7s .35s both;
+  overflow:hidden;
+}
+.explore-btn::before {
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.14) 0%,transparent 55%);
+  border-radius:inherit;
+  pointer-events:none;
+}
+.explore-btn:hover{
+  transform:translateY(-2px) scale(1.025);
+  box-shadow:0 8px 36px var(--btn-hover-shadow);
+}
+.explore-btn:active{transform:scale(.98);}
+.explore-btn.loading{opacity:.75;pointer-events:none;}
+
+.bsp {
+  display:none;width:18px;height:18px;
+  border:2.5px solid rgba(0,0,0,.15);
+  border-top-color:var(--btn-color);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════════════
+   PROJECTS SECTION
+═══════════════════════════════════════════════ */
+#projects-section {
+  position:relative;z-index:5;
+  width:100%;max-width:1160px;
+  margin:0 auto;
+  padding:0 1.2rem 4rem;
+  display:none;
+}
+#projects-section.visible{display:block;animation:fadeUp .5s ease both;}
+
+.section-header {
+  display:flex;align-items:center;
+  justify-content:space-between;
+  margin-bottom:1.6rem;
+  flex-wrap:wrap;gap:.6rem;
+}
+.section-title {
+  font-family:var(--section-family);
+  font-size:var(--section-size);
+  font-weight:var(--section-weight);
+  letter-spacing:var(--section-ls);
+  color:var(--text);
+  transition:all .5s, font-family .01s;
+}
+.section-title span { color:var(--accent); transition:color .5s; }
+
+.repo-count {
+  font-family:var(--body-family);
+  font-size:.74rem;font-weight:600;
+  color:var(--muted);
+  background:var(--welcome-bg);
+  border:1px solid var(--border);
+  padding:4px 12px;
+  border-radius:var(--count-r);
+  transition:all .5s, border-radius .45s ease;
+}
+
+.repo-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+  gap:1rem;
+}
+
+/* ── CARD ────────────────────────────────────────── */
+.repo-card {
+  background:var(--bg-card);
+  border:1px solid var(--border-soft);
+  border-radius:var(--card-r);
+  padding:1.35rem 1.4rem 1.2rem;
+  display:flex;flex-direction:column;gap:.7rem;
+  position:relative;overflow:hidden;
+  transition:
+    border-color .2s, transform .2s, box-shadow .2s,
+    background .5s, border-radius .45s ease;
+  animation:cardIn .4s ease both;
+}
+.repo-card::before {
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--card-line),transparent);
+  opacity:0;
+  transition:opacity .3s, background .5s;
+}
+.repo-card:hover{
+  border-color:var(--border);
+  transform:translateY(-3px);
+  box-shadow:0 8px 30px rgba(0,0,0,.32);
+}
+.repo-card:hover::before{opacity:1;}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(14px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+[data-theme="strong"] .repo-card { border-width: 2px; }
+[data-theme="soft"] .repo-card { box-shadow:0 2px 10px rgba(124,83,52,.06); }
+[data-theme="soft"] .repo-card:hover { box-shadow:0 8px 28px rgba(124,83,52,.16); }
+
+.card-top{display:flex;align-items:flex-start;gap:.75rem;}
+.repo-icon {
+  width:40px;height:40px;
+  background:var(--welcome-bg);
+  border:1px solid var(--border);
+  border-radius:var(--r-icon);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:1.1rem;
+  transition:border-radius .45s ease, background .5s, border-color .5s;
+}
+.repo-meta{flex:1;min-width:0;}
+.repo-name {
+  font-family:var(--body-family);
+  font-size:.92rem;font-weight:700;
+  color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:2px;
+  transition:color .5s, font-family .01s;
+}
+.zomb-hi { color:var(--accent); transition:color .5s; }
+.repo-updated {
+  font-size:.67rem;color:var(--muted);
+  font-family:var(--body-family);
+  transition:color .5s, font-family .01s;
+}
+
+.repo-desc {
+  font-family:var(--body-family);
+  font-size:.82rem;color:var(--muted);line-height:1.55;
+  flex:1;min-height:34px;
+  transition:color .5s, font-family .01s;
+}
+.repo-desc.empty{font-style:italic;opacity:.4;}
+
+.repo-tags{display:flex;gap:.38rem;flex-wrap:wrap;}
+.rtag {
+  font-family:var(--body-family);
+  font-size:.63rem;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;
+  padding:2px 9px;
+  border-radius:var(--r-tag);
+  background:var(--tag-bg);
+  border:1px solid var(--tag-border);
+  color:var(--tag-color);
+  transition:all .5s, border-radius .45s ease;
+}
+.rtag.l-ts  {background:rgba(66,133,244,.1); border-color:rgba(66,133,244,.28); color:#4285F4;}
+.rtag.l-js  {background:rgba(251,188,5,.1);  border-color:rgba(251,188,5,.28);  color:#FBBC05;}
+.rtag.l-html{background:rgba(234,67,53,.1);  border-color:rgba(234,67,53,.28);  color:#EA4335;}
+.rtag.l-py  {background:rgba(52,168,83,.1);  border-color:rgba(52,168,83,.28);  color:#34A853;}
+
+.repo-stats {
+  display:flex;gap:1rem;
+  font-size:.7rem;color:var(--stat-color);
+  font-family:var(--body-family);
+  transition:color .5s;
+}
+.stat{display:flex;align-items:center;gap:4px;}
+
+.card-actions{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:.55rem;margin-top:auto;
+}
+.action-btn {
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 10px;
+  border-radius:var(--r-action);
+  font-family:var(--body-family);
+  font-size:.74rem;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;
+  text-decoration:none;border:none;cursor:pointer;
+  transition:transform .15s,box-shadow .15s,border-radius .45s ease,background .5s;
+}
+.action-btn:hover{transform:translateY(-1px);}
+.action-btn:active{transform:scale(.97);}
+
+.btn-repo {
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  color:var(--text);
+  transition:background .2s,border-color .2s,border-radius .45s ease,color .5s;
+}
+.btn-repo:hover{background:var(--welcome-bg);border-color:var(--accent);}
+
+.btn-live {
+  background:var(--btn-grad);
+  color:var(--btn-color);
+  box-shadow:0 2px 12px var(--btn-shadow);
+  transition:box-shadow .2s,border-radius .45s ease,background .5s;
+}
+.btn-live:hover{box-shadow:0 4px 20px var(--btn-hover-shadow);}
+.btn-live.nopg {
+  background:rgba(128,128,128,.06);
+  border:1px solid rgba(128,128,128,.1);
+  color:rgba(128,128,128,.28);
+  box-shadow:none;pointer-events:none;
+}
+
+.state-msg{text-align:center;padding:3rem 1rem;color:var(--muted);}
+.state-msg .ico{font-size:2.5rem;margin-bottom:.8rem;}
+.state-msg p{font-size:.9rem;line-height:1.6;font-family:var(--body-family);}
+.state-msg code{background:var(--welcome-bg);padding:2px 6px;border-radius:4px;font-size:.8rem;}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  position:relative;z-index:5;
+  text-align:center;
+  padding:1.5rem 1rem;
+  border-top:1px solid var(--footer-border);
+  font-size:.8rem;color:var(--muted);
+  letter-spacing:.2px;
+  font-family:var(--body-family);
+  transition:border-color .5s,color .5s,font-family .01s;
+}
+footer strong{color:var(--accent);font-weight:800;transition:color .5s;}
+footer a{color:var(--accent);text-decoration:none;font-weight:700;transition:opacity .2s,color .5s;}
+footer a:hover{opacity:.7;}
+.fheart{color:var(--accent);transition:color .5s;}
+
+/* ── STRONG: uppercase everything ─────────────── */
+[data-theme="strong"] .welcome,
+[data-theme="strong"] .tagline,
+[data-theme="strong"] .repo-name,
+[data-theme="strong"] .repo-desc,
+[data-theme="strong"] .repo-count,
+[data-theme="strong"] footer { letter-spacing:1.5px; }
+
+/* ── SOFT: light bg nav fix ───────────────────── */
+[data-theme="soft"] nav a { color:rgba(42,26,14,.55) !important; }
+[data-theme="soft"] nav a:hover { color:var(--accent) !important; }
+[data-theme="soft"] .nav-pill { color:var(--text) !important; border-color:var(--border) !important; }
+[data-theme="soft"] body::before { opacity:.45; }
+
+/* ── Responsive ───────────────────────────────── */
+@media(max-width:600px){
+  .repo-grid{grid-template-columns:1fr;}
+  .card-actions{grid-template-columns:1fr;}
+  .tb{font-size:.58rem;padding:4px 10px;letter-spacing:1.2px;}
+}
+</style>
+</head>
+<body data-theme="cozy">
+
+<!-- Flash overlay for theme transitions -->
+<div id="flash"></div>
+
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║           THEME SWITCHER BAR            ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div class="theme-bar">
+  <button class="tb active" onclick="setTheme('cozy',this)">COZY</button>
+  <button class="tb"        onclick="setTheme('firm',this)">FIRM</button>
+  <button class="tb"        onclick="setTheme('strong',this)">STRONG</button>
+  <button class="tb"        onclick="setTheme('soft',this)">SOFT</button>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="https://github.com/balram3429" target="_blank" rel="noopener">GitHub</a>
+  <a href="https://github.com/balram3429" target="_blank" rel="noopener" class="nav-pill">@balram3429</a>
+</nav>
+
+<!-- Hero -->
+<main class="hero">
+  <div class="welcome">
+    <span class="dot"></span>
+    Welcome to ZombAI
+  </div>
+
+  <div class="logo" aria-label="ZombAI">
+    <span class="lz">Z</span><span class="lo">o</span><span class="lm">m</span><span class="lb">b</span><span class="lai">AI</span>
+  </div>
+
+  <p class="tagline">Intelligent Projects. Built to learn. Designed to inspire.</p>
+
+  <button class="explore-btn" id="exploreBtn" onclick="fetchProjects()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <span id="btnText">Explore Projects</span>
+    <span class="bsp" id="btnSpinner"></span>
+  </button>
+</main>
+
+<!-- Projects -->
+<section id="projects-section">
+  <div class="section-header">
+    <div class="section-title">Zomb<span>AI</span> Repositories</div>
+    <div class="repo-count" id="repoCount">Loading…</div>
+  </div>
+  <div class="repo-grid" id="repoGrid"></div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>
+    <span class="fheart">♥</span>
+    Learning is never so Simple — Powered by <strong>ZombAI</strong> &nbsp;·&nbsp;
+    <a href="https://github.com/balram3429" target="_blank" rel="noopener">@balram3429</a>
+  </p>
+</footer>
+
+<script>
+/* ── THEME ENGINE ─────────────────────────────────────── */
+let activeTheme = 'cozy';
+
+function setTheme(name, btn) {
+  if (name === activeTheme) return;
+
+  const flash = document.getElementById('flash');
+  flash.classList.add('on');
+
+  setTimeout(() => {
+    document.body.setAttribute('data-theme', name);
+    activeTheme = name;
+
+    // Update button states
+    document.querySelectorAll('.tb').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Remove flash after paint
+    requestAnimationFrame(() => requestAnimationFrame(() => flash.classList.remove('on')));
+  }, 200);
+}
+
+/* ── GITHUB FETCH ─────────────────────────────────────── */
+const GH_USER     = 'balram3429';
+const ZOMB_RE     = /zomb/i;
+
+function langClass(l) {
+  if (!l) return '';
+  const s = l.toLowerCase();
+  if (s==='typescript') return 'l-ts';
+  if (s==='javascript') return 'l-js';
+  if (s==='html')       return 'l-html';
+  if (s==='python')     return 'l-py';
+  return '';
+}
+function langEmoji(l) {
+  if (!l) return '📁';
+  const s = l.toLowerCase();
+  if (s==='typescript') return '🔷';
+  if (s==='javascript') return '🟨';
+  if (s==='python')     return '🐍';
+  if (s==='html')       return '🌐';
+  if (s==='css')        return '🎨';
+  if (s==='java')       return '☕';
+  return '📦';
+}
+function hiZomb(n) {
+  return n.replace(/(zomb)/gi,'<span class="zomb-hi">$1</span>');
+}
+function ago(d) {
+  const days = Math.floor((Date.now()-new Date(d))/86400000);
+  if (days===0) return 'Today';
+  if (days===1) return 'Yesterday';
+  if (days<30)  return `${days} days ago`;
+  const m = Math.floor(days/30);
+  if (m<12) return `${m} month${m>1?'s':''} ago`;
+  const y = Math.floor(m/12);
+  return `${y} year${y>1?'s':''} ago`;
+}
+
+function card(repo, i) {
+  const url  = `https://${GH_USER}.github.io/${repo.name}/`;
+  const hp   = repo.has_pages;
+  const lang = repo.language || '';
+  const desc = repo.description || '';
+  return `
+  <div class="repo-card" style="animation-delay:${i*.06}s">
+    <div class="card-top">
+      <div class="repo-icon">${langEmoji(lang)}</div>
+      <div class="repo-meta">
+        <div class="repo-name">${hiZomb(repo.name)}</div>
+        <div class="repo-updated">Updated ${ago(repo.updated_at)}</div>
+      </div>
+    </div>
+    <div class="repo-desc ${desc?'':'empty'}">${desc||'No description provided'}</div>
+    <div class="repo-tags">
+      ${lang?`<span class="rtag ${langClass(lang)}">${lang}</span>`:''}
+      ${repo.stargazers_count>0?`<span class="rtag">★ ${repo.stargazers_count}</span>`:''}
+      ${repo.fork?'<span class="rtag">Fork</span>':''}
+      ${repo.topics&&repo.topics.length?repo.topics.slice(0,2).map(t=>`<span class="rtag">${t}</span>`).join(''):''}
+    </div>
+    <div class="repo-stats">
+      <span class="stat">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>${repo.forks_count} forks
+      </span>
+      <span class="stat">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>${repo.open_issues_count} issues
+      </span>
+      <span class="stat">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>${repo.watchers_count} watching
+      </span>
+    </div>
+    <div class="card-actions">
+      <a class="action-btn btn-repo" href="${repo.html_url}" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>Explore Repo
+      </a>
+      <a class="action-btn btn-live ${hp?'':'nopg'}"
+         href="${hp?url:'#'}" target="${hp?'_blank':'_self'}" rel="noopener"
+         title="${hp?'View live hosted page':'No hosted page available'}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>${hp?'View Result':'No Live Page'}
+      </a>
+    </div>
+  </div>`;
+}
+
+/* ── STRATEGY:
+   1. Primary   → GET /users/:user/repos  (no custom headers → no CORS preflight)
+   2. Fallback  → GET /search/repositories (also no custom headers)
+   Both endpoints allow simple CORS requests from any origin.
+   The old Accept header was triggering a preflight OPTIONS check that
+   fails when the file is opened as file:// or from restrictive hosts. */
+
+async function ghFetch(url) {
+  // Simple fetch — NO custom headers so GitHub's CORS policy allows it
+  const res = await fetch(url);
+  if (res.status === 403) {
+    const body = await res.json().catch(()=>({}));
+    const msg  = body.message || '';
+    if (msg.toLowerCase().includes('rate limit')) throw new Error('RATE_LIMIT');
+    throw new Error(`HTTP 403: ${msg || 'Forbidden'}`);
+  }
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function fetchViaListAPI() {
+  /* Fetch up to 200 repos via the list endpoint, then filter client-side */
+  let all = [];
+  for (let p = 1; p <= 4; p++) {
+    const data = await ghFetch(
+      `https://api.github.com/users/${GH_USER}/repos?sort=created&direction=desc&per_page=50&page=${p}`
+    );
+    if (!Array.isArray(data) || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < 50) break;
+  }
+  return all.filter(r => ZOMB_RE.test(r.name));
+}
+
+async function fetchViaSearchAPI() {
+  /* Search API as fallback — returns items[] not a plain array */
+  const data = await ghFetch(
+    `https://api.github.com/search/repositories?q=zomb+user:${GH_USER}&sort=stars&per_page=50`
+  );
+  return Array.isArray(data.items) ? data.items : [];
+}
+
+async function fetchProjects() {
+  const btn     = document.getElementById('exploreBtn');
+  const btext   = document.getElementById('btnText');
+  const bspin   = document.getElementById('btnSpinner');
+  const section = document.getElementById('projects-section');
+  const grid    = document.getElementById('repoGrid');
+  const count   = document.getElementById('repoCount');
+
+  btn.classList.add('loading');
+  btext.textContent = 'Fetching…';
+  bspin.style.display = 'block';
+  grid.innerHTML = '';
+
+  let repos = [];
+  let usedFallback = false;
+  let errorMsg = '';
+
+  /* ── Try primary, then fallback ───────────────────────── */
+  try {
+    repos = await fetchViaListAPI();
+  } catch (e1) {
+    usedFallback = true;
+    try {
+      repos = await fetchViaSearchAPI();
+    } catch (e2) {
+      errorMsg = e2.message === 'RATE_LIMIT'
+        ? 'GitHub API rate limit reached (60 req/hr for unauthenticated users). Please wait ~60 seconds and try again.'
+        : `Primary: ${e1.message} · Fallback: ${e2.message}`;
+    }
+  }
+
+  section.classList.add('visible');
+
+  if (errorMsg) {
+    grid.innerHTML = `<div class="state-msg" style="grid-column:1/-1">
+      <div class="ico">⚠️</div>
+      <p>${errorMsg}</p>
+    </div>`;
+    count.textContent = 'Error';
+    btext.textContent = 'Try Again';
+    btn.classList.remove('loading');
+    bspin.style.display = 'none';
+    return;
+  }
+
+  /* Sort newest first */
+  repos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  if (repos.length === 0) {
+    grid.innerHTML = `<div class="state-msg" style="grid-column:1/-1">
+      <div class="ico">🔍</div>
+      <p>No repositories matching <code>zomb</code> found for <strong>${GH_USER}</strong>.</p>
+    </div>`;
+    count.textContent = '0 projects';
+  } else {
+    count.textContent = `${repos.length} project${repos.length !== 1 ? 's' : ''} found`;
+    grid.innerHTML = repos.map((r, i) => card(r, i)).join('');
+  }
+
+  btext.textContent = 'Refresh';
+  btn.classList.remove('loading');
+  bspin.style.display = 'none';
+  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+</script>
+</body>
+</html>
