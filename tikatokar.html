@@ -1,0 +1,3013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TikaTokar — Smart Vaccine Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   TIKATOKAR — ZombAI
+   Soft / Kids-Friendly Design System
+   Font: Fredoka (display) + Nunito (body)
+═══════════════════════════════════════════════════ */
+
+:root {
+  /* Brand Palette */
+  --pink:        #FF6B9D;
+  --pink-light:  #FFB3D1;
+  --pink-pale:   #FFF0F7;
+  --purple:      #7B5EA7;
+  --purple-light:#C4B0E0;
+  --purple-pale: #F3EEFF;
+  --yellow:      #FFD93D;
+  --yellow-light:#FFF3B0;
+  --yellow-pale: #FFFDE7;
+  --teal:        #4ECDC4;
+  --teal-light:  #A8EDE9;
+  --teal-pale:   #E8FFFE;
+  --orange:      #FF9A3C;
+  --orange-light:#FFD4A8;
+  --orange-pale: #FFF5EC;
+  --green:       #56C18D;
+  --green-light: #A8E6C8;
+  --green-pale:  #EDFFF6;
+  --red:         #FF5A5A;
+  --red-light:   #FFB8B8;
+  --red-pale:    #FFF0F0;
+
+  /* Neutrals */
+  --bg:          #FFF9FC;
+  --surface:     #FFFFFF;
+  --surface2:    #FDF5FF;
+  --border:      #F0E0F0;
+  --text-primary:#2D1B3D;
+  --text-secondary:#8B6A9B;
+  --text-muted:  #BBA8CC;
+
+  /* Shadows */
+  --shadow-sm:   0 2px 8px rgba(123,94,167,0.10);
+  --shadow-md:   0 4px 20px rgba(123,94,167,0.14);
+  --shadow-lg:   0 8px 40px rgba(123,94,167,0.18);
+
+  /* Radii */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-xl: 32px;
+  --r-full: 9999px;
+
+  /* Typography */
+  --font-display: 'Fredoka', sans-serif;
+  --font-body:    'Nunito', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ══ PAGES ══════════════════════════════════════ */
+.page { display: none; min-height: 100vh; }
+.page.active { display: block; }
+
+/* ══ SPLASH ══════════════════════════════════════ */
+#step-splash {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #FFF0F7 0%, #F3EEFF 40%, #E8FFFE 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+.splash-bg { position: absolute; inset: 0; pointer-events: none; }
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.35;
+}
+.blob-1 {
+  width: 300px; height: 300px;
+  background: var(--pink-light);
+  top: -80px; right: -80px;
+  animation: blobFloat 8s ease-in-out infinite;
+}
+.blob-2 {
+  width: 250px; height: 250px;
+  background: var(--purple-light);
+  bottom: 100px; left: -100px;
+  animation: blobFloat 10s ease-in-out infinite reverse;
+}
+.blob-3 {
+  width: 200px; height: 200px;
+  background: var(--teal-light);
+  top: 40%; right: -50px;
+  animation: blobFloat 7s ease-in-out infinite 2s;
+}
+
+@keyframes blobFloat {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(20px, -20px) scale(1.08); }
+}
+
+.splash-content {
+  position: relative; z-index: 1;
+  padding: 56px 28px 40px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 24px;
+  flex: 1;
+}
+
+.logo-lockup {
+  display: flex; align-items: center; gap: 14px;
+  animation: slideDown 0.6s ease both;
+}
+.logo-icon { flex-shrink: 0; filter: drop-shadow(0 4px 12px rgba(255,107,157,0.4)); }
+.logo-name {
+  font-family: var(--font-display);
+  font-size: 2rem; font-weight: 700;
+  color: var(--pink);
+  line-height: 1;
+}
+.logo-tagline {
+  font-family: var(--font-body);
+  font-size: 0.75rem; font-weight: 700;
+  color: var(--purple);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.splash-hero { text-align: center; animation: fadeUp 0.7s ease 0.1s both; }
+.hero-illustration { margin-bottom: 16px; }
+
+.splash-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem; font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+.splash-title .highlight { color: var(--pink); }
+
+.splash-subtitle {
+  font-size: 0.9rem; color: var(--text-secondary);
+  line-height: 1.6; max-width: 300px; margin: 0 auto;
+}
+
+.splash-features {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center;
+  animation: fadeUp 0.7s ease 0.2s both;
+}
+.feat-pill {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-full);
+  padding: 6px 14px;
+  font-size: 0.8rem; font-weight: 600;
+  color: var(--text-secondary);
+  display: flex; align-items: center; gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-cta {
+  width: 100%;
+  background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+  color: white;
+  border: none; border-radius: var(--r-full);
+  padding: 16px 28px;
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 6px 24px rgba(255,107,157,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+  animation: fadeUp 0.7s ease 0.3s both;
+}
+.btn-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,107,157,0.5); }
+.btn-cta:active { transform: translateY(0); }
+
+.splash-note {
+  font-size: 0.75rem; color: var(--text-muted);
+  text-align: center;
+  animation: fadeUp 0.7s ease 0.4s both;
+}
+
+/* ══ ONBOARDING STEPS ══════════════════════════ */
+.ob-step { display: none; min-height: 100vh; padding: 0 0 32px; }
+.ob-step.active { display: flex; flex-direction: column; }
+
+.ob-header {
+  background: linear-gradient(160deg, #FFF0F7 0%, #F3EEFF 100%);
+  padding: 52px 28px 28px;
+}
+
+.ob-progress {
+  width: 100%; height: 6px;
+  background: var(--border);
+  border-radius: var(--r-full);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.ob-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  border-radius: var(--r-full);
+  transition: width 0.4s ease;
+}
+
+.ob-step-label {
+  font-size: 0.75rem; font-weight: 700;
+  color: var(--purple);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.ob-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem; font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.ob-subtitle { font-size: 0.875rem; color: var(--text-secondary); }
+
+.ob-form { padding: 24px 24px 0; flex: 1; display: flex; flex-direction: column; }
+
+.field-group { margin-bottom: 16px; }
+.field-label {
+  display: block;
+  font-size: 0.8rem; font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.field-wrap {
+  display: flex; align-items: center;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field-wrap:focus-within {
+  border-color: var(--pink-light);
+  box-shadow: 0 0 0 3px rgba(255,107,157,0.12);
+}
+.field-icon { font-size: 1.1rem; margin-right: 10px; flex-shrink: 0; }
+.field-input {
+  flex: 1; border: none; outline: none; background: transparent;
+  padding: 13px 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem; color: var(--text-primary);
+}
+.field-input::placeholder { color: var(--text-muted); }
+.field-select { cursor: pointer; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.gender-pick {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin-bottom: 20px;
+}
+.gender-opt {
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; transition: all 0.2s;
+  font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);
+}
+.gender-opt.selected {
+  border-color: var(--pink);
+  background: var(--pink-pale);
+  color: var(--pink);
+  box-shadow: 0 2px 12px rgba(255,107,157,0.2);
+}
+.gender-emoji { font-size: 1.8rem; }
+
+.btn-next {
+  width: 100%; margin-top: auto; padding: 14px;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: white; border: none; border-radius: var(--r-full);
+  font-family: var(--font-display);
+  font-size: 1.05rem; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255,107,157,0.35);
+  transition: transform 0.15s;
+}
+.btn-next:hover { transform: translateY(-1px); }
+
+.btn-back {
+  padding: 12px 20px;
+  background: transparent; color: var(--text-secondary);
+  border: 2px solid var(--border); border-radius: var(--r-full);
+  font-family: var(--font-body);
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-back:hover { border-color: var(--purple-light); color: var(--purple); }
+
+.btn-row { display: flex; gap: 10px; align-items: center; margin-top: auto; }
+.btn-row .btn-next { flex: 1; margin-top: 0; }
+
+/* ══ CONFIRM CARD ══════════════════════════════ */
+.confirm-card {
+  margin: 0 24px 20px;
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+}
+.confirm-baby-header {
+  display: flex; align-items: center; gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--border);
+  margin-bottom: 16px;
+}
+.confirm-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink-light), var(--purple-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+}
+.confirm-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem; font-weight: 600; color: var(--text-primary);
+}
+.confirm-age { font-size: 0.82rem; color: var(--text-secondary); margin-top: 3px; }
+.confirm-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.confirm-item { background: var(--surface2); border-radius: var(--r-sm); padding: 10px 12px; }
+.confirm-item-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.confirm-item-value {
+  font-size: 0.9rem; font-weight: 700; color: var(--text-primary);
+}
+
+.reminder-pref {
+  background: var(--yellow-pale);
+  border: 1.5px solid var(--yellow-light);
+  border-radius: var(--r-md); padding: 14px 16px;
+  margin-bottom: 8px;
+}
+.pref-label {
+  font-size: 0.85rem; font-weight: 700; color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.pref-opts { display: flex; gap: 16px; }
+.pref-opt {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.875rem; font-weight: 600; color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* ══ APP HEADER ══════════════════════════════ */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: white;
+  border-bottom: 2px solid var(--border);
+  padding: 0 16px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+.header-logo { display: flex; align-items: center; gap: 8px; }
+.header-app-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem; font-weight: 600; color: var(--pink);
+}
+.header-baby {
+  font-size: 0.8rem; font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.header-baby .hb-name { font-size: 0.95rem; color: var(--text-primary); }
+.header-baby .hb-age { color: var(--purple); }
+.header-notif {
+  background: var(--pink-pale); border: none;
+  width: 40px; height: 40px; border-radius: 50%;
+  font-size: 1.1rem; cursor: pointer; position: relative;
+  transition: transform 0.15s;
+}
+.header-notif:hover { transform: scale(1.08); }
+.notif-badge {
+  position: absolute; top: 2px; right: 2px;
+  min-width: 18px; height: 18px;
+  background: var(--red); color: white;
+  border-radius: var(--r-full);
+  font-size: 0.65rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid white;
+}
+
+/* ══ APP MAIN ══════════════════════════════ */
+.app-main {
+  padding-bottom: 80px;
+  min-height: calc(100vh - 140px);
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeUp 0.3s ease; }
+
+/* ══ BOTTOM NAV ══════════════════════════════ */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: white;
+  border-top: 2px solid var(--border);
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  padding: 4px 4px 8px;
+  box-shadow: 0 -4px 20px rgba(123,94,167,0.10);
+  z-index: 100;
+}
+.nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 2px;
+  background: none; border: none; cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: background 0.15s;
+  position: relative;
+}
+.nav-btn:hover { background: var(--pink-pale); }
+.nav-btn.active { background: var(--pink-pale); }
+.nav-btn.active .nav-icon { transform: translateY(-2px); }
+.nav-icon { font-size: 1.2rem; transition: transform 0.15s; }
+.nav-label {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.02em;
+  color: var(--text-muted); text-transform: uppercase;
+}
+.nav-btn.active .nav-label { color: var(--pink); }
+
+/* ══ HOME TAB ══════════════════════════════ */
+.home-hero {
+  background: linear-gradient(160deg, var(--pink-pale) 0%, var(--purple-pale) 100%);
+  padding: 24px 20px;
+  position: relative; overflow: hidden;
+}
+.home-hero::after {
+  content: '';
+  position: absolute; top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background: var(--pink-light); border-radius: 50%; opacity: 0.3;
+}
+.baby-card-hero {
+  display: flex; align-items: center; gap: 16px; position: relative; z-index: 1;
+}
+.baby-avatar-lg {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink-light), var(--purple-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+  box-shadow: 0 4px 16px rgba(255,107,157,0.3);
+  flex-shrink: 0;
+}
+.baby-greeting {
+  font-size: 0.75rem; font-weight: 700;
+  color: var(--purple); text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.baby-name-lg {
+  font-family: var(--font-display);
+  font-size: 1.5rem; font-weight: 600; color: var(--text-primary);
+  line-height: 1;
+}
+.baby-age-lg { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
+.baby-stats-row {
+  display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+}
+.baby-stat-chip {
+  background: white; border-radius: var(--r-full);
+  padding: 4px 12px;
+  font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.home-section { padding: 20px 16px 0; }
+.section-heading {
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-heading .badge {
+  background: var(--red-pale); color: var(--red);
+  border-radius: var(--r-full);
+  padding: 2px 8px; font-size: 0.7rem; font-weight: 800;
+}
+
+/* Progress Overview */
+.progress-overview {
+  background: white; border-radius: var(--r-lg);
+  padding: 16px; box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--border);
+  margin-bottom: 16px;
+}
+.progress-nums {
+  display: flex; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.prog-num { text-align: center; }
+.prog-num-val {
+  font-family: var(--font-display);
+  font-size: 1.6rem; font-weight: 600;
+}
+.prog-num-label {
+  font-size: 0.7rem; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase;
+}
+.prog-bar-track {
+  background: var(--border); border-radius: var(--r-full);
+  height: 10px; overflow: hidden; margin-bottom: 4px;
+}
+.prog-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pink), var(--purple));
+  border-radius: var(--r-full);
+  transition: width 0.6s ease;
+}
+.prog-pct {
+  text-align: right; font-size: 0.75rem; font-weight: 700; color: var(--purple);
+}
+
+/* Next Vaccine Card */
+.next-vax-card {
+  background: linear-gradient(135deg, var(--teal-pale), var(--yellow-pale));
+  border: 2px solid var(--teal-light);
+  border-radius: var(--r-lg); padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 12px; cursor: pointer;
+  transition: transform 0.15s;
+}
+.next-vax-card:hover { transform: translateY(-2px); }
+.next-vax-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: white; display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; box-shadow: var(--shadow-sm); flex-shrink: 0;
+}
+.next-vax-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--teal); margin-bottom: 3px;
+}
+.next-vax-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 600; color: var(--text-primary);
+}
+.next-vax-date { font-size: 0.82rem; color: var(--text-secondary); margin-top: 3px; }
+.next-vax-badge {
+  margin-left: auto;
+  background: var(--yellow); color: var(--text-primary);
+  border-radius: var(--r-full); padding: 4px 10px;
+  font-size: 0.72rem; font-weight: 800; flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Alert Cards */
+.alert-card {
+  border-radius: var(--r-md); padding: 12px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.875rem; font-weight: 600;
+}
+.alert-warn { background: var(--yellow-pale); border: 1.5px solid var(--yellow); }
+.alert-ok   { background: var(--green-pale);  border: 1.5px solid var(--green-light); }
+.alert-urgent { background: var(--red-pale);  border: 1.5px solid var(--red-light); }
+.alert-info { background: var(--teal-pale);   border: 1.5px solid var(--teal-light); }
+.alert-icon { font-size: 1.1rem; flex-shrink: 0; }
+.alert-text { color: var(--text-primary); line-height: 1.4; }
+.alert-sub  { font-size: 0.78rem; font-weight: 500; color: var(--text-secondary); margin-top: 2px; }
+
+/* Quick actions */
+.quick-actions {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 20px;
+}
+.qa-btn {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: var(--r-md); padding: 14px 12px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  cursor: pointer; transition: all 0.2s;
+  text-align: left;
+}
+.qa-btn:hover { border-color: var(--pink-light); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+.qa-icon { font-size: 1.6rem; }
+.qa-title { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); }
+.qa-sub { font-size: 0.73rem; color: var(--text-muted); }
+
+/* ══ SCHEDULE TAB ══════════════════════════════ */
+.schedule-filters {
+  padding: 16px 16px 0;
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 0;
+  scrollbar-width: none;
+}
+.schedule-filters::-webkit-scrollbar { display: none; }
+.filter-chip {
+  padding: 7px 14px; border-radius: var(--r-full);
+  border: 2px solid var(--border);
+  background: white; color: var(--text-secondary);
+  font-size: 0.78rem; font-weight: 700; white-space: nowrap;
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.filter-chip.active {
+  background: var(--pink); color: white; border-color: var(--pink);
+  box-shadow: 0 2px 10px rgba(255,107,157,0.3);
+}
+
+.schedule-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+.age-group-header {
+  padding: 8px 0 4px;
+  font-family: var(--font-display);
+  font-size: 0.95rem; font-weight: 600;
+  color: var(--text-secondary);
+  display: flex; align-items: center; gap: 8px;
+}
+.age-group-line { flex: 1; height: 1px; background: var(--border); }
+
+.vax-row {
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-md); padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.vax-row:hover { border-color: var(--pink-light); box-shadow: var(--shadow-sm); }
+.vax-row.status-done { border-color: var(--green-light); background: var(--green-pale); }
+.vax-row.status-overdue { border-color: var(--red-light); background: var(--red-pale); }
+.vax-row.status-due { border-color: var(--yellow); background: var(--yellow-pale); }
+.vax-row.status-upcoming { border-color: var(--purple-light); }
+
+.vax-row-icon {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+}
+.vax-row-info { flex: 1; min-width: 0; }
+.vax-row-name {
+  font-size: 0.9rem; font-weight: 700; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vax-row-disease { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
+.vax-row-date { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+.vax-status-badge {
+  padding: 3px 9px; border-radius: var(--r-full);
+  font-size: 0.68rem; font-weight: 800; white-space: nowrap; flex-shrink: 0;
+}
+.vax-status-badge.done     { background: var(--green-light); color: #2A7A50; }
+.vax-status-badge.overdue  { background: var(--red-light); color: #C0392B; }
+.vax-status-badge.due      { background: var(--yellow); color: #7A5A00; }
+.vax-status-badge.upcoming { background: var(--purple-pale); color: var(--purple); }
+.vax-status-badge.future   { background: var(--border); color: var(--text-muted); }
+
+/* ══ REMINDERS TAB ══════════════════════════════ */
+.reminders-header {
+  background: linear-gradient(135deg, var(--yellow-pale), var(--orange-pale));
+  padding: 20px 20px 16px;
+  border-bottom: 2px solid var(--border);
+}
+.rem-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem; font-weight: 600; color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.rem-subtitle { font-size: 0.85rem; color: var(--text-secondary); }
+
+.rem-section { padding: 16px 16px 0; }
+.rem-section-title {
+  font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.reminder-card {
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-md); padding: 14px;
+  margin-bottom: 10px; position: relative; overflow: hidden;
+}
+.reminder-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+}
+.reminder-card.urgent::before { background: var(--red); }
+.reminder-card.soon::before   { background: var(--orange); }
+.reminder-card.upcoming::before{ background: var(--teal); }
+.reminder-card.done::before   { background: var(--green); }
+
+.rem-card-top {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;
+}
+.rem-vax-icon {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.rem-vax-name {
+  font-size: 0.9rem; font-weight: 700; color: var(--text-primary); line-height: 1.2;
+}
+.rem-vax-disease { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
+.rem-date-badge {
+  margin-left: auto; flex-shrink: 0;
+  padding: 4px 10px; border-radius: var(--r-full);
+  font-size: 0.7rem; font-weight: 800;
+}
+.rem-countdown {
+  background: var(--surface2); border-radius: var(--r-sm);
+  padding: 8px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.rem-countdown-text { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); }
+.rem-countdown-days {
+  font-family: var(--font-display);
+  font-size: 1rem; font-weight: 600;
+}
+.rem-action-row { display: flex; gap: 8px; margin-top: 10px; }
+.rem-btn {
+  flex: 1; padding: 8px; border-radius: var(--r-sm);
+  font-family: var(--font-body); font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; border: 1.5px solid transparent;
+}
+.rem-btn-book { background: var(--pink); color: white; }
+.rem-btn-book:hover { background: var(--purple); }
+.rem-btn-mark { background: transparent; color: var(--green); border-color: var(--green-light); }
+.rem-btn-mark:hover { background: var(--green-pale); }
+
+/* ══ VACCINES INFO TAB ══════════════════════════════ */
+.vaccines-header {
+  background: linear-gradient(135deg, var(--purple-pale), var(--pink-pale));
+  padding: 20px 20px 16px;
+  border-bottom: 2px solid var(--border);
+}
+.vaccines-search {
+  display: flex; align-items: center;
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-full); padding: 10px 16px; margin-top: 12px;
+  gap: 8px;
+}
+.vaccines-search input {
+  flex: 1; border: none; outline: none;
+  font-family: var(--font-body); font-size: 0.9rem; color: var(--text-primary);
+}
+.vaccines-search input::placeholder { color: var(--text-muted); }
+
+.vaccine-info-card {
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-md); margin: 8px 16px;
+  overflow: hidden; transition: box-shadow 0.2s;
+}
+.vaccine-info-card:hover { box-shadow: var(--shadow-md); }
+.vax-card-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px; cursor: pointer;
+}
+.vax-card-icon {
+  width: 46px; height: 46px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; flex-shrink: 0;
+}
+.vax-card-title-wrap { flex: 1; }
+.vax-card-name {
+  font-size: 0.95rem; font-weight: 700; color: var(--text-primary); line-height: 1.2;
+}
+.vax-card-short {
+  font-size: 0.72rem; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px;
+}
+.vax-card-arrow {
+  font-size: 0.8rem; color: var(--text-muted);
+  transition: transform 0.25s;
+}
+.vax-card-arrow.open { transform: rotate(180deg); }
+
+.vax-card-body {
+  padding: 0 14px 14px;
+  border-top: 1px dashed var(--border);
+  display: none;
+}
+.vax-card-body.open { display: block; }
+
+.vax-why {
+  background: var(--teal-pale); border-radius: var(--r-sm);
+  padding: 12px; margin-bottom: 12px; margin-top: 12px;
+}
+.vax-why-title {
+  font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--teal); margin-bottom: 5px;
+}
+.vax-why-text { font-size: 0.84rem; color: var(--text-primary); line-height: 1.5; }
+
+.vax-details-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.vax-detail-item {
+  background: var(--surface2); border-radius: var(--r-sm); padding: 10px 12px;
+}
+.vax-detail-label {
+  font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 3px;
+}
+.vax-detail-val {
+  font-size: 0.82rem; font-weight: 600; color: var(--text-primary);
+}
+
+.vax-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.vax-tag {
+  padding: 3px 10px; border-radius: var(--r-full);
+  font-size: 0.7rem; font-weight: 700;
+}
+.tag-mandatory { background: var(--green-pale); color: var(--green); }
+.tag-oral      { background: var(--teal-pale); color: var(--teal); }
+.tag-injectable{ background: var(--purple-pale); color: var(--purple); }
+.tag-booster   { background: var(--orange-pale); color: var(--orange); }
+
+/* ══ CENTERS TAB ══════════════════════════════ */
+.centers-header {
+  background: linear-gradient(135deg, var(--teal-pale), var(--yellow-pale));
+  padding: 20px 20px 16px; border-bottom: 2px solid var(--border);
+}
+.centers-search {
+  display: flex; gap: 8px; margin-top: 12px;
+}
+.centers-search input {
+  flex: 1;
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-full); padding: 10px 16px;
+  font-family: var(--font-body); font-size: 0.9rem;
+  outline: none; color: var(--text-primary);
+  transition: border-color 0.2s;
+}
+.centers-search input:focus { border-color: var(--teal); }
+.btn-search {
+  background: var(--teal); color: white; border: none;
+  border-radius: var(--r-full); padding: 10px 16px;
+  font-family: var(--font-display); font-size: 0.9rem; font-weight: 600;
+  cursor: pointer;
+}
+
+.center-type-tabs {
+  display: flex; gap: 8px; padding: 12px 16px 0;
+}
+.center-tab {
+  padding: 6px 14px; border-radius: var(--r-full);
+  border: 2px solid var(--border); background: white;
+  font-size: 0.78rem; font-weight: 700; cursor: pointer;
+  color: var(--text-secondary); transition: all 0.2s;
+}
+.center-tab.active { background: var(--teal); color: white; border-color: var(--teal); }
+
+.center-card {
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-md); margin: 8px 16px;
+  overflow: hidden; cursor: pointer; transition: all 0.2s;
+}
+.center-card:hover { box-shadow: var(--shadow-md); border-color: var(--teal-light); transform: translateY(-2px); }
+.center-card-top {
+  display: flex; align-items: flex-start; gap: 12px; padding: 14px;
+}
+.center-icon {
+  width: 48px; height: 48px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; flex-shrink: 0;
+}
+.center-name { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.center-type-badge {
+  display: inline-block; padding: 2px 8px; border-radius: var(--r-full);
+  font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-top: 3px;
+}
+.center-address { font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px; }
+.center-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.center-chip {
+  padding: 2px 8px; border-radius: var(--r-full);
+  font-size: 0.68rem; font-weight: 700;
+}
+.center-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface2); padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+.center-distance { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); }
+.btn-book-appt {
+  background: var(--pink); color: white; border: none;
+  border-radius: var(--r-full); padding: 7px 16px;
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-book-appt:hover { background: var(--purple); transform: scale(1.03); }
+
+/* ══ REPORTS TAB ══════════════════════════════ */
+.reports-header {
+  background: linear-gradient(135deg, var(--purple-pale), var(--teal-pale));
+  padding: 20px 20px 16px; border-bottom: 2px solid var(--border);
+}
+.stat-cards {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 16px 16px 0;
+}
+.stat-card {
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-md); padding: 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-card-val {
+  font-family: var(--font-display);
+  font-size: 2rem; font-weight: 600;
+}
+.stat-card-label {
+  font-size: 0.73rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted);
+}
+
+.chart-card {
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-lg); margin: 12px 16px;
+  padding: 16px; box-shadow: var(--shadow-sm);
+}
+.chart-title {
+  font-family: var(--font-display);
+  font-size: 1rem; font-weight: 600; color: var(--text-primary);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+
+/* ══ MODAL ══════════════════════════════ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(45,27,61,0.5); backdrop-filter: blur(4px);
+  z-index: 200; align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: white;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto;
+  padding: 24px;
+  animation: slideUp 0.3s ease;
+  position: relative;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--border); border: none;
+  width: 32px; height: 32px; border-radius: 50%;
+  font-size: 0.8rem; cursor: pointer; color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-handle {
+  width: 40px; height: 4px; background: var(--border);
+  border-radius: var(--r-full); margin: 0 auto 20px;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem; font-weight: 600; color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.modal-subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; }
+
+/* Appointment booking */
+.date-picker { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; }
+.date-btn {
+  flex-shrink: 0; width: 54px; padding: 10px 4px;
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-md); text-align: center; cursor: pointer; transition: all 0.15s;
+}
+.date-btn.selected { background: var(--pink); border-color: var(--pink); }
+.date-btn.selected .date-num, .date-btn.selected .date-day { color: white; }
+.date-day { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+.date-num { font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; color: var(--text-primary); }
+
+.time-slots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.time-slot {
+  padding: 10px; text-align: center;
+  background: white; border: 2px solid var(--border);
+  border-radius: var(--r-sm); cursor: pointer;
+  font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);
+  transition: all 0.15s;
+}
+.time-slot.selected { background: var(--purple); border-color: var(--purple); color: white; }
+.time-slot.full { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+.btn-confirm-appt {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: white; border: none; border-radius: var(--r-full);
+  font-family: var(--font-display); font-size: 1rem; font-weight: 600;
+  cursor: pointer; box-shadow: 0 4px 16px rgba(255,107,157,0.3);
+}
+
+/* Vaccine detail modal */
+.vax-modal-hero {
+  text-align: center; padding: 20px 0 10px;
+}
+.vax-modal-emoji { font-size: 3.5rem; margin-bottom: 8px; }
+.vax-modal-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem; font-weight: 600; margin-bottom: 4px;
+}
+
+/* ══ ANIMATIONS ══════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* ══ UTILITIES ══════════════════════════════ */
+.mt8  { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mb8  { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.text-center { text-align: center; }
+
+/* ══ RESPONSIVE ══════════════════════════════ */
+@media (min-width: 640px) {
+  body { box-shadow: 0 0 60px rgba(123,94,167,0.12); }
+}
+
+/* ══ EMPTY STATE ══════════════════════════════ */
+.empty-state {
+  text-align: center; padding: 48px 24px;
+  color: var(--text-muted);
+}
+.empty-state-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state-text { font-size: 0.9rem; }
+
+/* ══ TOAST ══════════════════════════════ */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--text-primary); color: white;
+  border-radius: var(--r-full); padding: 10px 20px;
+  font-size: 0.85rem; font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 300; opacity: 0; transition: all 0.3s;
+  white-space: nowrap;
+  max-width: calc(100% - 32px);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SPLASH / ONBOARDING                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="page-onboarding" class="page active">
+
+  <!-- Step 0: Welcome Splash -->
+  <div id="step-splash" class="ob-step active">
+    <div class="splash-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div class="splash-content">
+      <div class="logo-lockup">
+        <div class="logo-icon">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+            <circle cx="26" cy="26" r="26" fill="#FF6B9D"/>
+            <path d="M26 14c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12S32.627 14 26 14z" fill="white" opacity="0.3"/>
+            <path d="M21 23c0-1.105.895-2 2-2s2 .895 2 2-.895 2-2 2-2-.895-2-2zM27 23c0-1.105.895-2 2-2s2 .895 2 2-.895 2-2 2-2-.895-2-2z" fill="white"/>
+            <path d="M20 30s1.5 4 6 4 6-4 6-4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="38" cy="14" r="6" fill="#FFD93D"/>
+            <path d="M38 11v6M35 14h6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-name">TikaTokar</h1>
+          <p class="logo-tagline">by ZombAI</p>
+        </div>
+      </div>
+
+      <div class="splash-hero">
+        <div class="hero-illustration">
+          <svg width="280" height="220" viewBox="0 0 280 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Soft cloud shapes -->
+            <ellipse cx="140" cy="180" rx="110" ry="30" fill="#FFE8F4" opacity="0.6"/>
+            <!-- Baby in blanket -->
+            <ellipse cx="140" cy="145" rx="65" ry="45" fill="#FFB3D1"/>
+            <ellipse cx="140" cy="130" rx="60" ry="42" fill="#FFC9E0"/>
+            <circle cx="140" cy="95" r="38" fill="#FFDDA8"/>
+            <!-- Face features -->
+            <circle cx="128" cy="90" r="4" fill="#FF8FAB" opacity="0.8"/>
+            <circle cx="152" cy="90" r="4" fill="#FF8FAB" opacity="0.8"/>
+            <path d="M130 102 Q140 110 150 102" stroke="#FF6B9D" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <!-- Eyes closed (sleeping) -->
+            <path d="M123 88 Q128 84 133 88" stroke="#7B5EA7" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M147 88 Q152 84 157 88" stroke="#7B5EA7" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <!-- Cute hair -->
+            <path d="M115 80 Q120 60 140 58 Q160 56 165 75" stroke="#F4A261" stroke-width="6" stroke-linecap="round" fill="none"/>
+            <!-- Blanket pattern -->
+            <ellipse cx="140" cy="150" rx="58" ry="38" fill="#A8D8EA" opacity="0.7"/>
+            <ellipse cx="140" cy="155" rx="55" ry="33" fill="#B8E0F7"/>
+            <!-- Star decorations -->
+            <text x="55" y="70" font-size="22" opacity="0.7">⭐</text>
+            <text x="200" y="55" font-size="18" opacity="0.6">✨</text>
+            <text x="230" y="120" font-size="16" opacity="0.5">💫</text>
+            <text x="30" y="130" font-size="14" opacity="0.5">🌙</text>
+            <!-- Syringe cute -->
+            <rect x="210" y="140" width="35" height="8" rx="4" fill="#7B5EA7" opacity="0.8"/>
+            <rect x="245" y="142" width="12" height="4" rx="2" fill="#A78BFA"/>
+            <rect x="208" y="141" width="4" height="6" rx="2" fill="#A78BFA"/>
+            <circle cx="215" cy="144" r="5" fill="#DDD6FE"/>
+          </svg>
+        </div>
+
+        <h2 class="splash-title">Your baby deserves<br><span class="highlight">perfect protection.</span></h2>
+        <p class="splash-subtitle">Track every vaccine, never miss a shot — powered by India's NTAGI guidelines.</p>
+      </div>
+
+      <div class="splash-features">
+        <div class="feat-pill"><span>📅</span> Smart Schedule</div>
+        <div class="feat-pill"><span>🔔</span> 7-Day Reminders</div>
+        <div class="feat-pill"><span>🏥</span> Nearby Centers</div>
+        <div class="feat-pill"><span>📊</span> Progress Charts</div>
+      </div>
+
+      <button class="btn-cta" onclick="goToStep('step-parent')">
+        Get Started
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M10 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <p class="splash-note">Free forever · No spam · Made with 💕 for Indian parents</p>
+    </div>
+  </div>
+
+  <!-- Step 1: Parent Registration -->
+  <div id="step-parent" class="ob-step">
+    <div class="ob-header">
+      <div class="ob-progress"><div class="ob-bar" style="width:33%"></div></div>
+      <p class="ob-step-label">Step 1 of 3</p>
+      <h2 class="ob-title">Hello, Super Parent! 👋</h2>
+      <p class="ob-subtitle">Tell us a little about yourself</p>
+    </div>
+    <div class="ob-form">
+      <div class="field-group">
+        <label class="field-label">Your Name</label>
+        <div class="field-wrap">
+          <span class="field-icon">👤</span>
+          <input type="text" id="parent-name" class="field-input" placeholder="e.g. Priya Sharma" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Mobile Number</label>
+        <div class="field-wrap">
+          <span class="field-icon">📱</span>
+          <input type="tel" id="parent-phone" class="field-input" placeholder="+91 98765 43210" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Your City</label>
+        <div class="field-wrap">
+          <span class="field-icon">📍</span>
+          <input type="text" id="parent-city" class="field-input" placeholder="e.g. Mumbai, Delhi, Chennai" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Your Relation to Child</label>
+        <div class="field-wrap">
+          <span class="field-icon">❤️</span>
+          <select id="parent-relation" class="field-input field-select">
+            <option value="">Select relation</option>
+            <option>Mother</option>
+            <option>Father</option>
+            <option>Guardian</option>
+            <option>Grandparent</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-next" onclick="goToStep('step-baby')">
+        Continue <span>→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2: Baby Registration -->
+  <div id="step-baby" class="ob-step">
+    <div class="ob-header">
+      <div class="ob-progress"><div class="ob-bar" style="width:66%"></div></div>
+      <p class="ob-step-label">Step 2 of 3</p>
+      <h2 class="ob-title">Meet your little star! ⭐</h2>
+      <p class="ob-subtitle">Tell us about your baby</p>
+    </div>
+    <div class="ob-form">
+      <div class="gender-pick">
+        <div class="gender-opt" id="gen-girl" onclick="pickGender('girl')">
+          <span class="gender-emoji">👧</span>
+          <span>Girl</span>
+        </div>
+        <div class="gender-opt" id="gen-boy" onclick="pickGender('boy')">
+          <span class="gender-emoji">👦</span>
+          <span>Boy</span>
+        </div>
+        <div class="gender-opt" id="gen-skip" onclick="pickGender('skip')">
+          <span class="gender-emoji">🌈</span>
+          <span>Prefer not</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Baby's Name</label>
+        <div class="field-wrap">
+          <span class="field-icon">💕</span>
+          <input type="text" id="baby-name" class="field-input" placeholder="e.g. Aarav, Anaya..." />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Date of Birth</label>
+        <div class="field-wrap">
+          <span class="field-icon">🎂</span>
+          <input type="date" id="baby-dob" class="field-input" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Birth Weight (kg)</label>
+          <div class="field-wrap">
+            <span class="field-icon">⚖️</span>
+            <input type="number" id="baby-weight" class="field-input" placeholder="3.2" step="0.1" min="1" max="6"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Blood Group</label>
+          <div class="field-wrap">
+            <span class="field-icon">🩸</span>
+            <select id="baby-blood" class="field-input field-select">
+              <option value="">Select</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>O+</option><option>O-</option>
+              <option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Hospital of Birth</label>
+        <div class="field-wrap">
+          <span class="field-icon">🏥</span>
+          <input type="text" id="baby-hospital" class="field-input" placeholder="e.g. Apollo Hospitals, Chennai" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="goToStep('step-parent')">← Back</button>
+        <button class="btn-next" onclick="goToStep('step-confirm')">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Confirm & Launch -->
+  <div id="step-confirm" class="ob-step">
+    <div class="ob-header">
+      <div class="ob-progress"><div class="ob-bar" style="width:100%"></div></div>
+      <p class="ob-step-label">Step 3 of 3</p>
+      <h2 class="ob-title">All Set! 🎉</h2>
+      <p class="ob-subtitle">Review your details before we create your baby's vaccine schedule</p>
+    </div>
+    <div class="confirm-card" id="confirm-card">
+      <!-- Filled by JS -->
+    </div>
+    <div class="ob-form" style="margin-top:0">
+      <div class="reminder-pref">
+        <p class="pref-label">📲 Send reminders via:</p>
+        <div class="pref-opts">
+          <label class="pref-opt"><input type="checkbox" checked> SMS</label>
+          <label class="pref-opt"><input type="checkbox" checked> WhatsApp</label>
+          <label class="pref-opt"><input type="checkbox"> Email</label>
+        </div>
+      </div>
+      <button class="btn-cta" onclick="launchApp()" style="margin-top:16px">
+        🚀 Create My Baby's Schedule
+      </button>
+      <button class="btn-back" onclick="goToStep('step-baby')" style="margin-top:8px;width:100%">← Edit Details</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  MAIN APP                                      -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="page-app" class="page">
+
+  <!-- Top Nav -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="header-logo">
+        <svg width="32" height="32" viewBox="0 0 52 52" fill="none">
+          <circle cx="26" cy="26" r="26" fill="#FF6B9D"/>
+          <path d="M21 23c0-1.105.895-2 2-2s2 .895 2 2-.895 2-2 2-2-.895-2-2zM27 23c0-1.105.895-2 2-2s2 .895 2 2-.895 2-2 2-2-.895-2-2z" fill="white"/>
+          <path d="M20 30s1.5 4 6 4 6-4 6-4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="38" cy="14" r="6" fill="#FFD93D"/>
+          <path d="M38 11v6M35 14h6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span class="header-app-name">TikaTokar</span>
+      </div>
+    </div>
+    <div class="header-baby" id="header-baby-info">
+      <!-- filled by JS -->
+    </div>
+    <div class="header-right">
+      <button class="header-notif" onclick="switchTab('reminders')" title="Reminders">
+        🔔
+        <span class="notif-badge" id="notif-badge">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Tab Content -->
+  <main class="app-main">
+    <div id="tab-home" class="tab-content active"></div>
+    <div id="tab-schedule" class="tab-content"></div>
+    <div id="tab-reminders" class="tab-content"></div>
+    <div id="tab-vaccines" class="tab-content"></div>
+    <div id="tab-centers" class="tab-content"></div>
+    <div id="tab-reports" class="tab-content"></div>
+  </main>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('home')" data-tab="home">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('schedule')" data-tab="schedule">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Schedule</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('reminders')" data-tab="reminders">
+      <span class="nav-icon">🔔</span>
+      <span class="nav-label">Reminders</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('vaccines')" data-tab="vaccines">
+      <span class="nav-icon">💉</span>
+      <span class="nav-label">Vaccines</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('centers')" data-tab="centers">
+      <span class="nav-icon">🏥</span>
+      <span class="nav-label">Centers</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('reports')" data-tab="reports">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Reports</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  MODALS                                        -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+  <div id="modal-box" class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  NTAGI INDIA VACCINE SCHEDULE DATA
+//  Source: National Technical Advisory Group on
+//  Immunisation (NTAGI), India — UIP Schedule 2024
+// ═══════════════════════════════════════════════════
+
+const NTAGI_VACCINES = [
+  {
+    id: 'bcg',
+    name: 'BCG',
+    fullName: 'Bacillus Calmette-Guérin',
+    ageLabel: 'At Birth',
+    ageDaysMin: 0,
+    ageDaysMax: 3,
+    emoji: '🛡️',
+    color: '#4ECDC4',
+    colorLight: '#E8FFFE',
+    disease: 'Tuberculosis (TB)',
+    route: 'Intradermal — Left arm',
+    doses: '1 dose',
+    mandatory: true,
+    why: 'BCG protects newborns against severe forms of tuberculosis, especially TB meningitis and miliary TB — which are life-threatening in infants. India has one of the highest TB burdens in the world, making this vaccine critically important at birth. The characteristic scar left at the injection site serves as proof of immunization.',
+    sideEffects: 'Small red bump at injection site (normal). May form a small scar which is permanent. Very rare: swollen lymph nodes.',
+    efficacy: '70–80% against TB meningitis',
+    duration: 'Up to 15 years',
+    govtFree: true,
+    schedule: 'Single dose at birth (ideally within 24 hours)',
+    doNotMiss: true,
+  },
+  {
+    id: 'hepb1',
+    name: 'Hepatitis B – 1st dose',
+    fullName: 'Hepatitis B Vaccine',
+    ageLabel: 'At Birth',
+    ageDaysMin: 0,
+    ageDaysMax: 3,
+    emoji: '🔵',
+    color: '#7B5EA7',
+    colorLight: '#F3EEFF',
+    disease: 'Hepatitis B (liver infection)',
+    route: 'Intramuscular — Outer thigh',
+    doses: '3–4 doses total',
+    mandatory: true,
+    why: 'Hepatitis B is a serious liver infection that can become chronic and lead to liver failure or liver cancer. The first dose must be given within 24 hours of birth to prevent mother-to-child transmission, which accounts for majority of chronic Hepatitis B infections in India. Early protection is critical.',
+    sideEffects: 'Mild soreness at injection site, low-grade fever. Serious reactions are extremely rare.',
+    efficacy: '>90% after full course',
+    duration: 'Likely lifelong',
+    govtFree: true,
+    schedule: 'Birth, 6 weeks, 10 weeks, 14 weeks',
+    doNotMiss: true,
+  },
+  {
+    id: 'opv0',
+    name: 'OPV – 0 (Zero Dose)',
+    fullName: 'Oral Polio Vaccine',
+    ageLabel: 'At Birth',
+    ageDaysMin: 0,
+    ageDaysMax: 3,
+    emoji: '💧',
+    color: '#FF6B9D',
+    colorLight: '#FFF0F7',
+    disease: 'Poliomyelitis (Polio)',
+    route: 'Oral — 2 drops',
+    doses: '5+ doses',
+    mandatory: true,
+    why: 'The zero dose of OPV at birth primes the gut immune system to respond rapidly to subsequent polio vaccines. India was declared polio-free in 2014, but vigilance must be maintained as neighboring countries still report cases. This oral vaccine is painless and provides intestinal immunity against all 3 polio strains.',
+    sideEffects: 'Extremely rare. Vaccine-associated paralytic polio (VAPP) risk is 1 in 2.4 million doses.',
+    efficacy: '~99% with full schedule',
+    duration: 'Lifelong with boosters',
+    govtFree: true,
+    schedule: 'Birth, 6w, 10w, 14w, 9m, 18m, school entry',
+    doNotMiss: true,
+  },
+  {
+    id: 'dtp1',
+    name: 'DTP – 1st dose',
+    fullName: 'Diphtheria, Tetanus, Pertussis',
+    ageLabel: '6 Weeks',
+    ageDaysMin: 42,
+    ageDaysMax: 56,
+    emoji: '💉',
+    color: '#FF9A3C',
+    colorLight: '#FFF5EC',
+    disease: 'Diphtheria, Tetanus, Whooping Cough',
+    route: 'Intramuscular — Outer thigh',
+    doses: '5 doses (3 primary + 2 boosters)',
+    mandatory: true,
+    why: 'DTP protects against three serious diseases: Diphtheria (causes a membrane in the throat that can block breathing), Tetanus (causes severe muscle spasms and lockjaw), and Pertussis or whooping cough (causes intense coughing fits that can be fatal in infants). Starting at 6 weeks ensures early protection during the most vulnerable period.',
+    sideEffects: 'Fever 38–39°C (common), redness and swelling at site, irritability, crying. Give paracetamol if needed.',
+    efficacy: '95% against all three diseases',
+    duration: 'Requires boosters every 5–10 years',
+    govtFree: true,
+    schedule: '6w, 10w, 14w; Boosters at 18m and 5 years',
+    doNotMiss: true,
+  },
+  {
+    id: 'ipv1',
+    name: 'IPV – 1st dose',
+    fullName: 'Inactivated Poliovirus Vaccine',
+    ageLabel: '6 Weeks',
+    ageDaysMin: 42,
+    ageDaysMax: 56,
+    emoji: '🩺',
+    color: '#56C18D',
+    colorLight: '#EDFFF6',
+    disease: 'Poliomyelitis',
+    route: 'Intramuscular — Outer thigh',
+    doses: '2 doses (at 6w and 14w)',
+    mandatory: true,
+    why: 'IPV uses inactivated (killed) virus to build strong systemic immunity. Combined with OPV, it creates a double shield against polio — OPV protects the gut while IPV protects the bloodstream and nervous system. India introduced IPV into its routine immunization program in 2015 as part of the global polio eradication strategy.',
+    sideEffects: 'Mild soreness at site, low-grade fever. No risk of vaccine-associated polio.',
+    efficacy: '>99% with full schedule',
+    duration: 'Lifelong with boosters',
+    govtFree: true,
+    schedule: '6 weeks and 14 weeks',
+    doNotMiss: true,
+  },
+  {
+    id: 'pcv1',
+    name: 'PCV – 1st dose',
+    fullName: 'Pneumococcal Conjugate Vaccine',
+    ageLabel: '6 Weeks',
+    ageDaysMin: 42,
+    ageDaysMax: 56,
+    emoji: '🫁',
+    color: '#FF6B9D',
+    colorLight: '#FFF0F7',
+    disease: 'Pneumococcal Pneumonia & Meningitis',
+    route: 'Intramuscular — Outer thigh',
+    doses: '3 doses + 1 booster',
+    mandatory: true,
+    why: 'Streptococcus pneumoniae bacteria causes pneumonia (the leading infectious killer of children under 5), meningitis (brain infection), and blood infections. India records ~330,000 deaths from pneumonia annually in children. PCV13 protects against 13 strains responsible for most severe disease in India.',
+    sideEffects: 'Fever, pain at injection site, irritability within 1–2 days. Usually mild and self-limiting.',
+    efficacy: '75–80% against invasive disease',
+    duration: 'Long-lasting with booster',
+    govtFree: true,
+    schedule: '6w, 10w, 14w; Booster at 15m',
+    doNotMiss: true,
+  },
+  {
+    id: 'rv1',
+    name: 'Rotavirus – 1st dose',
+    fullName: 'Rotavirus Vaccine (ROTAVAC)',
+    ageLabel: '6 Weeks',
+    ageDaysMin: 42,
+    ageDaysMax: 56,
+    emoji: '🌀',
+    color: '#FFD93D',
+    colorLight: '#FFFDE7',
+    disease: 'Rotavirus Diarrhoea',
+    route: 'Oral — 5 drops',
+    doses: '3 doses',
+    mandatory: true,
+    why: 'Rotavirus is the most common cause of severe diarrhoea and dehydration in children under 5. In India, it causes an estimated 78,000–150,000 deaths annually among children. ROTAVAC is an indigenous Indian vaccine (developed by Bharat Biotech) that is highly effective against the most common rotavirus strain circulating in India.',
+    sideEffects: 'Mild irritability, temporary loose stools. Serious reactions (intussusception) extremely rare.',
+    efficacy: '56% against any RVGE; 94% against severe disease',
+    duration: 'Protection through early childhood',
+    govtFree: true,
+    schedule: '6 weeks, 10 weeks, 14 weeks',
+    doNotMiss: true,
+  },
+  {
+    id: 'dtp2',
+    name: 'DTP – 2nd dose',
+    fullName: 'Diphtheria, Tetanus, Pertussis',
+    ageLabel: '10 Weeks',
+    ageDaysMin: 70,
+    ageDaysMax: 84,
+    emoji: '💉',
+    color: '#FF9A3C',
+    colorLight: '#FFF5EC',
+    disease: 'Diphtheria, Tetanus, Whooping Cough',
+    route: 'Intramuscular — Outer thigh',
+    doses: '5 doses total',
+    mandatory: true,
+    why: 'The second DTP dose is critical to boost the immune response started by the first dose. Two doses give approximately 80% protection; it takes all three primary doses plus boosters to reach maximum efficacy. Do not skip or delay — the gap between doses should ideally not exceed 4 weeks.',
+    sideEffects: 'Similar to first dose: fever, soreness, fussiness. Usually resolves within 48 hours.',
+    efficacy: '95% with full course',
+    duration: 'Booster-dependent',
+    govtFree: true,
+    schedule: '6w, 10w, 14w; Boosters at 18m and 5 years',
+    doNotMiss: true,
+  },
+  {
+    id: 'hepb2',
+    name: 'Hepatitis B – 2nd dose',
+    fullName: 'Hepatitis B Vaccine',
+    ageLabel: '10 Weeks',
+    ageDaysMin: 70,
+    ageDaysMax: 84,
+    emoji: '🔵',
+    color: '#7B5EA7',
+    colorLight: '#F3EEFF',
+    disease: 'Hepatitis B',
+    route: 'Intramuscular — Outer thigh',
+    doses: '3–4 doses total',
+    mandatory: true,
+    why: 'The second dose of Hepatitis B vaccine continues building the immune response. Three doses are required to achieve durable protection against this blood-borne virus that can cause chronic liver disease.',
+    sideEffects: 'Mild soreness, possible low-grade fever. Generally well-tolerated.',
+    efficacy: '>90% after full course',
+    duration: 'Likely lifelong',
+    govtFree: true,
+    schedule: 'Birth, 6w, 10w, 14w (or 0-1-6 month schedule)',
+    doNotMiss: true,
+  },
+  {
+    id: 'rv2',
+    name: 'Rotavirus – 2nd dose',
+    fullName: 'Rotavirus Vaccine (ROTAVAC)',
+    ageLabel: '10 Weeks',
+    ageDaysMin: 70,
+    ageDaysMax: 84,
+    emoji: '🌀',
+    color: '#FFD93D',
+    colorLight: '#FFFDE7',
+    disease: 'Rotavirus Diarrhoea',
+    route: 'Oral — 5 drops',
+    doses: '3 doses',
+    mandatory: true,
+    why: 'Continues building intestinal immunity against rotavirus. Must be given before 24 weeks of age. The oral route means no needle — just a few drops in the mouth!',
+    sideEffects: 'Mild irritability, possible loose stools for 1–2 days.',
+    efficacy: '94% against severe disease with full course',
+    duration: 'Through early childhood',
+    govtFree: true,
+    schedule: '6w, 10w, 14w',
+    doNotMiss: false,
+  },
+  {
+    id: 'dtp3',
+    name: 'DTP – 3rd dose',
+    fullName: 'Diphtheria, Tetanus, Pertussis',
+    ageLabel: '14 Weeks',
+    ageDaysMin: 98,
+    ageDaysMax: 112,
+    emoji: '💉',
+    color: '#FF9A3C',
+    colorLight: '#FFF5EC',
+    disease: 'Diphtheria, Tetanus, Whooping Cough',
+    route: 'Intramuscular — Outer thigh',
+    doses: '5 doses total',
+    mandatory: true,
+    why: 'The third and final primary dose of DTP completes the initial immunization series. By 14 weeks, the baby has received all three primary doses needed to establish strong protective immunity against three dangerous bacterial diseases.',
+    sideEffects: 'Fever, soreness, irritability — typically mild and lasting 1–2 days.',
+    efficacy: '95% against all three diseases',
+    duration: 'Requires boosters at 18m and 5 years',
+    govtFree: true,
+    schedule: '6w, 10w, 14w',
+    doNotMiss: true,
+  },
+  {
+    id: 'ipv2',
+    name: 'IPV – 2nd dose',
+    fullName: 'Inactivated Poliovirus Vaccine',
+    ageLabel: '14 Weeks',
+    ageDaysMin: 98,
+    ageDaysMax: 112,
+    emoji: '🩺',
+    color: '#56C18D',
+    colorLight: '#EDFFF6',
+    disease: 'Poliomyelitis',
+    route: 'Intramuscular — Outer thigh',
+    doses: '2 doses',
+    mandatory: true,
+    why: 'The second and final dose of IPV in the primary schedule. Together with OPV doses, this creates comprehensive immunity against polio — one of the most successful vaccine programs in Indian public health history.',
+    sideEffects: 'Minimal. Slight soreness possible.',
+    efficacy: '>99% with full schedule',
+    duration: 'Lifelong with OPV boosters',
+    govtFree: true,
+    schedule: '6 weeks and 14 weeks',
+    doNotMiss: true,
+  },
+  {
+    id: 'pcv3',
+    name: 'PCV – 3rd dose',
+    fullName: 'Pneumococcal Conjugate Vaccine',
+    ageLabel: '14 Weeks',
+    ageDaysMin: 98,
+    ageDaysMax: 112,
+    emoji: '🫁',
+    color: '#FF6B9D',
+    colorLight: '#FFF0F7',
+    disease: 'Pneumococcal Pneumonia & Meningitis',
+    route: 'Intramuscular',
+    doses: '3+1 schedule',
+    mandatory: true,
+    why: 'Completes the primary PCV course. After 3 doses, the baby has strong protection against the most dangerous pneumococcal strains. A booster at 15 months will reinforce this protection.',
+    sideEffects: 'Mild fever and soreness, similar to earlier doses.',
+    efficacy: '75–80% against invasive disease',
+    duration: 'Long-lasting with booster at 15 months',
+    govtFree: true,
+    schedule: '6w, 10w, 14w + booster at 15m',
+    doNotMiss: true,
+  },
+  {
+    id: 'rv3',
+    name: 'Rotavirus – 3rd dose',
+    fullName: 'Rotavirus Vaccine',
+    ageLabel: '14 Weeks',
+    ageDaysMin: 98,
+    ageDaysMax: 112,
+    emoji: '🌀',
+    color: '#FFD93D',
+    colorLight: '#FFFDE7',
+    disease: 'Rotavirus Diarrhoea',
+    route: 'Oral',
+    doses: '3 doses',
+    mandatory: true,
+    why: 'Final dose of the primary rotavirus series. MUST be given before 24 weeks (168 days) of age. After this age, the vaccine is no longer recommended due to risk of intussusception (bowel obstruction).',
+    sideEffects: 'Mild only. Important: This dose cannot be given after 24 weeks of age.',
+    efficacy: '94% against severe RVGE',
+    duration: 'Through early childhood (2–3 years)',
+    govtFree: true,
+    schedule: 'Final dose — do not delay beyond 24 weeks',
+    doNotMiss: true,
+  },
+  {
+    id: 'hepb3',
+    name: 'Hepatitis B – 3rd dose',
+    fullName: 'Hepatitis B Vaccine',
+    ageLabel: '14 Weeks',
+    ageDaysMin: 98,
+    ageDaysMax: 112,
+    emoji: '🔵',
+    color: '#7B5EA7',
+    colorLight: '#F3EEFF',
+    disease: 'Hepatitis B',
+    route: 'Intramuscular',
+    doses: 'Completes primary series',
+    mandatory: true,
+    why: 'The final primary dose of Hepatitis B vaccine. Three doses provide >90% efficacy against Hepatitis B infection. This is particularly important in India where Hepatitis B is endemic and affects ~40 million people.',
+    sideEffects: 'Mild soreness, occasional low-grade fever.',
+    efficacy: '>90% seroprotection',
+    duration: 'Likely lifelong; booster if antibody levels fall',
+    govtFree: true,
+    schedule: 'Completes at 14 weeks',
+    doNotMiss: true,
+  },
+  {
+    id: 'vita',
+    name: 'Vitamin A – 1st dose',
+    fullName: 'Vitamin A Supplementation',
+    ageLabel: '9 Months',
+    ageDaysMin: 270,
+    ageDaysMax: 285,
+    emoji: '🟠',
+    color: '#FF9A3C',
+    colorLight: '#FFF5EC',
+    disease: 'Vitamin A Deficiency (VAD)',
+    route: 'Oral — 1 ml (1,00,000 IU)',
+    doses: 'Every 6 months up to 5 years',
+    mandatory: true,
+    why: 'Vitamin A deficiency causes blindness and increases child mortality by 23%. India has among the highest rates of VAD in the world. This supplement reduces all-cause childhood mortality by 24%, diarrhoea-related mortality by 28%, and measles mortality by 50%. It is not technically a vaccine but is given alongside vaccines in India\'s UIP.',
+    sideEffects: 'Very well tolerated. High doses may rarely cause transient nausea.',
+    efficacy: '23% reduction in all-cause mortality',
+    duration: 'Every 6 months',
+    govtFree: true,
+    schedule: '9m, 15m, 21m, 27m, 33m, 39m, 45m, 51m, 57m',
+    doNotMiss: true,
+  },
+  {
+    id: 'mr1',
+    name: 'Measles + Rubella – 1st dose',
+    fullName: 'Measles-Rubella Vaccine',
+    ageLabel: '9 Months',
+    ageDaysMin: 270,
+    ageDaysMax: 285,
+    emoji: '🌡️',
+    color: '#FF5A5A',
+    colorLight: '#FFF0F0',
+    disease: 'Measles & Rubella',
+    route: 'Subcutaneous — Outer upper arm',
+    doses: '2 doses',
+    mandatory: true,
+    why: 'Measles is one of the most contagious diseases known and can cause brain damage, blindness, and death. Rubella during pregnancy causes congenital defects in the baby. India eliminated MR vaccine as a national priority. The MR vaccine provides 97% protection after 2 doses and is the most effective vaccine against measles.',
+    sideEffects: 'Mild fever and rash 7–12 days after vaccination (common and harmless). Paracetamol if needed.',
+    efficacy: '93–97% with 2 doses',
+    duration: 'Long-lasting, likely lifelong',
+    govtFree: true,
+    schedule: '9 months and 15–18 months',
+    doNotMiss: true,
+  },
+  {
+    id: 'opv3',
+    name: 'OPV – 3rd dose',
+    fullName: 'Oral Polio Vaccine',
+    ageLabel: '9 Months',
+    ageDaysMin: 270,
+    ageDaysMax: 285,
+    emoji: '💧',
+    color: '#FF6B9D',
+    colorLight: '#FFF0F7',
+    disease: 'Poliomyelitis',
+    route: 'Oral — 2 drops',
+    doses: 'Part of ongoing schedule',
+    mandatory: true,
+    why: 'Continued oral polio vaccination maintains high mucosal immunity in the community. Even after India achieved polio-free status, OPV continues to be given as a booster to maintain herd immunity and prevent re-importation.',
+    sideEffects: 'Essentially none. Extremely safe.',
+    efficacy: '>99% with full schedule',
+    duration: 'Cumulative with each dose',
+    govtFree: true,
+    schedule: 'Ongoing per UIP schedule',
+    doNotMiss: false,
+  },
+  {
+    id: 'jeb1',
+    name: 'Japanese Encephalitis – 1st dose',
+    fullName: 'Japanese Encephalitis Vaccine',
+    ageLabel: '9 Months (Endemic Areas)',
+    ageDaysMin: 270,
+    ageDaysMax: 290,
+    emoji: '🧠',
+    color: '#7B5EA7',
+    colorLight: '#F3EEFF',
+    disease: 'Japanese Encephalitis (brain fever)',
+    route: 'Subcutaneous',
+    doses: '1–2 doses',
+    mandatory: false,
+    why: 'Japanese Encephalitis (JE) is the leading cause of viral encephalitis (brain fever) in Asia. JE is endemic in 21 states of India, particularly in Bihar, UP, Assam, and West Bengal. Spread by mosquito bites from infected pigs, JE has a 30% fatality rate and causes permanent brain damage in 30–50% of survivors. Vaccination is essential in endemic areas.',
+    sideEffects: 'Mild fever and swelling. Very safe inactivated vaccine.',
+    efficacy: '>90% with 2 doses',
+    duration: 'Booster at 18 months in endemic areas',
+    govtFree: true,
+    schedule: '9 months and 18 months (in endemic districts)',
+    doNotMiss: false,
+  },
+  {
+    id: 'mr2',
+    name: 'Measles + Rubella – 2nd dose',
+    fullName: 'Measles-Rubella Vaccine (Booster)',
+    ageLabel: '15–18 Months',
+    ageDaysMin: 450,
+    ageDaysMax: 540,
+    emoji: '🌡️',
+    color: '#FF5A5A',
+    colorLight: '#FFF0F0',
+    disease: 'Measles & Rubella',
+    route: 'Subcutaneous — Outer upper arm',
+    doses: '2nd and final dose',
+    mandatory: true,
+    why: 'The second MR dose ensures that children who did not respond to the first dose (5–7% of vaccinees) get protected. Two doses provide 97% community protection — above the 95% threshold needed for herd immunity to stop measles transmission.',
+    sideEffects: 'Same as first dose — possible mild fever and rash after 7–12 days.',
+    efficacy: '97% with 2 doses (up from 93% after 1 dose)',
+    duration: 'Lifelong protection',
+    govtFree: true,
+    schedule: '15–18 months (2nd dose)',
+    doNotMiss: true,
+  },
+  {
+    id: 'dtp_b1',
+    name: 'DTP – 1st Booster',
+    fullName: 'DTP Booster (18 Months)',
+    ageLabel: '16–18 Months',
+    ageDaysMin: 480,
+    ageDaysMax: 540,
+    emoji: '💉',
+    color: '#FF9A3C',
+    colorLight: '#FFF5EC',
+    disease: 'Diphtheria, Tetanus, Whooping Cough',
+    route: 'Intramuscular',
+    doses: 'First booster',
+    mandatory: true,
+    why: 'Immunity from the primary DTP series wanes over time. This booster at 16–18 months reinforces protection when the baby is becoming more mobile and interacting with more people. Without this booster, protection against whooping cough can drop significantly.',
+    sideEffects: 'Similar to primary series doses. May be slightly stronger reaction.',
+    efficacy: 'Restores full 95% efficacy',
+    duration: 'Lasts until school-entry booster at 5 years',
+    govtFree: true,
+    schedule: '16–18 months',
+    doNotMiss: true,
+  },
+  {
+    id: 'opv_b1',
+    name: 'OPV – Booster',
+    fullName: 'OPV Booster (18 Months)',
+    ageLabel: '16–18 Months',
+    ageDaysMin: 480,
+    ageDaysMax: 540,
+    emoji: '💧',
+    color: '#FF6B9D',
+    colorLight: '#FFF0F7',
+    disease: 'Poliomyelitis',
+    route: 'Oral',
+    doses: 'Booster dose',
+    mandatory: true,
+    why: 'OPV booster at 18 months, given alongside DTP booster, maintains high levels of intestinal mucosal immunity against polio. This is part of India\'s strategy to maintain polio-free status.',
+    sideEffects: 'None.',
+    efficacy: 'Maintains >99% protection',
+    duration: 'Continues protection until next booster',
+    govtFree: true,
+    schedule: '16–18 months (with DTP booster)',
+    doNotMiss: true,
+  },
+  {
+    id: 'pcv_b',
+    name: 'PCV Booster',
+    fullName: 'Pneumococcal Booster',
+    ageLabel: '15 Months',
+    ageDaysMin: 450,
+    ageDaysMax: 480,
+    emoji: '🫁',
+    color: '#FF6B9D',
+    colorLight: '#FFF0F7',
+    disease: 'Pneumococcal Pneumonia & Meningitis',
+    route: 'Intramuscular',
+    doses: 'Booster dose',
+    mandatory: true,
+    why: 'The PCV booster at 15 months provides a dramatic antibody boost (anamnestic response) that significantly raises protection levels. Studies show booster dose after 3-dose primary series provides the best long-term protection against pneumococcal disease into early childhood.',
+    sideEffects: 'Mild fever and injection site reactions.',
+    efficacy: 'Significantly boosts protection levels',
+    duration: 'Through early school age',
+    govtFree: true,
+    schedule: '15 months (after 3 primary doses)',
+    doNotMiss: true,
+  },
+  {
+    id: 'vita2',
+    name: 'Vitamin A – 2nd dose',
+    fullName: 'Vitamin A Supplementation',
+    ageLabel: '16–18 Months',
+    ageDaysMin: 480,
+    ageDaysMax: 540,
+    emoji: '🟠',
+    color: '#FF9A3C',
+    colorLight: '#FFF5EC',
+    disease: 'Vitamin A Deficiency',
+    route: 'Oral — 2 ml (2,00,000 IU)',
+    doses: 'Every 6 months until 5 years',
+    mandatory: true,
+    why: 'Continued Vitamin A supplementation is given every 6 months through age 5. Dose increases from 1 lac IU to 2 lac IU after 12 months. Studies show consistent supplementation reduces night blindness, xerophthalmia, and all-cause child mortality.',
+    sideEffects: 'Very safe. Occasional nausea with high doses.',
+    efficacy: 'Continued 23% mortality reduction',
+    duration: 'Every 6 months until 5 years',
+    govtFree: true,
+    schedule: 'Every 6 months until 5 years of age',
+    doNotMiss: true,
+  },
+  {
+    id: 'typhoid',
+    name: 'Typhoid Conjugate Vaccine',
+    fullName: 'Typhoid Conjugate Vaccine (TCV)',
+    ageLabel: '9–12 Months (Recommended)',
+    ageDaysMin: 270,
+    ageDaysMax: 365,
+    emoji: '🌿',
+    color: '#56C18D',
+    colorLight: '#EDFFF6',
+    disease: 'Typhoid Fever',
+    route: 'Intramuscular',
+    doses: '1 dose (single)',
+    mandatory: false,
+    why: 'India has one of the highest burdens of typhoid fever in the world with ~27 million cases annually. TCV (Typbar-TCV® or Typhi-Conjugate) is the world\'s first WHO-prequalified typhoid conjugate vaccine. Unlike the older Vi polysaccharide vaccine, TCV works in children under 2 and provides longer-lasting protection. Highly recommended especially in areas with high typhoid burden.',
+    sideEffects: 'Mild fever, injection site pain. Generally very well tolerated.',
+    efficacy: '82–87% protection',
+    duration: '5+ years (likely longer)',
+    govtFree: false,
+    schedule: 'Single dose from 9 months; boosters not yet established',
+    doNotMiss: false,
+  },
+  {
+    id: 'hepa',
+    name: 'Hepatitis A Vaccine',
+    fullName: 'Hepatitis A (2-dose series)',
+    ageLabel: '12 Months',
+    ageDaysMin: 365,
+    ageDaysMax: 395,
+    emoji: '🟡',
+    color: '#FFD93D',
+    colorLight: '#FFFDE7',
+    disease: 'Hepatitis A (liver infection)',
+    route: 'Intramuscular',
+    doses: '2 doses (6 months apart)',
+    mandatory: false,
+    why: 'Hepatitis A causes acute liver infection and is spread through contaminated food and water — very common in India due to sanitation challenges. It can cause weeks of jaundice, fatigue, and abdominal pain. In adults, it can cause severe hepatitis. The 2-dose vaccine provides 94–100% immunity and is recommended for all Indian children.',
+    sideEffects: 'Soreness at site, mild fever. Well-tolerated.',
+    efficacy: '94–100% after 2 doses',
+    duration: '20+ years, likely lifelong',
+    govtFree: false,
+    schedule: '12 months and 18 months (6 months apart)',
+    doNotMiss: false,
+  },
+  {
+    id: 'varicella',
+    name: 'Varicella (Chickenpox) Vaccine',
+    fullName: 'Varicella Zoster Vaccine',
+    ageLabel: '12–15 Months',
+    ageDaysMin: 365,
+    ageDaysMax: 455,
+    emoji: '⭐',
+    color: '#7B5EA7',
+    colorLight: '#F3EEFF',
+    disease: 'Chickenpox (Varicella)',
+    route: 'Subcutaneous — Upper arm',
+    doses: '2 doses',
+    mandatory: false,
+    why: 'Chickenpox is highly contagious and in some children causes serious complications like pneumonia, encephalitis, and secondary bacterial infections. The live attenuated vaccine is 85% effective against any disease and 97% effective against severe chickenpox. It also prevents shingles (herpes zoster) in later life. Recommended for all healthy children.',
+    sideEffects: 'Mild local reactions. About 5% develop a small rash 2–4 weeks after vaccination.',
+    efficacy: '85% against any disease; 97% against severe',
+    duration: 'Likely lifelong',
+    govtFree: false,
+    schedule: '12–15 months and 4–6 years',
+    doNotMiss: false,
+  },
+  {
+    id: 'dtp_b2',
+    name: 'DTP – 2nd Booster',
+    fullName: 'DTP Booster (5 Years / School Entry)',
+    ageLabel: '5 Years',
+    ageDaysMin: 1825,
+    ageDaysMax: 1920,
+    emoji: '💉',
+    color: '#FF9A3C',
+    colorLight: '#FFF5EC',
+    disease: 'Diphtheria, Tetanus, Whooping Cough',
+    route: 'Intramuscular',
+    doses: 'Second and final childhood booster',
+    mandatory: true,
+    why: 'Given at school entry (5 years), this booster protects against whooping cough outbreaks common in school settings and maintains tetanus protection. Children who are vaccinated also protect classmates who cannot be vaccinated for medical reasons (herd immunity).',
+    sideEffects: 'Mild fever and site reactions. Sometimes stronger reaction than in infancy — this is normal.',
+    efficacy: 'Restores full protection before school exposure',
+    duration: 'Lasts through school years; Td booster at 10 years',
+    govtFree: true,
+    schedule: 'School entry (4–6 years)',
+    doNotMiss: true,
+  },
+];
+
+// ═══════════════════════════════════════════════════
+//  VACCINE CENTERS DATA (Sample — Chennai focus)
+// ═══════════════════════════════════════════════════
+const VACCINE_CENTERS = [
+  {
+    id: 'c1',
+    name: 'Govt. Stanley Medical College Hospital',
+    type: 'government',
+    icon: '🏛️',
+    iconBg: '#E8FFFE',
+    address: 'Dr. D.N.D. Road, Old Washermanpet, Chennai – 600001',
+    distance: '1.2 km',
+    open: true,
+    timings: 'Mon–Sat, 9:00 AM – 4:00 PM',
+    phone: '044-2528 3030',
+    vaccines: ['BCG', 'OPV', 'DTP', 'HepB', 'IPV', 'PCV', 'Rotavirus', 'MR', 'Vitamin A'],
+    typeBadge: { label: 'Government', color: '#56C18D', bg: '#EDFFF6' },
+    chips: [
+      { label: '🆓 Free Vaccines', color: '#56C18D', bg: '#EDFFF6' },
+      { label: '⭐ Certified', color: '#FF9A3C', bg: '#FFF5EC' },
+    ],
+  },
+  {
+    id: 'c2',
+    name: 'Apollo Children\'s Hospital',
+    type: 'private',
+    icon: '🏥',
+    iconBg: '#FFF0F7',
+    address: '15, Shafee Mohammed Road, Thousand Lights, Chennai – 600006',
+    distance: '2.8 km',
+    open: true,
+    timings: 'All days, 8:00 AM – 8:00 PM',
+    phone: '1800-103-0202',
+    vaccines: ['All UIP Vaccines', 'Typhoid TCV', 'Hepatitis A', 'Varicella', 'MMR', 'Meningococcal', 'HPV'],
+    typeBadge: { label: 'Private', color: '#FF6B9D', bg: '#FFF0F7' },
+    chips: [
+      { label: '💳 Insurance OK', color: '#7B5EA7', bg: '#F3EEFF' },
+      { label: '📅 Prior Appt', color: '#4ECDC4', bg: '#E8FFFE' },
+    ],
+  },
+  {
+    id: 'c3',
+    name: 'Primary Health Centre – Mylapore',
+    type: 'government',
+    icon: '🏛️',
+    iconBg: '#E8FFFE',
+    address: '12, Kutchery Road, Mylapore, Chennai – 600004',
+    distance: '3.4 km',
+    open: true,
+    timings: 'Mon, Wed, Fri: 9 AM – 1 PM',
+    phone: '044-2498 1234',
+    vaccines: ['BCG', 'OPV', 'DTP', 'HepB', 'IPV', 'Rotavirus', 'MR', 'Vitamin A'],
+    typeBadge: { label: 'Government', color: '#56C18D', bg: '#EDFFF6' },
+    chips: [
+      { label: '🆓 Free Vaccines', color: '#56C18D', bg: '#EDFFF6' },
+      { label: '📅 Walk-in OK', color: '#4ECDC4', bg: '#E8FFFE' },
+    ],
+  },
+  {
+    id: 'c4',
+    name: 'Kanchi Kamakoti CHILDS Trust Hospital',
+    type: 'private',
+    icon: '🏥',
+    iconBg: '#FFF0F7',
+    address: '12-A, Nageswara Road, Nungambakkam, Chennai – 600034',
+    distance: '4.1 km',
+    open: false,
+    timings: 'Mon–Sat, 9:00 AM – 5:00 PM',
+    phone: '044-2822 5765',
+    vaccines: ['All UIP Vaccines', 'Typhoid', 'Hepatitis A', 'Varicella', 'HPV', 'Influenza'],
+    typeBadge: { label: 'Private', color: '#FF6B9D', bg: '#FFF0F7' },
+    chips: [
+      { label: '🧒 Paediatric Only', color: '#7B5EA7', bg: '#F3EEFF' },
+      { label: '💳 Insurance OK', color: '#FF9A3C', bg: '#FFF5EC' },
+    ],
+  },
+  {
+    id: 'c5',
+    name: 'ESI Hospital – KK Nagar',
+    type: 'government',
+    icon: '🏛️',
+    iconBg: '#E8FFFE',
+    address: 'Occupational Health Centre, KK Nagar, Chennai – 600078',
+    distance: '5.6 km',
+    open: true,
+    timings: 'Mon–Sat, 9:00 AM – 3:00 PM',
+    phone: '044-2364 5679',
+    vaccines: ['BCG', 'OPV', 'DTP', 'HepB', 'IPV', 'PCV', 'Rotavirus', 'MR'],
+    typeBadge: { label: 'ESI / Government', color: '#56C18D', bg: '#EDFFF6' },
+    chips: [
+      { label: '🆓 Free (ESI Members)', color: '#56C18D', bg: '#EDFFF6' },
+      { label: '📅 Walk-in OK', color: '#4ECDC4', bg: '#E8FFFE' },
+    ],
+  },
+  {
+    id: 'c6',
+    name: 'Rainbow Children\'s Hospital',
+    type: 'private',
+    icon: '🌈',
+    iconBg: '#FFFDE7',
+    address: '180, Perungudi Main Road, Perungudi, Chennai – 600096',
+    distance: '7.2 km',
+    open: true,
+    timings: 'All days, 8:00 AM – 9:00 PM',
+    phone: '044-6100 6100',
+    vaccines: ['All UIP Vaccines', 'Typhoid TCV', 'Hepatitis A', 'Varicella', 'MMR', 'HPV', 'Influenza', 'Rotavirus Oral'],
+    typeBadge: { label: 'Private', color: '#FF6B9D', bg: '#FFF0F7' },
+    chips: [
+      { label: '🧒 Paediatric Only', color: '#7B5EA7', bg: '#F3EEFF' },
+      { label: '💳 Insurance OK', color: '#FF9A3C', bg: '#FFF5EC' },
+      { label: '🌙 24h Emergency', color: '#FF5A5A', bg: '#FFF0F0' },
+    ],
+  },
+];
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════
+//  TIKATOKAR — Application Logic
+//  ZombAI · Built for Indian Parents
+// ═══════════════════════════════════════════════════
+
+// ── STATE ─────────────────────────────────────────
+let APP = {
+  parent: { name: '', phone: '', city: '', relation: '' },
+  baby: { name: '', dob: null, gender: '', weight: '', blood: '', hospital: '' },
+  completed: new Set(),
+  dismissed: new Set(),
+  booked: {},
+  selectedGender: '',
+  chartInstances: {},
+};
+
+// ── ONBOARDING ──────────────────────────────────────
+function goToStep(stepId) {
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(stepId);
+  if (target) { target.classList.add('active'); window.scrollTo(0, 0); }
+
+  if (stepId === 'step-confirm') buildConfirmCard();
+}
+
+function pickGender(g) {
+  APP.selectedGender = g;
+  document.querySelectorAll('.gender-opt').forEach(el => el.classList.remove('selected'));
+  document.getElementById('gen-' + (g === 'skip' ? 'skip' : g)).classList.add('selected');
+}
+
+function buildConfirmCard() {
+  const name  = document.getElementById('baby-name').value  || 'Your Baby';
+  const dob   = document.getElementById('baby-dob').value;
+  const wt    = document.getElementById('baby-weight').value;
+  const blood = document.getElementById('baby-blood').value;
+  const hosp  = document.getElementById('baby-hospital').value;
+  const pName = document.getElementById('parent-name').value || '—';
+  const phone = document.getElementById('parent-phone').value || '—';
+  const city  = document.getElementById('parent-city').value || '—';
+
+  let ageStr = '—';
+  if (dob) {
+    const d = daysBetween(new Date(dob), new Date());
+    ageStr = formatAge(d);
+  }
+
+  const gEmoji = { girl: '👧', boy: '👦', skip: '👶' }[APP.selectedGender] || '👶';
+
+  document.getElementById('confirm-card').innerHTML = `
+    <div class="confirm-baby-header">
+      <div class="confirm-avatar">${gEmoji}</div>
+      <div>
+        <div class="confirm-name">${name}</div>
+        <div class="confirm-age">${ageStr} old · ${dob ? new Date(dob).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'}</div>
+      </div>
+    </div>
+    <div class="confirm-grid">
+      <div class="confirm-item"><div class="confirm-item-label">⚖️ Birth Weight</div><div class="confirm-item-value">${wt ? wt + ' kg' : '—'}</div></div>
+      <div class="confirm-item"><div class="confirm-item-label">🩸 Blood Group</div><div class="confirm-item-value">${blood || '—'}</div></div>
+      <div class="confirm-item"><div class="confirm-item-label">👤 Parent</div><div class="confirm-item-value">${pName}</div></div>
+      <div class="confirm-item"><div class="confirm-item-label">📍 City</div><div class="confirm-item-value">${city}</div></div>
+      <div class="confirm-item" style="grid-column:span 2"><div class="confirm-item-label">🏥 Born At</div><div class="confirm-item-value">${hosp || '—'}</div></div>
+    </div>`;
+}
+
+function launchApp() {
+  // Collect all data
+  APP.parent = {
+    name:     document.getElementById('parent-name').value     || 'Parent',
+    phone:    document.getElementById('parent-phone').value    || '',
+    city:     document.getElementById('parent-city').value     || 'Chennai',
+    relation: document.getElementById('parent-relation').value || 'Parent',
+  };
+  const dobVal = document.getElementById('baby-dob').value;
+  APP.baby = {
+    name:     document.getElementById('baby-name').value     || 'Baby',
+    dob:      dobVal ? new Date(dobVal) : new Date(Date.now() - 72*86400000),
+    gender:   APP.selectedGender || 'skip',
+    weight:   document.getElementById('baby-weight').value   || '3.1',
+    blood:    document.getElementById('baby-blood').value    || '',
+    hospital: document.getElementById('baby-hospital').value || '',
+  };
+
+  // Auto-mark vaccines given at/before age
+  const ageDays = daysBetween(APP.baby.dob, new Date());
+  NTAGI_VACCINES.forEach(v => {
+    if (v.ageDaysMin <= ageDays - 14) APP.completed.add(v.id);
+  });
+
+  // Show app
+  document.getElementById('page-onboarding').classList.remove('active');
+  document.getElementById('page-app').classList.add('active');
+
+  updateHeaderBaby();
+  updateNotifBadge();
+  renderTab('home');
+  window.scrollTo(0, 0);
+}
+
+// ── NAVIGATION ──────────────────────────────────────
+let currentTab = 'home';
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn[data-tab="' + name + '"]').forEach(b => b.classList.add('active'));
+  currentTab = name;
+  renderTab(name);
+  window.scrollTo(0, 0);
+}
+
+function renderTab(name) {
+  const map = {
+    home:      renderHome,
+    schedule:  renderSchedule,
+    reminders: renderReminders,
+    vaccines:  renderVaccinesInfo,
+    centers:   renderCenters,
+    reports:   renderReports,
+  };
+  if (map[name]) map[name]();
+}
+
+// ── HEADER ──────────────────────────────────────
+function updateHeaderBaby() {
+  const ageDays = daysBetween(APP.baby.dob, new Date());
+  const gEmoji  = { girl:'👧', boy:'👦', skip:'👶' }[APP.baby.gender] || '👶';
+  document.getElementById('header-baby-info').innerHTML = `
+    <div class="hb-name">${gEmoji} ${APP.baby.name}</div>
+    <div class="hb-age">${formatAge(ageDays)}</div>`;
+}
+
+function updateNotifBadge() {
+  const count = getUpcomingWithinDays(7).length + getOverdue().length;
+  const badge = document.getElementById('notif-badge');
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'flex' : 'none';
+}
+
+// ── HOME TAB ──────────────────────────────────────
+function renderHome() {
+  const ageDays = daysBetween(APP.baby.dob, new Date());
+  const gEmoji  = { girl:'👧', boy:'👦', skip:'👶' }[APP.baby.gender] || '👶';
+  const total   = NTAGI_VACCINES.length;
+  const done    = APP.completed.size;
+  const pct     = Math.round((done / total) * 100);
+  const next    = getNextVaccine();
+  const overdue = getOverdue();
+
+  let nextVaxHTML = '';
+  if (overdue.length > 0) {
+    nextVaxHTML = `
+      <div class="next-vax-card" style="background:linear-gradient(135deg,var(--red-pale),var(--orange-pale));border-color:var(--red-light)" onclick="switchTab('reminders')">
+        <div class="next-vax-icon">🚨</div>
+        <div>
+          <div class="next-vax-label" style="color:var(--red)">⚠️ OVERDUE</div>
+          <div class="next-vax-name">${overdue[0].name}</div>
+          <div class="next-vax-date">Was due ${formatDate(getDueDate(overdue[0]))}</div>
+        </div>
+        <div class="next-vax-badge" style="background:var(--red);color:white">${overdue.length} vaccine${overdue.length>1?'s':''}</div>
+      </div>`;
+  } else if (next) {
+    const daysUntil = daysUntilDue(next);
+    nextVaxHTML = `
+      <div class="next-vax-card" onclick="openVaccineModal('${next.id}')">
+        <div class="next-vax-icon">${next.emoji}</div>
+        <div>
+          <div class="next-vax-label">NEXT VACCINE</div>
+          <div class="next-vax-name">${next.name}</div>
+          <div class="next-vax-date">Due ${formatDate(getDueDate(next))}</div>
+        </div>
+        <div class="next-vax-badge">${daysUntil <= 0 ? 'Today!' : daysUntil <= 7 ? 'In ' + daysUntil + 'd' : formatDate(getDueDate(next), true)}</div>
+      </div>`;
+  }
+
+  let alertHTML = '';
+  const within7 = getUpcomingWithinDays(7);
+  if (overdue.length > 0) {
+    alertHTML = `<div class="alert-card alert-urgent"><span class="alert-icon">🚨</span><div><div class="alert-text">${overdue.length} vaccine${overdue.length>1?'s are':' is'} overdue!</div><div class="alert-sub">Please visit your nearest vaccine center soon.</div></div></div>`;
+  } else if (within7.length > 0) {
+    alertHTML = `<div class="alert-card alert-warn"><span class="alert-icon">⏰</span><div><div class="alert-text">${within7.length} vaccine${within7.length>1?'s':''} due within 7 days</div><div class="alert-sub">${within7.map(v=>v.name).join(', ')}</div></div></div>`;
+  } else {
+    alertHTML = `<div class="alert-card alert-ok"><span class="alert-icon">✅</span><div><div class="alert-text">All vaccines up to date!</div><div class="alert-sub">Next due: ${next ? next.name + ' on ' + formatDate(getDueDate(next)) : 'No upcoming vaccines'}</div></div></div>`;
+  }
+
+  document.getElementById('tab-home').innerHTML = `
+    <div class="home-hero">
+      <div class="baby-card-hero">
+        <div class="baby-avatar-lg">${gEmoji}</div>
+        <div>
+          <div class="baby-greeting">Hello there, ${APP.parent.name.split(' ')[0]}! 👋</div>
+          <div class="baby-name-lg">${APP.baby.name}</div>
+          <div class="baby-age-lg">${formatAge(ageDays)} old · Born ${APP.baby.dob.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div>
+          <div class="baby-stats-row">
+            ${APP.baby.weight ? `<span class="baby-stat-chip">⚖️ ${APP.baby.weight} kg at birth</span>` : ''}
+            ${APP.baby.blood ? `<span class="baby-stat-chip">🩸 ${APP.baby.blood}</span>` : ''}
+            <span class="baby-stat-chip">📍 ${APP.parent.city}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-section">
+      ${alertHTML}
+
+      <div class="section-heading">
+        Vaccination Progress
+      </div>
+      <div class="progress-overview">
+        <div class="progress-nums">
+          <div class="prog-num"><div class="prog-num-val" style="color:var(--green)">${done}</div><div class="prog-num-label">Completed</div></div>
+          <div class="prog-num"><div class="prog-num-val" style="color:var(--orange)">${overdue.length}</div><div class="prog-num-label">Overdue</div></div>
+          <div class="prog-num"><div class="prog-num-val" style="color:var(--purple)">${total - done - overdue.length}</div><div class="prog-num-label">Upcoming</div></div>
+          <div class="prog-num"><div class="prog-num-val" style="color:var(--pink)">${total}</div><div class="prog-num-label">Total</div></div>
+        </div>
+        <div class="prog-bar-track">
+          <div class="prog-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="prog-pct">${pct}% complete</div>
+      </div>
+
+      ${nextVaxHTML}
+
+      <div class="section-heading" style="margin-top:16px">Quick Actions</div>
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="switchTab('schedule')">
+          <span class="qa-icon">📅</span>
+          <span class="qa-title">Full Schedule</span>
+          <span class="qa-sub">NTAGI timeline</span>
+        </button>
+        <button class="qa-btn" onclick="switchTab('reminders')">
+          <span class="qa-icon">🔔</span>
+          <span class="qa-title">Reminders</span>
+          <span class="qa-sub">${within7.length + overdue.length} need attention</span>
+        </button>
+        <button class="qa-btn" onclick="switchTab('centers')">
+          <span class="qa-icon">🏥</span>
+          <span class="qa-title">Find a Center</span>
+          <span class="qa-sub">Near ${APP.parent.city}</span>
+        </button>
+        <button class="qa-btn" onclick="switchTab('reports')">
+          <span class="qa-icon">📊</span>
+          <span class="qa-title">Reports</span>
+          <span class="qa-sub">Charts & stats</span>
+        </button>
+      </div>
+    </div>
+    <div style="height:16px"></div>`;
+}
+
+// ── SCHEDULE TAB ──────────────────────────────────────
+let scheduleFilter = 'all';
+
+function renderSchedule(filter) {
+  if (filter !== undefined) scheduleFilter = filter;
+
+  const groups = {};
+  NTAGI_VACCINES.forEach(v => {
+    const status = getStatus(v);
+    if (scheduleFilter === 'done'     && status !== 'done') return;
+    if (scheduleFilter === 'overdue'  && status !== 'overdue') return;
+    if (scheduleFilter === 'upcoming' && !['due','upcoming','future'].includes(status)) return;
+
+    const key = v.ageLabel;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(v);
+  });
+
+  let listHTML = '';
+  for (const [label, vaccines] of Object.entries(groups)) {
+    listHTML += `<div class="age-group-header"><span>${label}</span><span class="age-group-line"></span></div>`;
+    vaccines.forEach(v => {
+      const status = getStatus(v);
+      const dueDate = formatDate(getDueDate(v));
+      const labels = { done:'✅ Done', overdue:'⚠️ Overdue', due:'🔔 Due Now', upcoming:'📅 Upcoming', future:'🔜 Future' };
+      listHTML += `
+        <div class="vax-row status-${status}" onclick="openVaccineModal('${v.id}')">
+          <div class="vax-row-icon" style="background:${v.colorLight}">${v.emoji}</div>
+          <div class="vax-row-info">
+            <div class="vax-row-name">${v.name}</div>
+            <div class="vax-row-disease">${v.disease}</div>
+            <div class="vax-row-date">${status === 'done' ? 'Completed ✓' : 'Due: ' + dueDate}</div>
+          </div>
+          <span class="vax-status-badge ${status}">${labels[status]}</span>
+        </div>`;
+    });
+  }
+
+  if (!listHTML) listHTML = '<div class="empty-state"><div class="empty-state-icon">🎉</div><div class="empty-state-text">No vaccines in this category</div></div>';
+
+  document.getElementById('tab-schedule').innerHTML = `
+    <div class="schedule-filters">
+      <button class="filter-chip ${scheduleFilter==='all'?'active':''}"     onclick="renderSchedule('all')">All (${NTAGI_VACCINES.length})</button>
+      <button class="filter-chip ${scheduleFilter==='done'?'active':''}"    onclick="renderSchedule('done')">✅ Done (${APP.completed.size})</button>
+      <button class="filter-chip ${scheduleFilter==='overdue'?'active':''}" onclick="renderSchedule('overdue')">⚠️ Overdue (${getOverdue().length})</button>
+      <button class="filter-chip ${scheduleFilter==='upcoming'?'active':''}" onclick="renderSchedule('upcoming')">📅 Upcoming (${getUpcoming().length})</button>
+    </div>
+    <div class="schedule-list">${listHTML}</div>`;
+}
+
+// ── REMINDERS TAB ──────────────────────────────────────
+function renderReminders() {
+  const overdue  = getOverdue();
+  const within7  = getUpcomingWithinDays(7).filter(v => !overdue.includes(v));
+  const within30 = getUpcomingWithinDays(30).filter(v => !getUpcomingWithinDays(7).includes(v));
+  const future   = NTAGI_VACCINES.filter(v => !APP.completed.has(v.id) && !getUpcomingWithinDays(30).includes(v)).slice(0, 5);
+
+  const makeCard = (v, cls) => {
+    const daysUntil = daysUntilDue(v);
+    const dueStr = formatDate(getDueDate(v));
+    const badgeColor = cls === 'urgent' ? 'var(--red)' : cls === 'soon' ? 'var(--orange)' : cls === 'done' ? 'var(--green)' : 'var(--purple)';
+    const countdown = daysUntil < 0
+      ? `<div style="color:var(--red);font-weight:700">${Math.abs(daysUntil)} days overdue!</div>`
+      : daysUntil === 0
+      ? `<div style="color:var(--orange);font-weight:700">Due today!</div>`
+      : `<div style="color:var(--text-secondary)">In ${daysUntil} days</div>`;
+    return `
+      <div class="reminder-card ${cls}">
+        <div class="rem-card-top">
+          <div class="rem-vax-icon" style="background:${v.colorLight}">${v.emoji}</div>
+          <div>
+            <div class="rem-vax-name">${v.name}</div>
+            <div class="rem-vax-disease">${v.disease}</div>
+          </div>
+          <div class="rem-date-badge" style="background:${v.colorLight};color:${v.color}">${dueStr}</div>
+        </div>
+        <div class="rem-countdown">
+          <span class="rem-countdown-text">📅 Due: ${dueStr} · ${v.ageLabel}</span>
+          <span class="rem-countdown-days">${countdown}</span>
+        </div>
+        ${cls !== 'done' ? `<div class="rem-action-row">
+          <button class="rem-btn rem-btn-book" onclick="openBookingModal('${v.id}')">🏥 Book Appointment</button>
+          <button class="rem-btn rem-btn-mark" onclick="markDone('${v.id}')">✅ Mark Done</button>
+        </div>` : ''}
+      </div>`;
+  };
+
+  let html = `
+    <div class="reminders-header">
+      <div class="rem-title">🔔 Reminders</div>
+      <div class="rem-subtitle">We'll remind you 7 days before each vaccine is due</div>
+    </div>`;
+
+  if (overdue.length) {
+    html += `<div class="rem-section"><div class="rem-section-title"><span>🚨</span> Overdue (${overdue.length})</div>`;
+    overdue.forEach(v => { html += makeCard(v, 'urgent'); });
+    html += '</div>';
+  }
+
+  if (within7.length) {
+    html += `<div class="rem-section"><div class="rem-section-title"><span>⏰</span> This Week (${within7.length})</div>`;
+    within7.forEach(v => { html += makeCard(v, 'soon'); });
+    html += '</div>';
+  }
+
+  if (within30.length) {
+    html += `<div class="rem-section"><div class="rem-section-title"><span>📅</span> This Month (${within30.length})</div>`;
+    within30.forEach(v => { html += makeCard(v, 'upcoming'); });
+    html += '</div>';
+  }
+
+  if (future.length) {
+    html += `<div class="rem-section"><div class="rem-section-title"><span>🔜</span> Future Schedule</div>`;
+    future.forEach(v => { html += makeCard(v, 'upcoming'); });
+    html += '</div>';
+  }
+
+  if (!overdue.length && !within7.length && !within30.length) {
+    html += `<div class="empty-state"><div class="empty-state-icon">🎉</div><div class="empty-state-text">All vaccines up to date! Great job! 🌟</div></div>`;
+  }
+
+  html += '<div style="height:16px"></div>';
+  document.getElementById('tab-reminders').innerHTML = html;
+}
+
+// ── VACCINES INFO TAB ──────────────────────────────────────
+let vaccineSearch = '';
+
+function renderVaccinesInfo(search) {
+  if (search !== undefined) vaccineSearch = search;
+  const q = vaccineSearch.toLowerCase();
+  const filtered = NTAGI_VACCINES.filter(v =>
+    !q || v.name.toLowerCase().includes(q) || v.disease.toLowerCase().includes(q) || v.ageLabel.toLowerCase().includes(q)
+  );
+
+  let cardsHTML = filtered.map(v => {
+    const status = getStatus(v);
+    const statusDot = status === 'done' ? '🟢' : status === 'overdue' ? '🔴' : status === 'due' ? '🟡' : '⚪';
+    return `
+      <div class="vaccine-info-card">
+        <div class="vax-card-header" onclick="toggleVaxCard(this)">
+          <div class="vax-card-icon" style="background:${v.colorLight}">${v.emoji}</div>
+          <div class="vax-card-title-wrap">
+            <div class="vax-card-name">${statusDot} ${v.name}</div>
+            <div class="vax-card-short">${v.ageLabel} · ${v.disease}</div>
+          </div>
+          <span class="vax-card-arrow">▾</span>
+        </div>
+        <div class="vax-card-body">
+          <div class="vax-why">
+            <div class="vax-why-title">💡 Why This Vaccine?</div>
+            <div class="vax-why-text">${v.why}</div>
+          </div>
+          <div class="vax-details-grid">
+            <div class="vax-detail-item"><div class="vax-detail-label">💉 Route</div><div class="vax-detail-val">${v.route}</div></div>
+            <div class="vax-detail-item"><div class="vax-detail-label">📊 Doses</div><div class="vax-detail-val">${v.doses}</div></div>
+            <div class="vax-detail-item"><div class="vax-detail-label">🎯 Efficacy</div><div class="vax-detail-val">${v.efficacy}</div></div>
+            <div class="vax-detail-item"><div class="vax-detail-label">⏳ Duration</div><div class="vax-detail-val">${v.duration}</div></div>
+            <div class="vax-detail-item" style="grid-column:span 2"><div class="vax-detail-label">⚠️ Side Effects</div><div class="vax-detail-val">${v.sideEffects}</div></div>
+            <div class="vax-detail-item" style="grid-column:span 2"><div class="vax-detail-label">🗓️ Schedule</div><div class="vax-detail-val">${v.schedule}</div></div>
+          </div>
+          <div class="vax-tags">
+            ${v.mandatory ? '<span class="vax-tag tag-mandatory">✅ UIP Mandatory</span>' : '<span class="vax-tag" style="background:var(--yellow-pale);color:#7A5A00">⭐ Recommended</span>'}
+            ${v.govtFree ? '<span class="vax-tag" style="background:var(--green-pale);color:var(--green)">🆓 Free at Govt.</span>' : '<span class="vax-tag" style="background:var(--orange-pale);color:var(--orange)">💳 Paid</span>'}
+            ${v.route.toLowerCase().includes('oral') ? '<span class="vax-tag tag-oral">💧 Oral</span>' : '<span class="vax-tag tag-injectable">💉 Injectable</span>'}
+            ${v.doses.toLowerCase().includes('boost') ? '<span class="vax-tag tag-booster">🔄 Booster</span>' : ''}
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="rem-btn rem-btn-book" style="flex:1" onclick="openBookingModal('${v.id}')">🏥 Book Vaccine</button>
+            ${status !== 'done' ? `<button class="rem-btn rem-btn-mark" onclick="markDone('${v.id}')">✅ Mark Done</button>` : '<span style="font-size:0.8rem;color:var(--green);font-weight:700;align-self:center">✅ Completed</span>'}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  if (!cardsHTML) cardsHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No vaccines found</div></div>';
+
+  document.getElementById('tab-vaccines').innerHTML = `
+    <div class="vaccines-header">
+      <div class="rem-title">💉 Vaccine Guide</div>
+      <div class="rem-subtitle">Tap any vaccine to learn why it matters</div>
+      <div class="vaccines-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search vaccines or diseases..." value="${vaccineSearch}" oninput="renderVaccinesInfo(this.value)">
+      </div>
+    </div>
+    ${cardsHTML}
+    <div style="height:16px"></div>`;
+}
+
+function toggleVaxCard(header) {
+  const body  = header.nextElementSibling;
+  const arrow = header.querySelector('.vax-card-arrow');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  arrow.classList.toggle('open', !isOpen);
+}
+
+// ── CENTERS TAB ──────────────────────────────────────
+let centersFilter = 'all';
+
+function renderCenters(filter) {
+  if (filter !== undefined) centersFilter = filter;
+  const filtered = centersFilter === 'all'
+    ? VACCINE_CENTERS
+    : VACCINE_CENTERS.filter(c => c.type === centersFilter);
+
+  const cardsHTML = filtered.map(c => `
+    <div class="center-card" onclick="openCenterModal('${c.id}')">
+      <div class="center-card-top">
+        <div class="center-icon" style="background:${c.iconBg}">${c.icon}</div>
+        <div style="flex:1">
+          <div class="center-name">${c.name}</div>
+          <span class="center-type-badge" style="background:${c.typeBadge.bg};color:${c.typeBadge.color}">${c.typeBadge.label}</span>
+          <div class="center-address">📍 ${c.address}</div>
+          <div class="center-tags">
+            ${c.chips.map(ch => `<span class="center-chip" style="background:${ch.bg};color:${ch.color}">${ch.label}</span>`).join('')}
+            <span class="center-chip" style="background:${c.open?'var(--green-pale)':'var(--red-pale)'};color:${c.open?'var(--green)':'var(--red)'}">
+              ${c.open ? '🟢 Open Now' : '🔴 Closed'}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="center-card-footer">
+        <div>
+          <div class="center-distance">📏 ${c.distance} away · ⏰ ${c.timings}</div>
+        </div>
+        <button class="btn-book-appt" onclick="event.stopPropagation();openBookingModal(null,'${c.id}')">Book Appt →</button>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('tab-centers').innerHTML = `
+    <div class="centers-header">
+      <div class="rem-title">🏥 Vaccine Centers</div>
+      <div class="rem-subtitle">Near ${APP.parent.city || 'your location'}</div>
+      <div class="centers-search">
+        <input type="text" placeholder="Search by area or pincode..." />
+        <button class="btn-search">🔍 Search</button>
+      </div>
+    </div>
+    <div class="center-type-tabs">
+      <button class="center-tab ${centersFilter==='all'?'active':''}"        onclick="renderCenters('all')">All (${VACCINE_CENTERS.length})</button>
+      <button class="center-tab ${centersFilter==='government'?'active':''}" onclick="renderCenters('government')">🏛️ Government</button>
+      <button class="center-tab ${centersFilter==='private'?'active':''}"    onclick="renderCenters('private')">🏥 Private</button>
+    </div>
+    ${cardsHTML}
+    <div style="height:16px"></div>`;
+}
+
+// ── REPORTS TAB ──────────────────────────────────────
+function renderReports() {
+  const total    = NTAGI_VACCINES.length;
+  const done     = APP.completed.size;
+  const overdue  = getOverdue().length;
+  const upcoming = getUpcoming().length;
+  const pct      = Math.round((done / total) * 100);
+  const ageDays  = daysBetween(APP.baby.dob, new Date());
+
+  document.getElementById('tab-reports').innerHTML = `
+    <div class="reports-header">
+      <div class="rem-title">📊 ${APP.baby.name}'s Vaccine Report</div>
+      <div class="rem-subtitle">NTAGI compliance overview · Age: ${formatAge(ageDays)}</div>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-card-val" style="color:var(--green)">${done}</div><div class="stat-card-label">Completed</div></div>
+      <div class="stat-card"><div class="stat-card-val" style="color:var(--red)">${overdue}</div><div class="stat-card-label">Overdue</div></div>
+      <div class="stat-card"><div class="stat-card-val" style="color:var(--purple)">${upcoming}</div><div class="stat-card-label">Upcoming</div></div>
+      <div class="stat-card"><div class="stat-card-val" style="color:var(--pink)">${pct}%</div><div class="stat-card-label">On Schedule</div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📈 Overall Completion</div>
+      <div style="position:relative;height:200px"><canvas id="chartDonut"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📅 Vaccines by Age Group</div>
+      <div style="position:relative;height:220px"><canvas id="chartBar"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📊 Status Breakdown</div>
+      <div style="position:relative;height:200px"><canvas id="chartStatus"></canvas></div>
+    </div>
+    <div style="height:16px"></div>`;
+
+  setTimeout(() => renderCharts(), 50);
+}
+
+function renderCharts() {
+  destroyCharts();
+
+  // ── Donut: Completion ──
+  const done = APP.completed.size;
+  const remaining = NTAGI_VACCINES.length - done;
+  APP.chartInstances.donut = new Chart(document.getElementById('chartDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed', 'Remaining'],
+      datasets: [{
+        data: [done, remaining],
+        backgroundColor: ['#56C18D', '#F3EEFF'],
+        borderColor: ['#A8E6C8', '#E8D5FF'],
+        borderWidth: 2,
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '72%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Nunito', size: 12, weight: '700' }, padding: 16, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} vaccines` } },
+      },
+    },
+  });
+
+  // ── Bar: By Age Group ──
+  const groups = [
+    { label: 'Birth', min: 0, max: 3 },
+    { label: '6 Weeks', min: 40, max: 56 },
+    { label: '10 Weeks', min: 68, max: 84 },
+    { label: '14 Weeks', min: 95, max: 115 },
+    { label: '9 Months', min: 265, max: 295 },
+    { label: '15–18m', min: 450, max: 545 },
+    { label: '5 Years', min: 1800, max: 1920 },
+  ];
+  const doneByGroup    = groups.map(g => NTAGI_VACCINES.filter(v => v.ageDaysMin >= g.min && v.ageDaysMin <= g.max && APP.completed.has(v.id)).length);
+  const remainByGroup  = groups.map(g => NTAGI_VACCINES.filter(v => v.ageDaysMin >= g.min && v.ageDaysMin <= g.max && !APP.completed.has(v.id)).length);
+
+  APP.chartInstances.bar = new Chart(document.getElementById('chartBar'), {
+    type: 'bar',
+    data: {
+      labels: groups.map(g => g.label),
+      datasets: [
+        { label: 'Completed', data: doneByGroup, backgroundColor: '#56C18D', borderRadius: 6, borderSkipped: false },
+        { label: 'Remaining', data: remainByGroup, backgroundColor: '#C4B0E0', borderRadius: 6, borderSkipped: false },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Nunito', size: 10 } } },
+        y: { stacked: true, grid: { color: '#F0E8F8' }, ticks: { stepSize: 1, font: { family: 'Nunito', size: 11 } } },
+      },
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'Nunito', size: 12, weight: '700' }, padding: 12, boxWidth: 12 } },
+      },
+    },
+  });
+
+  // ── Horizontal bar: Status breakdown ──
+  const statuses = ['Completed', 'Overdue', 'Due Now', 'Upcoming (30d)', 'Future'];
+  const statusCounts = [
+    APP.completed.size,
+    getOverdue().length,
+    getUpcomingWithinDays(0).filter(v => daysUntilDue(v) === 0).length,
+    getUpcomingWithinDays(30).length,
+    NTAGI_VACCINES.filter(v => !APP.completed.has(v.id) && daysUntilDue(v) > 30).length,
+  ];
+  const statusColors = ['#56C18D', '#FF5A5A', '#FFD93D', '#7B5EA7', '#BBA8CC'];
+
+  APP.chartInstances.status = new Chart(document.getElementById('chartStatus'), {
+    type: 'bar',
+    data: {
+      labels: statuses,
+      datasets: [{
+        data: statusCounts,
+        backgroundColor: statusColors,
+        borderRadius: 8,
+        borderSkipped: false,
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { color: '#F0E8F8' }, ticks: { stepSize: 1, font: { family: 'Nunito', size: 11 } } },
+        y: { grid: { display: false }, ticks: { font: { family: 'Nunito', size: 12, weight: '700' } } },
+      },
+      plugins: { legend: { display: false } },
+    },
+  });
+}
+
+function destroyCharts() {
+  Object.values(APP.chartInstances).forEach(c => { try { c.destroy(); } catch(e){} });
+  APP.chartInstances = {};
+}
+
+// ── MODALS ──────────────────────────────────────
+function openModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function openVaccineModal(vaxId) {
+  const v = NTAGI_VACCINES.find(x => x.id === vaxId);
+  if (!v) return;
+  const status = getStatus(v);
+  const dueDate = formatDate(getDueDate(v));
+  const statusLabel = { done:'✅ Completed', overdue:'⚠️ Overdue', due:'🔔 Due Now', upcoming:'📅 Upcoming', future:'🔜 Scheduled' }[status];
+  const statusColor = { done:'var(--green)', overdue:'var(--red)', due:'var(--orange)', upcoming:'var(--purple)', future:'var(--text-muted)' }[status];
+
+  openModal(`
+    <div class="modal-handle"></div>
+    <div class="vax-modal-hero">
+      <div class="vax-modal-emoji">${v.emoji}</div>
+      <div class="vax-modal-name">${v.name}</div>
+      <span style="font-size:0.8rem;font-weight:700;color:${statusColor}">${statusLabel}</span>
+    </div>
+    <div class="vax-why" style="margin-bottom:14px">
+      <div class="vax-why-title">💡 Why is this vaccine important?</div>
+      <div class="vax-why-text">${v.why}</div>
+    </div>
+    <div class="vax-details-grid">
+      <div class="vax-detail-item"><div class="vax-detail-label">🗓️ When Given</div><div class="vax-detail-val">${v.ageLabel}</div></div>
+      <div class="vax-detail-item"><div class="vax-detail-label">📅 Due Date</div><div class="vax-detail-val">${dueDate}</div></div>
+      <div class="vax-detail-item"><div class="vax-detail-label">💉 Route</div><div class="vax-detail-val">${v.route}</div></div>
+      <div class="vax-detail-item"><div class="vax-detail-label">📊 Doses</div><div class="vax-detail-val">${v.doses}</div></div>
+      <div class="vax-detail-item"><div class="vax-detail-label">🎯 Efficacy</div><div class="vax-detail-val">${v.efficacy}</div></div>
+      <div class="vax-detail-item"><div class="vax-detail-label">⏳ Duration</div><div class="vax-detail-val">${v.duration}</div></div>
+      <div class="vax-detail-item" style="grid-column:span 2"><div class="vax-detail-label">⚠️ Side Effects</div><div class="vax-detail-val">${v.sideEffects}</div></div>
+    </div>
+    <div class="vax-tags" style="margin:12px 0">
+      ${v.mandatory ? '<span class="vax-tag tag-mandatory">✅ UIP Mandatory</span>' : ''}
+      ${v.govtFree ? '<span class="vax-tag" style="background:var(--green-pale);color:var(--green)">🆓 Free at Govt.</span>' : '<span class="vax-tag" style="background:var(--orange-pale);color:var(--orange)">💳 Paid</span>'}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-confirm-appt" style="flex:2" onclick="closeModal();openBookingModal('${v.id}')">🏥 Book Appointment</button>
+      ${status !== 'done'
+        ? `<button onclick="markDone('${v.id}');closeModal()" style="flex:1;padding:14px;background:var(--green-pale);color:var(--green);border:2px solid var(--green-light);border-radius:var(--r-full);font-family:var(--font-display);font-size:0.9rem;font-weight:600;cursor:pointer">✅ Done</button>`
+        : ''}
+    </div>`);
+}
+
+function openBookingModal(vaxId, centerId) {
+  const center = centerId ? VACCINE_CENTERS.find(c => c.id === centerId) : VACCINE_CENTERS[0];
+  const vax    = vaxId    ? NTAGI_VACCINES.find(v => v.id === vaxId)     : null;
+
+  const today = new Date();
+  const days  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  let datesHTML = '';
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(today); d.setDate(today.getDate() + i);
+    datesHTML += `<div class="date-btn ${i===1?'selected':''}" onclick="document.querySelectorAll('.date-btn').forEach(x=>x.classList.remove('selected'));this.classList.add('selected')">
+      <div class="date-day">${days[d.getDay()]}</div>
+      <div class="date-num">${d.getDate()}</div>
+      <div class="date-day">${months[d.getMonth()]}</div>
+    </div>`;
+  }
+
+  const times = ['9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','2:00 PM','2:30 PM','3:00 PM'];
+  const booked = [2, 5]; // simulate some booked slots
+  let timesHTML = times.map((t, i) =>
+    `<div class="time-slot ${booked.includes(i)?'full':i===0?'selected':''}" onclick="if(!this.classList.contains('full')){document.querySelectorAll('.time-slot').forEach(x=>x.classList.remove('selected'));this.classList.add('selected')}">${t}${booked.includes(i)?' (Full)':''}</div>`
+  ).join('');
+
+  const vaxOptions = NTAGI_VACCINES.filter(v => !APP.completed.has(v.id)).map(v =>
+    `<option value="${v.id}" ${vaxId===v.id?'selected':''}>${v.name} (${v.ageLabel})</option>`).join('');
+
+  openModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-title">📅 Book Appointment</div>
+    <div class="modal-subtitle">${center ? center.name : 'Select a center'}</div>
+
+    <div class="field-group">
+      <label class="field-label">Select Vaccine</label>
+      <div class="field-wrap">
+        <span class="field-icon">💉</span>
+        <select class="field-input field-select" id="book-vax-select">${vaxOptions}</select>
+      </div>
+    </div>
+
+    <label class="field-label" style="margin-bottom:8px;display:block">Select Date</label>
+    <div class="date-picker">${datesHTML}</div>
+
+    <label class="field-label" style="margin-bottom:8px;display:block">Select Time</label>
+    <div class="time-slots">${timesHTML}</div>
+
+    <div class="field-group">
+      <label class="field-label">Notes (optional)</label>
+      <div class="field-wrap">
+        <span class="field-icon">📝</span>
+        <input type="text" class="field-input" placeholder="Any allergies or notes for the doctor..." />
+      </div>
+    </div>
+
+    <button class="btn-confirm-appt" onclick="confirmBooking()">✅ Confirm Appointment</button>`);
+}
+
+function confirmBooking() {
+  closeModal();
+  showToast('🎉 Appointment confirmed! You\'ll get a reminder 24 hrs before.');
+}
+
+function openCenterModal(centerId) {
+  const c = VACCINE_CENTERS.find(x => x.id === centerId);
+  if (!c) return;
+  openModal(`
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div style="width:56px;height:56px;border-radius:14px;background:${c.iconBg};display:flex;align-items:center;justify-content:center;font-size:1.8rem">${c.icon}</div>
+      <div>
+        <div class="modal-title" style="margin-bottom:0">${c.name}</div>
+        <span style="font-size:0.75rem;font-weight:700;background:${c.typeBadge.bg};color:${c.typeBadge.color};padding:2px 8px;border-radius:999px">${c.typeBadge.label}</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="vax-detail-item"><div class="vax-detail-label">📍 Address</div><div class="vax-detail-val" style="font-size:0.8rem">${c.address}</div></div>
+      <div class="vax-detail-item"><div class="vax-detail-label">📏 Distance</div><div class="vax-detail-val">${c.distance}</div></div>
+      <div class="vax-detail-item"><div class="vax-detail-label">⏰ Timings</div><div class="vax-detail-val" style="font-size:0.8rem">${c.timings}</div></div>
+      <div class="vax-detail-item"><div class="vax-detail-label">📞 Phone</div><div class="vax-detail-val">${c.phone}</div></div>
+    </div>
+    <div class="vax-detail-item" style="margin-bottom:14px">
+      <div class="vax-detail-label">💉 Vaccines Available</div>
+      <div class="vax-detail-val" style="font-size:0.82rem;margin-top:4px">${c.vaccines.join(' · ')}</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-confirm-appt" onclick="closeModal();openBookingModal(null,'${c.id}')">📅 Book Appointment</button>
+      <a href="tel:${c.phone}" style="flex:0.4;padding:14px;background:var(--teal-pale);color:var(--teal);border:2px solid var(--teal-light);border-radius:var(--r-full);font-family:var(--font-display);font-size:0.9rem;font-weight:600;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center">📞 Call</a>
+    </div>`);
+}
+
+// ── HELPERS ──────────────────────────────────────
+function markDone(vaxId) {
+  APP.completed.add(vaxId);
+  updateNotifBadge();
+  renderTab(currentTab);
+  showToast('✅ Marked as done!');
+}
+
+function getStatus(v) {
+  if (APP.completed.has(v.id)) return 'done';
+  const dueDate = getDueDate(v);
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const diff    = Math.floor((dueDate - today) / 86400000);
+  if (diff < -7) return 'overdue';
+  if (diff <= 0) return 'due';
+  if (diff <= 30) return 'upcoming';
+  return 'future';
+}
+
+function getDueDate(v) {
+  const d = new Date(APP.baby.dob);
+  d.setDate(d.getDate() + v.ageDaysMin);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function daysUntilDue(v) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.floor((getDueDate(v) - today) / 86400000);
+}
+
+function getOverdue()              { return NTAGI_VACCINES.filter(v => getStatus(v) === 'overdue'); }
+function getUpcoming()             { return NTAGI_VACCINES.filter(v => ['due','upcoming','future'].includes(getStatus(v))); }
+function getUpcomingWithinDays(n)  { return NTAGI_VACCINES.filter(v => !APP.completed.has(v.id) && daysUntilDue(v) >= 0 && daysUntilDue(v) <= n); }
+function getNextVaccine()          { return NTAGI_VACCINES.filter(v => !APP.completed.has(v.id)).sort((a,b) => getDueDate(a)-getDueDate(b))[0]; }
+
+function daysBetween(a, b) { return Math.floor((b - a) / 86400000); }
+
+function formatAge(days) {
+  if (days < 0)   return 'Not yet born';
+  if (days === 0) return 'Newborn';
+  if (days < 7)   return days + ' day' + (days > 1 ? 's' : '');
+  if (days < 30)  return Math.floor(days/7) + ' week' + (Math.floor(days/7)>1?'s':'');
+  if (days < 365) { const m = Math.floor(days/30); const d = days%30; return m + 'mo' + (d > 0 ? ' ' + d + 'd' : ''); }
+  const y = Math.floor(days/365); const m = Math.floor((days%365)/30);
+  return y + ' yr' + (y>1?'s':'') + (m>0?' '+m+'mo':'');
+}
+
+function formatDate(date, short = false) {
+  if (!date) return '—';
+  const opts = short
+    ? { day: 'numeric', month: 'short' }
+    : { day: 'numeric', month: 'short', year: 'numeric' };
+  return date.toLocaleDateString('en-IN', opts);
+}
+
+// ── TOAST ──────────────────────────────────────
+function showToast(msg) {
+  let t = document.querySelector('.toast');
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── DEMO: Pre-load a sample baby ──────────────────────────────────────
+function loadDemo() {
+  APP.parent = { name: 'Priya Sharma', phone: '+91 98765 43210', city: 'Chennai', relation: 'Mother' };
+  APP.baby   = {
+    name: 'Anaya',
+    dob:  new Date(Date.now() - 72 * 86400000), // 72 days old
+    gender: 'girl',
+    weight: '3.1',
+    blood:  'B+',
+    hospital: 'Apollo Hospitals, Chennai',
+  };
+  APP.selectedGender = 'girl';
+  // Mark birth vaccines as done
+  ['bcg','hepb1','opv0'].forEach(id => APP.completed.add(id));
+
+  document.getElementById('page-onboarding').classList.remove('active');
+  document.getElementById('page-app').classList.add('active');
+  updateHeaderBaby();
+  updateNotifBadge();
+  renderTab('home');
+}
+
+// ── INIT ──────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Set default DOB to today for ease
+  const dobInput = document.getElementById('baby-dob');
+  if (dobInput) dobInput.valueAsDate = new Date();
+
+  // Auto-load demo for preview
+  loadDemo();
+});
+
+</script>
+</body>
+</html>
