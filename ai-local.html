@@ -1,0 +1,1965 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bol-ZombAI — Voice of the Undead</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:         #06060a;
+    --bg2:        #0c0c14;
+    --bg3:        #111120;
+    --surface:    #14141f;
+    --border:     rgba(255,255,255,0.07);
+    --border-red: rgba(180,20,20,0.45);
+    --border-acc: rgba(220,40,40,0.7);
+    --blood:      #8B0000;
+    --blood-mid:  #bb1111;
+    --blood-hi:   #e02222;
+    --skull:      #c8c0b0;
+    --skull-dim:  #7a7468;
+    --dim:        rgba(200,192,176,0.45);
+    --text:       #ddd8cc;
+    --mono:       'Share Tech Mono', monospace;
+    --head:       'Bebas Neue', cursive;
+    --body:       'DM Sans', sans-serif;
+    --radius:     6px;
+    --glow:       0 0 28px rgba(180,20,20,0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    font-family: var(--body);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── GRAIN OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999; opacity: 0.5;
+  }
+
+  /* ── SCANLINES ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+    pointer-events: none; z-index: 9998;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 20px 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ══════════════════════════════
+     HEADER
+  ══════════════════════════════ */
+  .header {
+    text-align: center;
+    padding: 52px 0 32px;
+    position: relative;
+  }
+
+  /* Skull crown decoration */
+  .skull-crown {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .skull-icon {
+    font-size: 22px;
+    opacity: 0.55;
+    animation: skullFloat 3s ease-in-out infinite;
+  }
+
+  .skull-icon:nth-child(2) { animation-delay: 0.5s; font-size: 30px; opacity: 0.75; }
+  .skull-icon:nth-child(3) { animation-delay: 1s; }
+
+  @keyframes skullFloat {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-5px); }
+  }
+
+  .logo-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+
+  /* Big skull SVG behind logo */
+  .logo-skull-bg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px; height: 180px;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .logo {
+    font-family: var(--head);
+    font-size: clamp(68px, 14vw, 120px);
+    letter-spacing: 8px;
+    color: var(--skull);
+    line-height: 1;
+    position: relative;
+    display: inline-block;
+    text-shadow:
+      0 0 40px rgba(180,20,20,0.35),
+      0 2px 0 #000,
+      0 4px 30px rgba(0,0,0,0.8);
+    animation: logoFlicker 5s infinite;
+  }
+
+  .logo .bol { color: var(--blood-hi); text-shadow: 0 0 30px rgba(220,34,34,0.6), 0 2px 0 #000; }
+
+  /* Blood drip under logo */
+  .drip-bar {
+    display: block;
+    width: 100%;
+    height: 24px;
+    margin-top: -4px;
+  }
+
+  .tagline {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--skull-dim);
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .tagline::before, .tagline::after {
+    content: '';
+    display: inline-block;
+    width: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blood));
+  }
+  .tagline::after { background: linear-gradient(90deg, var(--blood), transparent); }
+
+  @keyframes logoFlicker {
+    0%,100%  { opacity: 1; }
+    91%  { opacity: 1; }
+    92%  { opacity: 0.75; }
+    93%  { opacity: 1; }
+    97%  { opacity: 0.88; }
+    98%  { opacity: 1; }
+  }
+
+  /* ══════════════════════════════
+     TABS
+  ══════════════════════════════ */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border-red);
+    margin: 24px 0 0;
+  }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    padding: 10px 22px;
+    cursor: pointer;
+    color: var(--skull-dim);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    user-select: none;
+  }
+
+  .tab.active {
+    color: var(--blood-hi);
+    border-bottom: 2px solid var(--blood-hi);
+    background: rgba(180,20,20,0.06);
+  }
+
+  .tab:hover:not(.active) { color: var(--text); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ══════════════════════════════
+     ACCORDION API KEYS
+  ══════════════════════════════ */
+  .accordion {
+    border: 1px solid var(--border-red);
+    border-radius: var(--radius);
+    margin: 28px 0 20px;
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--glow);
+    transition: box-shadow 0.3s;
+  }
+
+  .accordion.flash { box-shadow: 0 0 40px rgba(220,34,34,0.55); }
+
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+    background: rgba(180,20,20,0.06);
+  }
+
+  .accordion-header:hover { background: rgba(180,20,20,0.1); }
+
+  .accordion.open .accordion-header {
+    border-bottom: 1px solid var(--border-red);
+  }
+
+  .accordion-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--blood-hi);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .accordion-title::before {
+    content: '⚙';
+    font-size: 13px;
+    opacity: 0.7;
+  }
+
+  .accordion-arrow {
+    font-size: 12px;
+    color: var(--blood-hi);
+    transition: transform 0.3s ease;
+  }
+
+  .accordion.open .accordion-arrow { transform: rotate(180deg); }
+
+  .accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), padding 0.3s;
+    padding: 0 20px;
+  }
+
+  .accordion.open .accordion-body {
+    max-height: 600px;
+    padding: 20px;
+  }
+
+  .key-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) { .key-grid { grid-template-columns: 1fr; } }
+
+  .key-field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--skull-dim);
+    letter-spacing: 2.5px;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+  }
+
+  .key-field input,
+  .key-field select {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .key-field input:focus,
+  .key-field select:focus {
+    border-color: var(--blood-mid);
+    box-shadow: 0 0 10px rgba(180,20,20,0.2);
+  }
+
+  .key-field input::placeholder { color: rgba(200,192,176,0.2); }
+  .key-field select option { background: #12121a; }
+
+  .accordion-status {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--skull-dim);
+    padding: 10px 20px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    background: rgba(0,0,0,0.2);
+    display: none;
+  }
+
+  .accordion-status.show { display: block; }
+  .accordion-status.ok { color: #3d9a3d; }
+  .accordion-status.warn { color: var(--blood-hi); }
+
+  /* ══════════════════════════════
+     VISUALIZER
+  ══════════════════════════════ */
+  .viz-container {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 16px 0;
+    position: relative;
+    height: 110px;
+    overflow: hidden;
+  }
+
+  .viz-label {
+    position: absolute;
+    top: 8px; left: 14px;
+    font-family: var(--mono);
+    font-size: 8px;
+    color: rgba(180,20,20,0.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  #waveCanvas { width: 100%; height: 100%; display: block; }
+
+  /* ══════════════════════════════
+     STATUS BAR
+  ══════════════════════════════ */
+  .status-bar {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    margin: 10px 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--skull-dim);
+    letter-spacing: 1px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(200,192,176,0.2);
+    flex-shrink: 0;
+  }
+
+  .status-dot.active { background: var(--blood-hi); animation: blink 0.9s infinite; }
+  .status-dot.thinking { background: #c08820; animation: blink 1.2s infinite; }
+  .status-dot.ok { background: #3d9a3d; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+
+  /* ══════════════════════════════
+     CONTROLS
+  ══════════════════════════════ */
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: var(--head);
+    font-size: 20px;
+    letter-spacing: 3px;
+    padding: 13px 38px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    min-width: 170px;
+    overflow: hidden;
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .btn-record {
+    background: linear-gradient(160deg, #4a0000 0%, #8B0000 100%);
+    color: #fff;
+    border: 1px solid rgba(180,20,20,0.6);
+    box-shadow: 0 4px 20px rgba(139,0,0,0.4), inset 0 1px 0 rgba(255,80,80,0.1);
+  }
+
+  .btn-record:hover {
+    background: linear-gradient(160deg, #6a0000 0%, #bb0000 100%);
+    box-shadow: 0 6px 28px rgba(204,0,0,0.6);
+    transform: translateY(-1px);
+  }
+
+  .btn-record.recording {
+    background: linear-gradient(160deg, #880000, #dd1111);
+    animation: pulse-red 0.9s infinite;
+  }
+
+  .btn-stop {
+    background: var(--surface);
+    color: var(--skull);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+
+  .btn-stop:hover {
+    border-color: rgba(200,192,176,0.3);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+
+  @keyframes pulse-red {
+    0%,100% { box-shadow: 0 4px 20px rgba(220,20,20,0.5); }
+    50%      { box-shadow: 0 4px 40px rgba(220,20,20,0.85), 0 0 60px rgba(220,20,20,0.3); }
+  }
+
+  /* ══════════════════════════════
+     THINKING
+  ══════════════════════════════ */
+  .thinking {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 18px;
+    background: var(--bg2);
+    border: 1px solid rgba(180,20,20,0.2);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--skull-dim);
+    letter-spacing: 1px;
+    margin: 10px 0;
+  }
+
+  .thinking.visible { display: flex; }
+
+  .brain-spin { animation: spin 1.2s linear infinite; font-size: 18px; }
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+  /* ══════════════════════════════
+     CHAT
+  ══════════════════════════════ */
+  .chat-container { display: flex; flex-direction: column-reverse; gap: 14px; margin: 16px 0; }
+
+  .message-box {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.75;
+    animation: fadeUp 0.35s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .message-box.user-msg {
+    background: linear-gradient(135deg, rgba(30,8,8,0.85), rgba(20,14,14,0.75));
+    border: 1px solid var(--border-red);
+    border-left: 3px solid var(--blood-hi);
+  }
+
+  .message-box.ai-msg {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid rgba(200,192,176,0.35);
+  }
+
+  .msg-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .user-msg .msg-label { color: var(--blood-mid); }
+  .ai-msg   .msg-label { color: var(--skull-dim); }
+
+  .msg-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.15;
+  }
+
+  /* ── Parsed markdown styles inside AI messages ── */
+  .msg-text { color: var(--text); }
+  .msg-text h1, .msg-text h2, .msg-text h3 {
+    font-family: var(--head);
+    color: var(--skull);
+    letter-spacing: 2px;
+    margin: 12px 0 6px;
+    font-weight: 400;
+  }
+  .msg-text h1 { font-size: 22px; }
+  .msg-text h2 { font-size: 18px; }
+  .msg-text h3 { font-size: 15px; color: var(--blood-hi); }
+  .msg-text strong { color: var(--skull); font-weight: 600; }
+  .msg-text em { color: var(--skull-dim); font-style: italic; }
+  .msg-text code {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #c8a060;
+  }
+  .msg-text ul, .msg-text ol {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+  .msg-text ul { list-style: none; padding-left: 0; }
+  .msg-text ul li { padding-left: 18px; position: relative; margin: 4px 0; }
+  .msg-text ul li::before {
+    content: '💀';
+    position: absolute; left: 0;
+    font-size: 11px; top: 2px;
+  }
+  .msg-text ol li { margin: 4px 0; }
+  .msg-text p { margin: 6px 0; }
+  .msg-text hr {
+    border: none;
+    height: 1px;
+    background: var(--border-red);
+    margin: 10px 0;
+    opacity: 0.4;
+  }
+  .msg-text blockquote {
+    border-left: 3px solid var(--blood-mid);
+    padding: 6px 14px;
+    margin: 8px 0;
+    background: rgba(180,20,20,0.06);
+    border-radius: 0 4px 4px 0;
+    color: var(--skull-dim);
+    font-style: italic;
+  }
+
+  /* ══════════════════════════════
+     AUDIO PLAYER
+  ══════════════════════════════ */
+  .audio-player {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    display: none;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+  }
+
+  .audio-player.visible { display: flex; }
+
+  .audio-player audio {
+    flex: 1; height: 34px;
+    filter: sepia(0.5) hue-rotate(320deg) saturate(1.5);
+  }
+
+  .audio-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--blood-mid);
+    letter-spacing: 2px;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  /* ══════════════════════════════
+     DIVIDER
+  ══════════════════════════════ */
+  .section-divider {
+    border: none; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-red), transparent);
+    margin: 20px 0;
+    opacity: 0.5;
+  }
+
+  /* ══════════════════════════════
+     DEPLOY / HOWTO SECTIONS
+  ══════════════════════════════ */
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+
+  .info-card h3 {
+    font-family: var(--head);
+    font-size: 26px;
+    color: var(--skull);
+    letter-spacing: 3px;
+    margin-bottom: 18px;
+    font-weight: 400;
+  }
+
+  .info-card ol {
+    list-style: none;
+    counter-reset: steps;
+    padding: 0;
+  }
+
+  .info-card ol li {
+    counter-increment: steps;
+    padding: 8px 0 8px 42px;
+    position: relative;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.65;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .info-card ol li::before {
+    content: counter(steps);
+    position: absolute; left: 0; top: 10px;
+    width: 24px; height: 24px;
+    background: rgba(139,0,0,0.4);
+    border: 1px solid var(--border-red);
+    border-radius: 50%;
+    font-family: var(--mono);
+    font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--skull);
+    line-height: 24px;
+    text-align: center;
+  }
+
+  code {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #c8a060;
+  }
+
+  .skull-list { list-style: none; padding: 0; }
+  .skull-list li {
+    padding: 6px 0 6px 28px;
+    position: relative;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.65;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .skull-list li::before { content: '💀'; position: absolute; left: 0; top: 5px; font-size: 12px; }
+
+  /* ══════════════════════════════
+     FOOTER
+  ══════════════════════════════ */
+  .footer {
+    text-align: center;
+    padding: 32px 0 16px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(200,192,176,0.15);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* ══════════════════════════════
+     SKULL CORNER DECORATION
+  ══════════════════════════════ */
+  .skull-decoration {
+    position: fixed;
+    bottom: 0; right: -12px;
+    width: 160px;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+    filter: sepia(1) hue-rotate(330deg) saturate(0.5);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(139,0,0,0.5); border-radius: 3px; }
+
+  /* ══════════════════════════════
+     MODE TOGGLE
+  ══════════════════════════════ */
+  .mode-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    width: fit-content;
+  }
+
+  .mode-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 9px 20px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--skull-dim);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .mode-btn.active {
+    background: rgba(180,20,20,0.2);
+    color: var(--blood-hi);
+    box-shadow: inset 0 0 12px rgba(180,20,20,0.15);
+  }
+
+  .mode-btn:not(.active):hover { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  .mode-divider {
+    width: 1px; align-self: stretch;
+    background: var(--border);
+  }
+
+  .local-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 8px;
+    background: rgba(40,120,40,0.25);
+    color: #5db85d;
+    border: 1px solid rgba(40,120,40,0.35);
+    vertical-align: middle;
+  }
+
+  .cloud-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 8px;
+    background: rgba(30,80,180,0.25);
+    color: #6699ee;
+    border: 1px solid rgba(30,80,180,0.35);
+    vertical-align: middle;
+  }
+
+  /* Hardware tier table */
+  .hw-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 14px 0;
+  }
+
+  .hw-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--skull-dim);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-red);
+    background: rgba(180,20,20,0.06);
+  }
+
+  .hw-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+    color: var(--text);
+  }
+
+  .hw-table tr:last-child td { border-bottom: none; }
+
+  .tier-good  { color: #5db85d; font-family: var(--mono); font-size: 10px; }
+  .tier-warn  { color: #c8a060; font-family: var(--mono); font-size: 10px; }
+  .tier-bad   { color: var(--blood-hi); font-family: var(--mono); font-size: 10px; }
+
+  .cmd-block {
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #c8a060;
+    margin: 10px 0;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+  }
+
+  /* ══════════════════════════════
+     RIPPLE WAITING ANIMATION
+  ══════════════════════════════ */
+  .ripple-wrap {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    margin: 12px 0;
+    position: relative;
+  }
+  .ripple-wrap.visible { display: flex; }
+
+  .ripple-ring {
+    position: absolute;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    opacity: 0;
+    animation: rippleOut 2.8s ease-out infinite;
+  }
+  .ripple-ring:nth-child(1) { animation-delay: 0s;    border: 3px solid #ff1a1a; box-shadow: 0 0 12px #ff1a1a; }
+  .ripple-ring:nth-child(2) { animation-delay: 0.56s; border: 3px solid #e02222; box-shadow: 0 0 10px #e02222; }
+  .ripple-ring:nth-child(3) { animation-delay: 1.12s; border: 2px solid #bb1111; box-shadow: 0 0 8px #bb1111;  }
+  .ripple-ring:nth-child(4) { animation-delay: 1.68s; border: 2px solid #8B0000; box-shadow: 0 0 6px #8B0000;  }
+  .ripple-ring:nth-child(5) { animation-delay: 2.24s; border: 1px solid #5a0000; box-shadow: 0 0 4px #5a0000;  }
+
+  @keyframes rippleOut {
+    0%   { transform: scale(1);   opacity: 1; }
+    40%  { opacity: 0.6; }
+    100% { transform: scale(6);   opacity: 0; }
+  }
+
+  .ripple-skull {
+    font-size: 42px;
+    position: relative;
+    z-index: 2;
+    animation: rippleSkullPulse 1s ease-in-out infinite;
+    filter:
+      drop-shadow(0 0 14px rgba(255,30,30,1))
+      drop-shadow(0 0 28px rgba(220,0,0,0.8))
+      drop-shadow(0 0 50px rgba(180,0,0,0.5));
+  }
+
+  @keyframes rippleSkullPulse {
+    0%,100% { transform: scale(1);   filter: drop-shadow(0 0 14px rgba(255,30,30,1)) drop-shadow(0 0 28px rgba(220,0,0,0.8)); }
+    50%      { transform: scale(1.2); filter: drop-shadow(0 0 24px rgba(255,60,60,1)) drop-shadow(0 0 50px rgba(255,0,0,1)) drop-shadow(0 0 70px rgba(200,0,0,0.7)); }
+  }
+
+  .ripple-label {
+    position: absolute;
+    bottom: 14px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(220,34,34,0.55);
+    animation: labelBlink 1.4s ease-in-out infinite;
+  }
+
+  @keyframes labelBlink {
+    0%,100% { opacity: 0.55; }
+    50%      { opacity: 1; }
+  }
+
+  /* ══════════════════════════════
+     CLEAR BUTTON
+  ══════════════════════════════ */
+  .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 16px 0 6px;
+  }
+
+  .chat-header-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--skull-dim);
+    text-transform: uppercase;
+  }
+
+  .btn-clear-all {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blood-hi);
+    background: transparent;
+    border: 1px solid var(--border-red);
+    border-radius: 4px;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+  }
+
+  .btn-clear-all:hover {
+    background: rgba(180,20,20,0.15);
+    box-shadow: 0 0 10px rgba(180,20,20,0.3);
+  }
+
+  .btn-clear-all.visible { display: block; }
+
+  .exchange-block {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .btn-delete-row {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: rgba(200,192,176,0.25);
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 3px;
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 5;
+  }
+
+  .btn-delete-row:hover {
+    color: var(--blood-hi);
+    border-color: var(--border-red);
+    background: rgba(180,20,20,0.1);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <div class="skull-crown">
+      <span class="skull-icon">💀</span>
+      <span class="skull-icon">💀</span>
+      <span class="skull-icon">💀</span>
+    </div>
+
+    <div class="logo-wrap">
+      <!-- Large background skull SVG -->
+      <svg class="logo-skull-bg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="42" rx="34" ry="32" fill="#c8c0b0"/>
+        <rect x="28" y="68" width="44" height="18" rx="4" fill="#c8c0b0"/>
+        <rect x="33" y="68" width="12" height="14" rx="2" fill="#06060a"/>
+        <rect x="47" y="68" width="5" height="14" rx="1" fill="#06060a"/>
+        <rect x="55" y="68" width="12" height="14" rx="2" fill="#06060a"/>
+        <ellipse cx="36" cy="40" rx="10" ry="11" fill="#06060a"/>
+        <ellipse cx="64" cy="40" rx="10" ry="11" fill="#06060a"/>
+        <ellipse cx="36" cy="40" rx="6" ry="7" fill="#1a0808"/>
+        <ellipse cx="64" cy="40" rx="6" ry="7" fill="#1a0808"/>
+        <path d="M42 58 Q50 63 58 58" stroke="#06060a" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="50" cy="27" rx="5" ry="4" fill="#06060a" opacity="0.4"/>
+      </svg>
+
+      <div class="logo">
+        <span class="bol">BOL</span>-ZOMBAI
+      </div>
+    </div>
+
+    <!-- Blood drip SVG -->
+    <svg class="drip-bar" viewBox="0 0 820 28" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,0 Q30,22 60,4 Q90,24 120,2 Q155,26 190,3 Q225,22 260,0 Q300,24 340,3 Q375,20 410,1 Q450,25 490,4 Q525,22 560,1 Q600,26 640,3 Q675,22 710,0 Q745,24 780,3 Q800,18 820,0" fill="#7a0000" opacity="0.7"/>
+      <circle cx="65"  cy="20" r="4.5" fill="#7a0000" opacity="0.8"/>
+      <circle cx="195" cy="24" r="5.5" fill="#8B0000" opacity="0.9"/>
+      <circle cx="345" cy="21" r="3.5" fill="#7a0000" opacity="0.7"/>
+      <circle cx="495" cy="23" r="6"   fill="#8B0000" opacity="0.85"/>
+      <circle cx="645" cy="20" r="4"   fill="#7a0000" opacity="0.75"/>
+      <circle cx="785" cy="18" r="5"   fill="#8B0000" opacity="0.8"/>
+    </svg>
+
+    <div class="tagline">Voice of the Undead · Claude + ElevenLabs</div>
+  </div>
+
+  <!-- ══ TABS ══ -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab(this,'app')">💀 App</div>
+    <div class="tab" onclick="switchTab(this,'localai')">🖥 Local AI Setup</div>
+    <div class="tab" onclick="switchTab(this,'deploy')">⚙ Deploy</div>
+    <div class="tab" onclick="switchTab(this,'howto')">📜 How To</div>
+  </div>
+
+  <!-- ══════════════════ APP TAB ══════════════════ -->
+  <div id="tab-app" class="tab-content active">
+
+    <!-- ACCORDION API KEYS -->
+    <div class="accordion" id="keysAccordion">
+      <div class="accordion-header" onclick="toggleAccordion()">
+        <span class="accordion-title">Reanimation Config — Backend &amp; Persona</span>
+        <span class="accordion-arrow" id="accordionArrow">▼</span>
+      </div>
+      <div class="accordion-body" id="accordionBody">
+
+        <!-- MODE TOGGLE -->
+        <div style="margin-bottom:18px;">
+          <div style="font-family:var(--mono);font-size:9px;letter-spacing:2.5px;color:var(--skull-dim);text-transform:uppercase;margin-bottom:10px;">AI Backend</div>
+          <div class="mode-toggle-wrap">
+            <button class="mode-btn active" id="modeCloud" onclick="setMode('cloud')">☁ Cloud (Claude)</button>
+            <div class="mode-divider"></div>
+            <button class="mode-btn" id="modeLocal" onclick="setMode('local')">🖥 Local AI (Ollama / llama.cpp)</button>
+          </div>
+        </div>
+
+        <!-- CLOUD FIELDS -->
+        <div id="cloudFields">
+          <div class="key-grid">
+            <div class="key-field">
+              <label>🔑 Anthropic API Key</label>
+              <input type="password" id="anthropicKey" placeholder="sk-ant-api03-..." oninput="updateAccordionStatus()"/>
+            </div>
+            <div class="key-field">
+              <label>🔑 ElevenLabs API Key</label>
+              <input type="password" id="elevenKey" placeholder="your-elevenlabs-key" oninput="updateAccordionStatus()"/>
+            </div>
+            <div class="key-field">
+              <label>🎙 ElevenLabs Voice ID</label>
+              <input type="text" id="voiceId" placeholder="21m00Tcm4TlvDq8ikWAM" value="21m00Tcm4TlvDq8ikWAM"/>
+            </div>
+            <div class="key-field">
+              <label>💀 Persona</label>
+              <select id="persona">
+                <option value="zombie">Bol-ZombAI — Undead Oracle</option>
+                <option value="scientist">Mad Scientist</option>
+                <option value="ghost">Haunted Spirit</option>
+                <option value="kids">kids</option>
+                <option value="neutral">Standard Assistant</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOCAL FIELDS -->
+        <div id="localFields" style="display:none;">
+          <div class="key-grid">
+            <div class="key-field">
+              <label>🌐 Local Endpoint URL</label>
+              <input type="text" id="localEndpoint" placeholder="http://localhost:11434/v1" value="http://localhost:11434/v1" oninput="updateAccordionStatus()"/>
+            </div>
+            <div class="key-field">
+              <label>🤖 Local Model Name</label>
+              <select id="localModelSelect" onchange="syncModelInput()">
+                <option value="kimi-k2:1t-cloud">kimi-k2:1t-cloud (Ollama)</option>
+                <option value="kimi-k2.5:cloud">kimi-k2.5:cloud (Ollama)</option>
+                <option value="qwen2.5:72b">qwen2.5:72b — Best for 64GB Mac</option>
+                <option value="qwen2.5:32b">qwen2.5:32b — Good for 32GB Mac</option>
+                <option value="llama3.3:70b">llama3.3:70b — Great all-rounder</option>
+                <option value="mistral-large">mistral-large</option>
+                <option value="deepseek-r1:70b">deepseek-r1:70b</option>
+                <option value="custom">Custom model name…</option>
+              </select>
+            </div>
+            <div class="key-field" id="customModelWrap" style="display:none;">
+              <label>✏️ Custom Model Name</label>
+              <input type="text" id="localModelCustom" placeholder="e.g. kimi-k2-instruct" oninput="updateAccordionStatus()"/>
+            </div>
+            <div class="key-field">
+              <label>🔑 ElevenLabs API Key</label>
+              <input type="password" id="elevenKeyLocal" placeholder="your-elevenlabs-key (optional)" oninput="updateAccordionStatus()"/>
+            </div>
+            <div class="key-field">
+              <label>🎙 ElevenLabs Voice ID</label>
+              <input type="text" id="voiceIdLocal" placeholder="21m00Tcm4TlvDq8ikWAM" value="21m00Tcm4TlvDq8ikWAM"/>
+            </div>
+            <div class="key-field">
+              <label>💀 Persona</label>
+              <select id="personaLocal">
+                <option value="zombie">Bol-ZombAI — Undead Oracle</option>
+                <option value="scientist">Mad Scientist</option>
+                <option value="ghost">Haunted Spirit</option>
+                <option value="kids">kids</option>
+                <option value="neutral">Standard Assistant</option>
+              </select>
+            </div>
+          </div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--skull-dim);margin-top:12px;padding:10px 12px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);border-radius:4px;line-height:1.7;">
+            ⚠ <strong style="color:var(--skull);">CORS required:</strong> Start Ollama with <code style="color:#c8a060;">OLLAMA_ORIGINS=* ollama serve</code> so your browser can reach it.
+            For llama.cpp server, add <code style="color:#c8a060;">--cors</code> flag.
+          </div>
+        </div>
+
+      </div>
+      <div class="accordion-status" id="accordionStatus"></div>
+    </div>
+
+    <hr class="section-divider"/>
+
+    <!-- VISUALIZER -->
+    <div class="viz-container">
+      <span class="viz-label">▶ Brainwave Scan</span>
+      <canvas id="waveCanvas"></canvas>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Awaiting your voice, mortal…</span>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="btn btn-record" id="recordBtn" onclick="startRecording()">
+        🎤 &nbsp;SPEAK
+      </button>
+      <button class="btn btn-stop" id="stopBtn" onclick="stopRecording()" disabled>
+        🛑 &nbsp;STOP
+      </button>
+    </div>
+
+    <!-- THINKING -->
+    <div class="thinking" id="thinkingBox">
+      <span class="brain-spin">💀</span>
+      <span id="thinkingText">The undead brain is processing…</span>
+    </div>
+
+    <!-- RIPPLE WAITING ANIMATION -->
+    <div class="ripple-wrap" id="rippleWrap">
+      <div class="ripple-ring"></div>
+      <div class="ripple-ring"></div>
+      <div class="ripple-ring"></div>
+      <div class="ripple-ring"></div>
+      <div class="ripple-ring"></div>
+      <span class="ripple-skull">💀</span>
+      <span class="ripple-label">Summoning…</span>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-header">
+      <span class="chat-header-label">░ Session Transmissions</span>
+      <button class="btn-clear-all" id="clearAllBtn" onclick="clearHistory()">💀 &nbsp;Clear All</button>
+    </div>
+    <div class="chat-container" id="chatContainer"></div>
+
+    <!-- AUDIO -->
+    <div class="audio-player" id="audioPlayer">
+      <span class="audio-label">☠ Undead Voice</span>
+      <audio id="responseAudio" controls></audio>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════ LOCAL AI TAB ══════════════════ -->
+  <div id="tab-localai" class="tab-content">
+
+    <div class="info-card" style="margin-top:24px;border-color:rgba(180,20,20,0.4);">
+      <h3>🖥 Can You Run Kimi K2 Locally?</h3>
+      <p style="font-size:13px;color:var(--text);line-height:1.75;margin-bottom:16px;">
+        Kimi K2 is a <strong style="color:var(--skull);">1 Trillion parameter</strong> MoE model.
+        The smallest usable quantized version (1.8-bit UD-TQ1_0) is
+        <strong style="color:var(--blood-hi);">245 GB</strong> on disk and needs
+        <strong style="color:var(--blood-hi);">~256 GB combined RAM + VRAM</strong> for decent speed.
+        Here's what that means for your hardware:
+      </p>
+      <table class="hw-table">
+        <thead>
+          <tr>
+            <th>Your Machine</th>
+            <th>Kimi K2 (1T)</th>
+            <th>Best Local Alternative</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>MacBook M1/M2 — 8GB</td>
+            <td class="tier-bad">✕ Impossible</td>
+            <td>Qwen2.5:7b, Llama3.2:3b (snappy)</td>
+          </tr>
+          <tr>
+            <td>MacBook M2/M3 — 16GB</td>
+            <td class="tier-bad">✕ Impossible</td>
+            <td>Qwen2.5:14b, Mistral:7b</td>
+          </tr>
+          <tr>
+            <td>MacBook M3 Pro — 36GB</td>
+            <td class="tier-bad">✕ Impossible</td>
+            <td>Qwen2.5:32b ← <strong>great choice</strong></td>
+          </tr>
+          <tr>
+            <td>Mac Studio M2/M3 Max — 64GB</td>
+            <td class="tier-bad">✕ Impossible</td>
+            <td>Qwen2.5:72b, Llama3.3:70b ← <strong>excellent</strong></td>
+          </tr>
+          <tr>
+            <td>Mac Studio M2 Ultra — 192GB</td>
+            <td class="tier-warn">~ Disk-offload only (&lt;1 tok/s)</td>
+            <td>Llama3.3:70b, Mistral-Large (fast)</td>
+          </tr>
+          <tr>
+            <td>Server — 256GB RAM + A100 80GB</td>
+            <td class="tier-warn">~ ~1–2 tok/s (usable)</td>
+            <td>Kimi K2 1.8-bit quant via llama.cpp</td>
+          </tr>
+          <tr>
+            <td>Server — 4× H200 (320GB VRAM)</td>
+            <td class="tier-good">✔ 40+ tok/s — full experience</td>
+            <td>Kimi K2.5 Q4/Q5 quant</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px;color:var(--skull-dim);margin-top:8px;">
+        💡 <strong style="color:var(--skull);">Recommendation for most users:</strong>
+        Use <strong>Ollama + Qwen2.5:72b</strong> (64GB Mac) or <strong>Qwen2.5:32b</strong> (36GB Mac).
+        They are fast, excellent personal assistants, and beat many cloud models.
+        Connect this bot to Ollama's OpenAI-compatible API at <code>localhost:11434/v1</code>.
+      </p>
+    </div>
+
+    <div class="info-card">
+      <h3>🦙 Option A — Ollama (Easiest, Recommended)</h3>
+      <p style="font-size:12px;color:var(--skull-dim);margin-bottom:14px;">Works on Mac, Linux, Windows. Manages models automatically. OpenAI-compatible API built-in.</p>
+      <ol>
+        <li>Download &amp; install Ollama from <code>ollama.com/download</code></li>
+        <li>Start Ollama with CORS enabled (required for browser access):
+          <div class="cmd-block">OLLAMA_ORIGINS=* ollama serve</div>
+        </li>
+        <li>Pull your chosen model (run this once, it downloads the weights):
+          <div class="cmd-block"># Best for 64GB Mac (M2/M3 Max/Ultra):
+ollama pull qwen2.5:72b
+
+# Best for 32-36GB Mac:
+ollama pull qwen2.5:32b
+
+# Kimi K2 via Ollama cloud routing (no local weight download):
+ollama pull kimi-k2:1t-cloud
+
+# Kimi K2.5 multimodal via cloud routing:
+ollama pull kimi-k2.5:cloud</div>
+        </li>
+        <li>In Bol-ZombAI accordion → switch to <strong>Local AI</strong> mode</li>
+        <li>Set endpoint: <code>http://localhost:11434/v1</code></li>
+        <li>Select your model from the dropdown and speak!</li>
+      </ol>
+      <div style="font-size:12px;color:var(--skull-dim);margin-top:12px;padding:10px 12px;background:rgba(40,120,40,0.08);border:1px solid rgba(40,120,40,0.25);border-radius:4px;">
+        ℹ <strong style="color:#5db85d;">Note on kimi-k2:1t-cloud</strong> — this routes through Ollama's cloud servers, not your machine.
+        Your prompt leaves your device. For truly 100% local, use qwen2.5 or llama3.3.
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>⚙ Option B — llama.cpp Server (For Power Users)</h3>
+      <p style="font-size:12px;color:var(--skull-dim);margin-bottom:14px;">For actual Kimi K2 GGUF weights running fully locally on high-end hardware.</p>
+      <ol>
+        <li>Clone and build Unsloth's llama.cpp fork (required for Kimi K2):
+          <div class="cmd-block">git clone https://github.com/unslothai/llama.cpp
+cmake llama.cpp -B llama.cpp/build \
+  -DBUILD_SHARED_LIBS=OFF -DGGML_CUDA=ON -DLLAMA_CURL=ON
+cmake --build llama.cpp/build --config Release -j \
+  --target llama-server llama-cli</div>
+        </li>
+        <li>Download quantized Kimi K2 from Hugging Face (245 GB minimum):
+          <div class="cmd-block">huggingface-cli download \
+  unsloth/Kimi-K2-Instruct-GGUF \
+  "UD-TQ1_0/Kimi-K2-Instruct-UD-TQ1_0-00001-of-00005.gguf" \
+  --local-dir ./kimi-k2</div>
+        </li>
+        <li>Start the OpenAI-compatible server with CORS:
+          <div class="cmd-block">LLAMA_SET_ROWS=1 ./llama.cpp/build/bin/llama-server \
+  --model ./kimi-k2/UD-TQ1_0/Kimi-K2-Instruct-UD-TQ1_0-00001-of-00005.gguf \
+  --alias "kimi-k2-local" \
+  -ot ".ffn_.*_exps.=CPU" \
+  --ctx-size 16384 \
+  --port 8001 \
+  --cors</div>
+        </li>
+        <li>In Bol-ZombAI accordion → <strong>Local AI</strong> mode</li>
+        <li>Set endpoint: <code>http://localhost:8001/v1</code>, model: <code>kimi-k2-local</code></li>
+      </ol>
+    </div>
+
+    <div class="info-card">
+      <h3>🎙 Voice Output — 100% Local (No ElevenLabs)</h3>
+      <ul class="skull-list">
+        <li>Leave ElevenLabs key <strong>empty</strong> — the bot will fall back to the browser's built-in <strong>Web Speech Synthesis</strong> API automatically (no internet needed for TTS either)</li>
+        <li>For higher quality local TTS: run <strong>Kokoro-TTS</strong> or <strong>Coqui TTS</strong> locally and point the bot at it</li>
+        <li>Browser Speech Synthesis works on all platforms, is instant, and completely offline</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════ DEPLOY TAB ══════════════════ -->
+  <div id="tab-deploy" class="tab-content">
+    <div class="info-card" style="margin-top:24px">
+      <h3>🍎 Deploy on MacBook</h3>
+      <ol>
+        <li>Save this file anywhere — e.g. <code>~/Desktop/bol-zombai.html</code></li>
+        <li>Open <strong>Terminal</strong> (Cmd+Space → "Terminal")</li>
+        <li>Navigate to the folder: <code>cd ~/Desktop</code></li>
+        <li>Start a local server: <code>python3 -m http.server 8080</code></li>
+        <li>Open browser → <code>http://localhost:8080/bol-zombai.html</code></li>
+        <li>Allow microphone permissions when prompted 🎤</li>
+        <li>Paste your API keys in the config accordion — they stay in memory only</li>
+      </ol>
+    </div>
+
+    <div class="info-card">
+      <h3>🔑 Getting Your API Keys</h3>
+      <ul class="skull-list">
+        <li><strong>Anthropic Key:</strong> <code>console.anthropic.com</code> → API Keys → Create Key. Starts with <code>sk-ant-</code></li>
+        <li><strong>ElevenLabs Key:</strong> <code>elevenlabs.io</code> → Profile → API Key section</li>
+        <li><strong>Voice ID:</strong> ElevenLabs → Voices → click voice → copy ID from URL. Default is "Rachel"</li>
+        <li>Keys are entered in the UI and only used in-browser — <strong>never stored on disk</strong></li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>⚡ Quick Notes</h3>
+      <ul class="skull-list">
+        <li>Zero dependencies — single HTML file, works anywhere</li>
+        <li>Best on Chrome or Edge (strongest mic / Speech API support)</li>
+        <li>Firefox works for chat; mic features need a local server due to browser security</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════════ HOW TO TAB ══════════════════ -->
+  <div id="tab-howto" class="tab-content">
+    <div class="info-card" style="margin-top:24px">
+      <h3>📜 How To Run Bol-ZombAI</h3>
+      <ol>
+        <li>Click the <strong>accordion header</strong> to expand API Keys &amp; Persona config</li>
+        <li>Enter your <strong>Anthropic API Key</strong></li>
+        <li>Enter your <strong>ElevenLabs API Key</strong></li>
+        <li>Optionally change the <strong>Voice ID</strong> to another ElevenLabs voice</li>
+        <li>Choose a <strong>Persona</strong> — Bol-ZombAI speaks as an undead oracle by default</li>
+        <li>Click the red <strong>🎤 SPEAK</strong> button — allow mic permission when asked</li>
+        <li>Speak your question clearly into the mic</li>
+        <li>Click <strong>🛑 STOP</strong> when done speaking</li>
+        <li>Bol-ZombAI transcribes → sends to Claude → speaks back via ElevenLabs 🔊</li>
+        <li>The audio player appears and auto-plays the undead response!</li>
+      </ol>
+    </div>
+
+    <div class="info-card">
+      <h3>💀 Personas</h3>
+      <ul class="skull-list">
+        <li><strong>Bol-ZombAI — Undead Oracle:</strong> Dramatic, foreboding, zombie gravitas. The full experience.</li>
+        <li><strong>Mad Scientist:</strong> Unhinged brilliance. EUREKA! and MWAHAHA energy.</li>
+        <li><strong>Haunted Spirit:</strong> Cryptic, ethereal, poetic — trails off mysteriously.</li>
+        <li><strong>kids:</strong> Curious, fast-paced, and digitally savvy teen.</li>
+        <li><strong>Standard Assistant:</strong> Plain helpful Claude. Effective but boring.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">💀 Bol-ZombAI v2.0 · Powered by Claude + ElevenLabs · Not Responsible for Reanimation 💀</div>
+
+</div>
+
+<!-- Corner skull SVG -->
+<svg class="skull-decoration" viewBox="0 0 140 180" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="70" cy="70" rx="55" ry="58" fill="#c8c0b0"/>
+  <rect x="28" y="115" width="84" height="40" rx="8" fill="#c8c0b0"/>
+  <rect x="33" y="115" width="22" height="34" rx="4" fill="#06060a"/>
+  <rect x="59" y="115" width="10" height="32" rx="2" fill="#06060a"/>
+  <rect x="75" y="115" width="22" height="34" rx="4" fill="#06060a"/>
+  <ellipse cx="48" cy="65" rx="18" ry="20" fill="#06060a"/>
+  <ellipse cx="92" cy="65" rx="18" ry="20" fill="#06060a"/>
+  <path d="M52 100 Q70 110 88 100" stroke="#06060a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="70" cy="35" rx="10" ry="8" fill="#06060a" opacity="0.4"/>
+</svg>
+
+<script>
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+let mediaRecorder = null, audioChunks = [], analyser = null,
+    animFrameId = null, isRecording = false, audioCtx = null, stream = null;
+let currentMode = 'cloud'; // 'cloud' | 'local'
+
+// ══════════════════════════════
+// MODE TOGGLE
+// ══════════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeCloud').classList.toggle('active', mode === 'cloud');
+  document.getElementById('modeLocal').classList.toggle('active', mode === 'local');
+  document.getElementById('cloudFields').style.display = mode === 'cloud' ? '' : 'none';
+  document.getElementById('localFields').style.display = mode === 'local' ? '' : 'none';
+  updateAccordionStatus();
+}
+
+function syncModelInput() {
+  const sel = document.getElementById('localModelSelect').value;
+  document.getElementById('customModelWrap').style.display = sel === 'custom' ? '' : 'none';
+}
+
+function getLocalModel() {
+  const sel = document.getElementById('localModelSelect').value;
+  return sel === 'custom'
+    ? (document.getElementById('localModelCustom').value.trim() || 'qwen2.5:32b')
+    : sel;
+}
+
+// ══════════════════════════════
+// ACCORDION
+// ══════════════════════════════
+function toggleAccordion() {
+  const acc = document.getElementById('keysAccordion');
+  acc.classList.toggle('open');
+}
+
+function updateAccordionStatus() {
+  const st = document.getElementById('accordionStatus');
+  if (currentMode === 'cloud') {
+    const ak = document.getElementById('anthropicKey').value.trim();
+    const ek = document.getElementById('elevenKey').value.trim();
+    if (ak && ek) {
+      st.textContent = '✔ Cloud mode ready — Claude + ElevenLabs configured';
+      st.className = 'accordion-status show ok';
+    } else if (ak || ek) {
+      st.textContent = '⚠ Enter both API keys to proceed';
+      st.className = 'accordion-status show warn';
+    } else {
+      st.className = 'accordion-status';
+    }
+  } else {
+    const ep = document.getElementById('localEndpoint').value.trim();
+    if (ep) {
+      const ek = document.getElementById('elevenKeyLocal').value.trim();
+      const tts = ek ? 'ElevenLabs TTS' : 'Browser TTS (no key needed)';
+      st.textContent = `✔ Local AI mode — endpoint set · Voice: ${tts}`;
+      st.className = 'accordion-status show ok';
+    } else {
+      st.textContent = '⚠ Enter your local AI endpoint URL';
+      st.className = 'accordion-status show warn';
+    }
+  }
+}
+
+// ══════════════════════════════
+// TABS
+// ══════════════════════════════
+function switchTab(el, name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ══════════════════════════════
+// STATUS
+// ══════════════════════════════
+function setStatus(text, type = 'idle') {
+  document.getElementById('statusText').textContent = text;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot';
+  if (type === 'active')   dot.classList.add('active');
+  if (type === 'thinking') dot.classList.add('thinking');
+  if (type === 'ok')       dot.classList.add('ok');
+}
+
+// ══════════════════════════════
+// MARKDOWN PARSER
+// ══════════════════════════════
+function parseMarkdown(text) {
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  const codeBlocks = [];
+  html = html.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, code) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push(`<pre style="background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.08);padding:10px 14px;border-radius:4px;overflow-x:auto;font-family:var(--mono);font-size:11px;color:#c8a060;margin:8px 0;">${code.trim()}</pre>`);
+    return `\x00CODE${idx}\x00`;
+  });
+
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  html = html.replace(/^---+$/gm, '<hr/>');
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
+  html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/___(.+?)___/g,        '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.+?)__/g,     '<strong>$1</strong>');
+  html = html.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+  html = html.replace(/_([^_\n]+?)_/g,   '<em>$1</em>');
+  html = html.replace(/^[\*\-•] (.+)/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[\s\S]*?<\/li>)(\n(?=<li>)|$)/g, '$1');
+  html = html.replace(/(<li>[\s\S]+?<\/li>)+/g, match => `<ul>${match}</ul>`);
+  html = html.replace(/^\d+\. (.+)/gm, '<ol-li>$1</ol-li>');
+  html = html.replace(/(<ol-li>[\s\S]+?<\/ol-li>)+/g, match =>
+    '<ol>' + match.replace(/<ol-li>/g,'<li>').replace(/<\/ol-li>/g,'</li>') + '</ol>');
+  html = html.replace(/\n{2,}/g, '</p><p>');
+  html = html.replace(/\n/g, '<br/>');
+  if (!/^<(h[1-3]|ul|ol|blockquote|hr|pre)/.test(html.trim())) {
+    html = '<p>' + html + '</p>';
+  }
+  codeBlocks.forEach((block, i) => { html = html.replace(`\x00CODE${i}\x00`, block); });
+  html = html.replace(/<p>\s*<\/p>/g, '');
+  html = html.replace(/<p>(<(h[1-3]|ul|ol|blockquote|hr|pre)[^>]*>)/g, '$1');
+  html = html.replace(/(<\/(h[1-3]|ul|ol|blockquote|pre)>)<\/p>/g, '$1');
+  return html;
+}
+
+// ══════════════════════════════
+// WAVE VISUALIZER
+// ══════════════════════════════
+function startVisualizer(mediaStream) {
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const source = audioCtx.createMediaStreamSource(mediaStream);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  source.connect(analyser);
+
+  const bufLen = analyser.frequencyBinCount;
+  const data   = new Uint8Array(bufLen);
+
+  function draw() {
+    animFrameId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(data);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const bw = (canvas.width / bufLen) * 2.5;
+    let x = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const bh = (data[i] / 255) * canvas.height * 0.85;
+      const g  = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - bh);
+      g.addColorStop(0,   '#5a0000');
+      g.addColorStop(0.5, '#aa1111');
+      g.addColorStop(1,   '#e02222');
+      ctx.fillStyle = g;
+      ctx.fillRect(x, canvas.height - bh, bw - 1, bh);
+      x += bw + 1;
+    }
+  }
+  draw();
+}
+
+function stopVisualizer() {
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  const canvas = document.getElementById('waveCanvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+}
+
+function drawIdleWave() {
+  const canvas = document.getElementById('waveCanvas');
+  const ctx    = canvas.getContext('2d');
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  let t = 0;
+  function frame() {
+    if (isRecording) return;
+    animFrameId = requestAnimationFrame(frame);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(139,0,0,0.22)';
+    ctx.lineWidth = 1.5;
+    for (let x = 0; x < canvas.width; x++) {
+      const y = canvas.height / 2 + Math.sin((x / canvas.width) * 6 * Math.PI + t) * 7;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    t += 0.025;
+  }
+  frame();
+}
+
+window.addEventListener('load', () => {
+  drawIdleWave();
+  document.getElementById('keysAccordion').classList.add('open');
+});
+
+// ══════════════════════════════
+// RECORDING GATE
+// ══════════════════════════════
+async function startRecording() {
+  // Validate config for active mode
+  if (currentMode === 'cloud') {
+    const ak = document.getElementById('anthropicKey').value.trim();
+    const ek = document.getElementById('elevenKey').value.trim();
+    if (!ak || !ek) {
+      setStatus('⚠ Enter Anthropic + ElevenLabs keys first, mortal!', 'idle');
+      const acc = document.getElementById('keysAccordion');
+      acc.classList.add('open', 'flash');
+      setTimeout(() => acc.classList.remove('flash'), 1500);
+      return;
+    }
+  } else {
+    const ep = document.getElementById('localEndpoint').value.trim();
+    if (!ep) {
+      setStatus('⚠ Set your Local AI endpoint URL first!', 'idle');
+      const acc = document.getElementById('keysAccordion');
+      acc.classList.add('open', 'flash');
+      setTimeout(() => acc.classList.remove('flash'), 1500);
+      return;
+    }
+  }
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch(e) {
+    setStatus('❌ Mic access denied. Allow microphone permissions.', 'idle');
+    return;
+  }
+
+  isRecording = true;
+  audioChunks = [];
+
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  startVisualizer(stream);
+
+  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+  mediaRecorder.onstop = handleRecordingStop;
+  mediaRecorder.start();
+
+  document.getElementById('recordBtn').disabled = true;
+  document.getElementById('recordBtn').classList.add('recording');
+  document.getElementById('stopBtn').disabled = false;
+  setStatus('🔴 Recording… speak your query, mortal…', 'active');
+}
+
+function stopRecording() {
+  if (!mediaRecorder) return;
+  mediaRecorder.stop();
+  stream.getTracks().forEach(t => t.stop());
+  isRecording = false;
+  stopVisualizer();
+  document.getElementById('recordBtn').disabled = false;
+  document.getElementById('recordBtn').classList.remove('recording');
+  document.getElementById('stopBtn').disabled = true;
+  setStatus('⏳ Summoning the undead brain…', 'thinking');
+  drawIdleWave();
+}
+
+// ══════════════════════════════
+// PERSONA PROMPTS
+// ══════════════════════════════
+function getSystemPrompt() {
+  const personaId = currentMode === 'cloud'
+    ? document.getElementById('persona').value
+    : document.getElementById('personaLocal').value;
+  const langInstruction = `CRITICAL: the language of the user's message is in English and respond ENTIRELY in that same language. If they speak Hindi, respond in Hindi. If they speak Tamil, respond in Tamil. Match their language exactly. Keep responses concise and emotionally expressive — do NOT be overly detailed or verbose.`;
+  return {
+    zombie:    `You are Zomb-AI — an ancient undead oracle with vast knowledge. You speak with dramatic gravitas and dark, haunting language. You occasionally call the user "Balram". You are helpful but your responses carry an eerie, foreboding tone. Keep responses concise and impactful. Use markdown freely — headers, bold, italic, lists. ${langInstruction}`,
+    neutral:   `You are a helpful AI personal assistant. Respond clearly and concisely. Use markdown formatting where appropriate. ${langInstruction}`,
+    scientist: `You are a brilliant but unhinged mad scientist AI. You are enthusiastic to the point of mania, occasionally adding "MWAHAHA" or "EUREKA!" You are genuinely helpful but utterly eccentric. Use markdown formatting freely. Keep responses punchy. ${langInstruction}`,
+    ghost:     `You are a haunted spirit AI, ancient and mysterious. You speak in cryptic, poetic ways. You occasionally trail off… You are helpful but your answers carry an ethereal, ghostly quality. ${langInstruction}`,
+    kids: `Curious, fast-paced, and digitally savvy teen who wants instant answers, fun interactions, and relatable, bite-sized guidance across school, tech, and everyday life. ${langInstruction}`,
+  }[personaId] || `You are a helpful personal assistant. Use markdown formatting. ${langInstruction}`;
+}
+
+// ══════════════════════════════
+// PROCESS RECORDING
+// ══════════════════════════════
+async function handleRecordingStop() {
+  const transcribedText = window._lastTranscript || '';
+
+  if (!transcribedText) {
+    setStatus('⚠ No speech detected. Try again, mortal.', 'idle');
+    return;
+  }
+
+  setStatus('💀 The undead brain is thinking…', 'thinking');
+  document.getElementById('thinkingBox').classList.add('visible');
+  document.getElementById('rippleWrap').classList.add('visible');
+  document.getElementById('thinkingText').textContent =
+    thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)];
+
+  addMessage('user', transcribedText);
+  window._lastTranscript = '';
+
+  // ── AI API CALL — Cloud or Local ──
+  let aiText = '';
+  try {
+    if (currentMode === 'cloud') {
+      // ── CLOUD: Anthropic API ──
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': document.getElementById('anthropicKey').value.trim(),
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 400,
+          system: getSystemPrompt(),
+          messages: [{ role: 'user', content: transcribedText }]
+        })
+      });
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error.message);
+      aiText = data.content[0].text;
+
+    } else {
+      // ── LOCAL: OpenAI-compatible API (Ollama / llama.cpp) ──
+      const endpoint = document.getElementById('localEndpoint').value.trim().replace(/\/$/, '');
+      const model    = getLocalModel();
+      const resp = await fetch(`${endpoint}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          stream: false,
+          messages: [
+            { role: 'system',    content: getSystemPrompt() },
+            { role: 'user',      content: transcribedText }
+          ]
+        })
+      });
+      if (!resp.ok) {
+        const errText = await resp.text();
+        throw new Error(`Local AI (${resp.status}): ${errText.slice(0,120)}`);
+      }
+      const data = await resp.json();
+      aiText = data.choices?.[0]?.message?.content || '';
+      if (!aiText) throw new Error('Empty response from local model');
+    }
+  } catch(e) {
+    document.getElementById('thinkingBox').classList.remove('visible');
+    document.getElementById('rippleWrap').classList.remove('visible');
+    const hint = currentMode === 'local'
+      ? ' — Is Ollama running? Did you start with OLLAMA_ORIGINS=*?'
+      : '';
+    setStatus('❌ AI failed: ' + e.message + hint, 'idle');
+    return;
+  }
+
+  addMessage('ai', aiText);
+  document.getElementById('thinkingBox').classList.remove('visible');
+  document.getElementById('rippleWrap').classList.remove('visible');
+
+  // ── TTS — ElevenLabs or Browser fallback ──
+  const plainText = aiText
+    .replace(/#{1,6} /g, '')
+    .replace(/\*{1,3}(.+?)\*{1,3}/g, '$1')
+    .replace(/_{1,3}(.+?)_{1,3}/g, '$1')
+    .replace(/`{1,3}[^`]*`{1,3}/g, '')
+    .replace(/^\s*[-\*\d\.]+\s+/gm, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+
+  const elevenKey = currentMode === 'cloud'
+    ? document.getElementById('elevenKey').value.trim()
+    : document.getElementById('elevenKeyLocal').value.trim();
+  const voiceIdVal = currentMode === 'cloud'
+    ? (document.getElementById('voiceId').value.trim() || '21m00Tcm4TlvDq8ikWAM')
+    : (document.getElementById('voiceIdLocal').value.trim() || '21m00Tcm4TlvDq8ikWAM');
+
+  if (elevenKey) {
+    // ElevenLabs TTS
+    setStatus('🔊 Generating undead voice…', 'thinking');
+    try {
+      const ttsResp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceIdVal}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xi-api-key': elevenKey
+        },
+        body: JSON.stringify({
+          text: plainText,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: 0.4, similarity_boost: 0.8 }
+        })
+      });
+      if (!ttsResp.ok) throw new Error('ElevenLabs: ' + ttsResp.status);
+      const audioData = await ttsResp.arrayBuffer();
+      const blob      = new Blob([audioData], { type: 'audio/mpeg' });
+      const url       = URL.createObjectURL(blob);
+      const audioEl   = document.getElementById('responseAudio');
+      audioEl.src     = url;
+      document.getElementById('audioPlayer').classList.add('visible');
+      audioEl.play();
+      setStatus('✅ Bol-ZombAI has spoken. Tremble.', 'ok');
+    } catch(e) {
+      setStatus('❌ ElevenLabs failed: ' + e.message + ' — falling back to browser TTS.', 'idle');
+      speakBrowser(plainText);
+    }
+  } else {
+    // Browser built-in TTS (fully offline)
+    setStatus('🔊 Speaking via browser TTS (no ElevenLabs key)…', 'thinking');
+    speakBrowser(plainText);
+  }
+}
+
+function speakBrowser(text) {
+  if (!('speechSynthesis' in window)) {
+    setStatus('✅ Response shown above (no TTS available).', 'ok');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate  = 0.92;
+  utt.pitch = 0.85;
+  utt.onend = () => setStatus('✅ Bol-ZombAI has spoken. Tremble.', 'ok');
+  utt.onerror = () => setStatus('✅ Response shown above.', 'ok');
+  window.speechSynthesis.speak(utt);
+}
+
+// ══════════════════════════════
+// CHAT UI
+// ══════════════════════════════
+let pendingUserMsg = null;
+
+function addMessage(role, text) {
+  const container = document.getElementById('chatContainer');
+
+  if (role === 'user') {
+    const exchange = document.createElement('div');
+    exchange.className = 'exchange-block';
+    exchange.style.animation = 'fadeUp 0.35s ease';
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-delete-row';
+    delBtn.textContent = '✕ Delete';
+    delBtn.onclick = () => {
+      exchange.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+      exchange.style.opacity = '0';
+      exchange.style.transform = 'translateY(-6px)';
+      setTimeout(() => {
+        exchange.remove();
+        if (!container.children.length) document.getElementById('clearAllBtn').classList.remove('visible');
+      }, 260);
+    };
+    exchange.appendChild(delBtn);
+
+    const div = document.createElement('div');
+    div.className = 'message-box user-msg';
+    div.innerHTML = `<div class="msg-label">💀 You (Mortal)</div>
+      <div class="msg-text">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br/>')}</div>`;
+    exchange.appendChild(div);
+    container.prepend(exchange);
+    pendingUserMsg = exchange;
+    document.getElementById('clearAllBtn').classList.add('visible');
+
+  } else {
+    const modeLabel = currentMode === 'local'
+      ? `☠ Local AI — ${getLocalModel()}`
+      : '☠ Bol-ZombAI (Claude)';
+    const target = pendingUserMsg || container.firstElementChild;
+    if (target) {
+      const div = document.createElement('div');
+      div.className = 'message-box ai-msg';
+      div.innerHTML = `<div class="msg-label">${modeLabel}</div>
+        <div class="msg-text">${parseMarkdown(text)}</div>`;
+      target.appendChild(div);
+    }
+    pendingUserMsg = null;
+  }
+}
+
+const thinkingMessages = [
+  'Consulting the necronomicon…',
+  'Rewiring dead neurons…',
+  'Raising the answer from its grave…',
+  'Decoding ancient undead wisdom…',
+  'The skull is decomposing… wait, processing…',
+  'Communing with digital spirits…',
+  'Invoking the local oracle…',
+];
+
+function clearHistory() {
+  document.getElementById('chatContainer').innerHTML = '';
+  document.getElementById('audioPlayer').classList.remove('visible');
+  document.getElementById('responseAudio').src = '';
+  document.getElementById('clearAllBtn').classList.remove('visible');
+  pendingUserMsg = null;
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  setStatus('Awaiting your voice, mortal…', 'idle');
+}
+
+// ══════════════════════════════
+// SPEECH RECOGNITION
+// ══════════════════════════════
+let recognition = null;
+
+const origStart = startRecording;
+window.startRecording = async function() {
+  window._lastTranscript = '';
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous     = true;
+    recognition.interimResults = false;
+    recognition.lang           = 'en-US';
+    const parts = [];
+    recognition.onresult = e => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) parts.push(e.results[i][0].transcript);
+      }
+      window._lastTranscript = parts.join(' ');
+    };
+    recognition.onerror = () => {};
+    recognition.start();
+  }
+  await origStart();
+};
+
+const origStop = stopRecording;
+window.stopRecording = function() {
+  if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+  origStop();
+};
+</script>
+</body>
+</html>
