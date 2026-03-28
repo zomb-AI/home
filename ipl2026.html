@@ -248,6 +248,92 @@ footer{position:relative;z-index:3;padding:40px;text-align:center;border-top:1px
   .stats4{grid-template-columns:1fr 1fr;}
   .hero-h1{font-size:clamp(70px,20vw,120px);}
 }
+
+/* ── VIEW PROMPT BUTTON ── */
+.btn-view-prompt{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 16px;
+  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2.5px;
+  color:#04060D;
+  background:linear-gradient(135deg,#FFD700,#FF8C00);
+  border:none;border-radius:3px;cursor:pointer;
+  box-shadow:0 0 14px rgba(255,215,0,0.45),0 2px 8px rgba(0,0,0,0.4);
+  transition:var(--transition);white-space:nowrap;position:relative;overflow:hidden;
+}
+.btn-view-prompt::before{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
+  transition:.45s;
+}
+.btn-view-prompt:hover::before{left:100%;}
+.btn-view-prompt:hover{
+  box-shadow:0 0 28px rgba(255,215,0,0.7),0 4px 16px rgba(0,0,0,0.5);
+  transform:translateY(-2px);
+}
+
+/* ── PROMPT POPOVER ── */
+#promptOv{
+  display:none;position:fixed;inset:0;z-index:1100;
+  background:rgba(0,0,0,0.82);backdrop-filter:blur(18px);
+  align-items:center;justify-content:center;padding:16px;
+}
+#promptOv.on{display:flex;}
+.prompt-box{
+  background:linear-gradient(160deg,#0c1120,#0a0d1a);
+  border:1px solid rgba(255,215,0,0.3);
+  border-top:3px solid #FFD700;
+  border-radius:12px;
+  max-width:640px;width:100%;
+  max-height:88vh;overflow-y:auto;
+  animation:mIn .32s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 0 60px rgba(255,215,0,0.12),0 24px 60px rgba(0,0,0,0.6);
+}
+.prompt-head{
+  padding:18px 22px;border-bottom:1px solid rgba(255,215,0,0.15);
+  display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;background:#0c1120;z-index:1;border-radius:12px 12px 0 0;
+}
+.prompt-title{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;
+  background:linear-gradient(135deg,#FFD700,#FF8C00);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.prompt-body{padding:22px;}
+.prompt-label{
+  font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:4px;
+  color:rgba(255,215,0,0.6);text-transform:uppercase;margin-bottom:12px;
+}
+.prompt-text{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,215,0,0.12);
+  border-radius:8px;padding:18px;
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;
+  line-height:1.75;color:rgba(240,236,236,0.9);
+  letter-spacing:.3px;white-space:pre-wrap;
+  max-height:340px;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(255,215,0,0.3) transparent;
+}
+.prompt-text::-webkit-scrollbar{width:3px;}
+.prompt-text::-webkit-scrollbar-thumb{background:rgba(255,215,0,0.35);border-radius:2px;}
+.prompt-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.btn-copy-prompt{
+  flex:1;padding:11px 20px;
+  font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FF8C00);
+  color:#04060D;border:none;border-radius:3px;cursor:pointer;
+  transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 2px 12px rgba(255,215,0,0.3);
+}
+.btn-copy-prompt:hover{box-shadow:0 4px 24px rgba(255,215,0,0.5);transform:translateY(-1px);}
+.btn-copy-prompt.copied{background:linear-gradient(135deg,#00ff88,#00cc66);color:#04060D;}
+.btn-ok-prompt{
+  flex:1;padding:11px 20px;
+  font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;
+  background:transparent;color:rgba(255,255,255,0.7);
+  border:1px solid rgba(255,255,255,0.2);border-radius:3px;cursor:pointer;
+  transition:var(--transition);
+}
+.btn-ok-prompt:hover{border-color:#fff;color:#fff;box-shadow:var(--glow-white);}
 </style>
 </head>
 <body>
@@ -269,10 +355,13 @@ footer{position:relative;z-index:3;padding:40px;text-align:center;border-top:1px
     <a class="nav-link" href="#hero">HOME</a>
     <a class="nav-link" href="#schedule">SCHEDULE</a>
     <a class="nav-link" href="#history">HISTORY</a>
-    <a class="nav-link ext" href="https://balram3429.github.io/zombAI-IPL-Predictor/" target="_blank">⚡ IPL ORACLE</a>
-    <a class="nav-link ext" href="https://balram3429.github.io/zombAI-ganador/" target="_blank">🏆 ZOMBAI GANADOR</a>
+    <a class="nav-link ext" href="https://balram3429.github.io/zombAI-IPL-Predictor/" target="_blank" style="display:none">⚡ IPL ORACLE</a>
+    <a class="nav-link ext" href="https://balram3429.github.io/zombAI-ganador/" target="_blank" style="display:none">🏆 ZOMBAI GANADOR</a>
   </div>
   <div class="nav-right">
+    <button class="btn-view-prompt" onclick="document.getElementById('promptOv').classList.add('on')">
+      ✦ VIEW PROMPT
+    </button>
     <div class="nav-live"><span class="live-dot"></span><span>LIVE</span></div>
     <button class="sound-btn" id="sndBtn">🔇</button>
   </div>
@@ -342,6 +431,44 @@ footer{position:relative;z-index:3;padding:40px;text-align:center;border-top:1px
 <div class="overlay" id="predOv"><div class="mbox" id="predBox"></div></div>
 <div class="overlay" id="statsOv"><div class="mbox" id="statsBox"></div></div>
 <div class="overlay" id="finalOv"><div class="mbox" id="finalBox"></div></div>
+
+<!-- PROMPT POPOVER -->
+<div id="promptOv">
+  <div class="prompt-box">
+    <div class="prompt-head">
+      <div class="prompt-title">✦ THE PROMPT</div>
+      <button class="mclose" onclick="document.getElementById('promptOv').classList.remove('on')">✕</button>
+    </div>
+    <div class="prompt-body">
+      <div class="prompt-label">Original prompt used to build this tool</div>
+      <div class="prompt-text" id="promptTextEl"> I want a tool named as "Zomb.Ai-IPL-2026" that analyses the Historical data of Indian Premier League since its existence and use the data as base for all the analysis.
+	∙	It should list the 2026 IPL Schedule as Tiles.
+	∙	Add to the tiles the format of the game for that day, TEAM, Date Time.
+	∙	On Tapping the schedule card, it should  provide details of the Teams /Match/ stadium. - A button to see the Past Statistics
+	∙	There should be a button named " WHO WILL BE WINNER"
+	∙	Using Advance Predictive analysis models, provide the Winning Team probability
+	∙	Loosing probability of the participating team
+	∙	Also Provide the Factors affecting the Match like Pitch Type, Weather, Humidity, Wind depending on the Location of the Match, Chasing team Probability.
+	∙	Add some Graphs &amp; Charts for better representation.
+This tool should be a Single page website,
+	∙	Add 5 HERO Banner of last 5 IPL FINAL SCORE CARD &amp; tap details to the  Team Formation Details.
+[ NATURE ] - CRICKET STYLE, SPORTY, Adrenaline feel
+[COLOR] - IPL Team Colors MIX
+[TYPOGRAPHY] - Bold, Futuristic,
+Theme: aggressive, SOFT BOLD, powerful, IPL Team Logos Randomly scattered in Background visibility.
+Colors:  luxury, exclusivity, premium,  Bebas
+Body: Background sound Stadium Noise during landing</div>
+      <div class="prompt-actions">
+        <button class="btn-copy-prompt" id="copyPromptBtn" onclick="copyPrompt()">
+          📋 COPY PROMPT
+        </button>
+        <button class="btn-ok-prompt" onclick="document.getElementById('promptOv').classList.remove('on')">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 const LOGO={
@@ -778,6 +905,27 @@ window.addEventListener('load',()=>{
   makeSpeedLines();renderFinals();renderSchedule();renderHistory();
   setTimeout(()=>{document.getElementById('loader').classList.add('gone');setTimeout(()=>{const l=document.getElementById('loader');if(l)l.remove();},600);},2200);
 });
+
+// Close prompt popover on backdrop click
+document.getElementById('promptOv').addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');});
+
+function copyPrompt(){
+  const txt=document.getElementById('promptTextEl').innerText;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById('copyPromptBtn');
+    btn.classList.add('copied');btn.textContent='✅ COPIED!';
+    setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📋 COPY PROMPT';},2200);
+  }).catch(()=>{
+    // Fallback for older browsers
+    const ta=document.createElement('textarea');
+    ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn=document.getElementById('copyPromptBtn');
+    btn.classList.add('copied');btn.textContent='✅ COPIED!';
+    setTimeout(()=>{btn.classList.remove('copied');btn.textContent='📋 COPY PROMPT';},2200);
+  });
+}
 </script>
 </body>
 </html>
