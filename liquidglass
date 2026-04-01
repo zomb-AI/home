@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liquid Glass</title>
+  <!--
+  LIQUID GLASS - Phase 1: Shell, Layout, Canvas Layers, Activation UI, Auto-Hide Control Panel
+  Module Map:
+    [M1] CSS Variables & Reset
+    [M2] Canvas Layer Stack     (webcam-canvas + ripple-canvas)
+    [M3] Activation Overlay     (brand, frosted button)
+    [M4] Control Panel Bar      (auto-hide, sliders, reset)
+    [M5] Status Badge + Error Toast
+    [M6] Custom Cursor
+    [M7] Shell JS               (cursor, resize, panel, sliders, global LG object)
+
+  Phase stubs for future modules:
+    LG.startWebcam()  <- Phase 2
+    LG.initMP()       <- Phase 3
+    detectGesture()   <- Phase 4
+    RippleSystem      <- Phase 5
+    WebGLRenderer     <- Phase 6
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    /* =========================================================
+       [M1] DESIGN TOKENS
+    ========================================================= */
+    :root {
+      --bg:           #050810;
+      --ice:          #a8d8f0;
+      --ice-dim:      rgba(168,216,240,0.15);
+      --ice-glow:     rgba(168,216,240,0.35);
+      --pearl:        rgba(255,255,255,0.88);
+      --panel-bg:     rgba(7,13,24,0.86);
+      --panel-border: rgba(168,216,240,0.16);
+      --font-d:       'Cormorant Garamond', serif;
+      --font-ui:      'DM Mono', monospace;
+      --panel-h:      88px;
+      --ease:         cubic-bezier(0.16,1,0.3,1);
+    }
+
+    /* RESET */
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; user-select:none; }
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--pearl); font-family:var(--font-ui); cursor:none; -webkit-font-smoothing:antialiased; }
+    button { font-family:var(--font-ui); background:none; border:none; }
+
+    /* =========================================================
+       [M6] CUSTOM CURSOR
+       Two-layer: snap dot + lagging ghost ring
+    ========================================================= */
+    #cursor { position:fixed; width:10px; height:10px; border-radius:50%; background:var(--ice); box-shadow:0 0 10px 3px var(--ice-glow); pointer-events:none; z-index:9999; transform:translate(-50%,-50%); will-change:left,top; }
+    #cursor-ring { position:fixed; width:34px; height:34px; border-radius:50%; border:1px solid rgba(168,216,240,0.5); pointer-events:none; z-index:9998; transform:translate(-50%,-50%); will-change:left,top; }
+
+    /* =========================================================
+       [M2] CANVAS LAYER STACK
+       webcam-canvas z:1 — 2D context, video frames (Phase 2)
+       ripple-canvas z:2 — WebGL context, ripple shader (Phase 6)
+    ========================================================= */
+    #stage { position:fixed; inset:0; }
+    canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    #webcam-canvas { z-index:1; background:#000; }
+    #ripple-canvas { z-index:2; pointer-events:none; }
+
+    /* =========================================================
+       [M3] ACTIVATION OVERLAY
+    ========================================================= */
+    #activation-overlay {
+      position:fixed; inset:0; z-index:10;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:radial-gradient(ellipse 75% 65% at 50% 50%, rgba(10,20,46,0.72) 0%, rgba(5,8,16,0.97) 100%);
+      backdrop-filter:blur(2px);
+      transition:opacity 0.9s var(--ease), visibility 0.9s var(--ease);
+    }
+    #activation-overlay.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+
+    /* Ambient concentric rings */
+    .ambient-ring { position:absolute; border-radius:50%; border:1px solid var(--ice-dim); pointer-events:none; animation:pulse-ring 5s ease-in-out infinite; }
+    .ambient-ring:nth-child(1) { width:300px; height:300px; animation-delay:0s; }
+    .ambient-ring:nth-child(2) { width:480px; height:480px; animation-delay:1.2s; border-color:rgba(168,216,240,0.07); }
+    .ambient-ring:nth-child(3) { width:680px; height:680px; animation-delay:2.4s; border-color:rgba(168,216,240,0.04); }
+    .ambient-ring:nth-child(4) { width:900px; height:900px; animation-delay:3.6s; border-color:rgba(168,216,240,0.02); }
+    @keyframes pulse-ring { 0%,100%{transform:scale(1);opacity:.7;} 50%{transform:scale(1.05);opacity:.2;} }
+
+    /* Brand block */
+    .brand-block { display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:60px; position:relative; z-index:1; animation:fade-up 1.1s var(--ease) both; }
+    .brand-eyebrow { font-size:9.5px; letter-spacing:.38em; color:var(--ice); opacity:.6; text-transform:uppercase; }
+    .brand-title {
+      font-family:var(--font-d); font-size:clamp(56px,9vw,104px); font-weight:300; letter-spacing:-.01em; line-height:1;
+      background:linear-gradient(140deg,#fff 0%,var(--ice) 38%,rgba(200,235,255,.55) 70%,#fff 100%);
+      background-size:200% 200%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      animation:shimmer 6s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
+    .brand-subtitle { font-size:10.5px; letter-spacing:.18em; color:rgba(168,216,240,.42); margin-top:2px; font-style:italic; }
+
+    /* Frosted glass CTA button */
+    #btn-activate {
+      position:relative; z-index:1;
+      display:flex; align-items:center; gap:14px;
+      padding:18px 48px; border:1px solid rgba(168,216,240,.28); border-radius:40px;
+      background:rgba(168,216,240,.06); backdrop-filter:blur(20px);
+      color:rgba(255,255,255,.82); font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+      cursor:none; outline:none; overflow:hidden;
+      transition:background .4s var(--ease), border-color .4s var(--ease), box-shadow .4s var(--ease), transform .3s var(--ease), color .3s ease;
+      animation:fade-up 1.1s .25s var(--ease) both;
+    }
+    #btn-activate::before { content:''; position:absolute; top:0;left:0;right:0;height:50%; background:linear-gradient(180deg,rgba(255,255,255,.09) 0%,transparent 100%); border-radius:inherit; pointer-events:none; }
+    #btn-activate::after  { content:''; position:absolute; inset:0; background:linear-gradient(110deg,transparent 0%,rgba(168,216,240,.14) 50%,transparent 100%); transform:translateX(-100%); transition:transform .5s ease; border-radius:inherit; }
+    #btn-activate:hover::after { transform:translateX(100%); }
+    #btn-activate:hover { background:rgba(168,216,240,.11); border-color:rgba(168,216,240,.55); box-shadow:0 0 36px rgba(168,216,240,.18),0 0 80px rgba(168,216,240,.07),inset 0 1px 0 rgba(255,255,255,.12); transform:translateY(-3px); color:#fff; }
+    #btn-activate:active { transform:translateY(-1px); }
+
+    .btn-dot { width:7px; height:7px; border-radius:50%; background:var(--ice); box-shadow:0 0 7px 2px var(--ice-glow); flex-shrink:0; animation:btn-pulse 2.2s ease-in-out infinite; }
+    @keyframes btn-pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.45;transform:scale(.85);} }
+    .permission-hint { position:relative; z-index:1; margin-top:28px; font-size:9.5px; letter-spacing:.12em; color:rgba(168,216,240,.28); animation:fade-up 1.1s .5s var(--ease) both; }
+
+    /* =========================================================
+       [M5] STATUS BADGE + ERROR TOAST
+    ========================================================= */
+    #status-badge { position:fixed; top:22px; left:26px; z-index:20; display:flex; align-items:center; gap:10px; padding:8px 16px 8px 12px; border-radius:99px; background:rgba(7,13,24,.72); border:1px solid var(--panel-border); backdrop-filter:blur(14px); font-size:9.5px; letter-spacing:.15em; color:rgba(168,216,240,.65); opacity:0; transform:translateY(-10px); transition:opacity .6s var(--ease),transform .6s var(--ease); pointer-events:none; }
+    #status-badge.visible { opacity:1; transform:translateY(0); }
+    .status-dot { width:6px; height:6px; border-radius:50%; background:#3ddc84; box-shadow:0 0 7px rgba(61,220,132,.65); flex-shrink:0; animation:btn-pulse 2s infinite; }
+    .status-dot.tracking { background:var(--ice); box-shadow:0 0 7px var(--ice-glow); }
+    #error-toast { position:fixed; top:24px; left:50%; transform:translateX(-50%) translateY(-90px); z-index:100; padding:13px 28px; border-radius:10px; background:rgba(200,50,50,.16); border:1px solid rgba(220,80,80,.38); backdrop-filter:blur(18px); font-size:10.5px; letter-spacing:.1em; color:#ffb0b0; transition:transform .5s var(--ease); pointer-events:none; white-space:nowrap; }
+    #error-toast.show { transform:translateX(-50%) translateY(0); }
+
+    /* =========================================================
+       [M4] CONTROL PANEL BAR (auto-hide)
+    ========================================================= */
+    #panel-trigger { position:fixed; bottom:0; left:0; right:0; height:22px; z-index:29; }
+    #control-panel { position:fixed; bottom:0; left:0; right:0; z-index:30; height:var(--panel-h); background:var(--panel-bg); border-top:1px solid var(--panel-border); backdrop-filter:blur(28px); display:flex; align-items:center; padding:0 28px; gap:22px; transform:translateY(100%); transition:transform .45s var(--ease); will-change:transform; }
+    #control-panel.visible { transform:translateY(0); }
+
+    .panel-handle { position:absolute; top:-26px; left:50%; transform:translateX(-50%); width:52px; height:26px; background:var(--panel-bg); border:1px solid var(--panel-border); border-bottom:none; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; }
+    .panel-handle-bar { width:22px; height:2px; border-radius:2px; background:rgba(168,216,240,.25); }
+
+    .panel-brand { display:flex; flex-direction:column; gap:3px; flex-shrink:0; }
+    .panel-brand-name { font-family:var(--font-d); font-size:17px; font-weight:300; letter-spacing:.04em; line-height:1; background:linear-gradient(90deg,#fff 0%,var(--ice) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .panel-brand-sub { font-size:7.5px; letter-spacing:.22em; color:rgba(168,216,240,.32); text-transform:uppercase; }
+
+    .panel-divider { width:1px; height:42px; background:var(--panel-border); flex-shrink:0; }
+
+    .ctrl-group { display:flex; flex-direction:column; gap:7px; min-width:94px; }
+    .ctrl-header { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+    .ctrl-name { font-size:8.5px; letter-spacing:.14em; color:rgba(168,216,240,.42); text-transform:uppercase; white-space:nowrap; }
+    .ctrl-value { font-size:9px; color:var(--ice); letter-spacing:.05em; min-width:30px; text-align:right; }
+
+    input[type="range"] { -webkit-appearance:none; appearance:none; width:100%; height:2px; background:rgba(168,216,240,.14); border-radius:2px; outline:none; cursor:none; }
+    input[type="range"]:hover { background:rgba(168,216,240,.24); }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:13px; height:13px; border-radius:50%; background:var(--ice); box-shadow:0 0 8px 2px var(--ice-glow),0 0 0 2px rgba(168,216,240,.15); cursor:none; transition:transform .18s ease,box-shadow .18s ease; }
+    input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.35); box-shadow:0 0 14px 4px var(--ice-glow),0 0 0 3px rgba(168,216,240,.2); }
+    input[type="range"]::-moz-range-thumb { width:13px; height:13px; border-radius:50%; background:var(--ice); box-shadow:0 0 8px 2px var(--ice-glow); border:none; cursor:none; }
+
+    #btn-reset { display:flex; align-items:center; gap:8px; padding:8px 18px; border-radius:6px; border:1px solid var(--panel-border); background:transparent; color:rgba(168,216,240,.42); font-size:9px; letter-spacing:.2em; text-transform:uppercase; cursor:none; transition:border-color .22s,color .22s,background .22s; flex-shrink:0; white-space:nowrap; }
+    #btn-reset:hover { border-color:rgba(168,216,240,.38); color:var(--ice); background:rgba(168,216,240,.06); }
+
+    #btn-cursor-toggle { display:flex; align-items:center; gap:8px; padding:8px 18px; border-radius:6px; border:1px solid var(--panel-border); background:transparent; color:rgba(168,216,240,.42); font-size:9px; letter-spacing:.2em; text-transform:uppercase; cursor:none; transition:border-color .22s,color .22s,background .22s; flex-shrink:0; white-space:nowrap; }
+    #btn-cursor-toggle:hover { border-color:rgba(168,216,240,.38); color:var(--ice); background:rgba(168,216,240,.06); }
+    #btn-cursor-toggle.on { border-color:rgba(168,216,240,.55); color:var(--ice); background:rgba(168,216,240,.08); }
+    #btn-cursor-toggle.on #cursor-toggle-icon { color:var(--ice); text-shadow:0 0 8px var(--ice-glow); }
+
+    .panel-live-stat { display:flex; flex-direction:column; gap:3px; align-items:center; flex-shrink:0; }
+    .live-stat-value { font-size:22px; font-weight:300; color:var(--ice); letter-spacing:-.02em; line-height:1; }
+    .live-stat-label { font-size:7.5px; letter-spacing:.18em; color:rgba(168,216,240,.32); text-transform:uppercase; }
+
+    @keyframes fade-up { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
+
+    /* Grain overlay */
+    #grain { position:fixed; inset:0; z-index:50; pointer-events:none; opacity:.022; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size:256px 256px; }
+  </style>
+</head>
+<body>
+
+  <div id="grain"></div>
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <div id="error-toast" role="alert"></div>
+
+  <div id="status-badge">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">LIVE</span>
+  </div>
+
+  <!-- [M2] FULLSCREEN CANVAS STAGE -->
+  <div id="stage">
+    <canvas id="webcam-canvas" aria-hidden="true"></canvas>
+    <canvas id="ripple-canvas" aria-hidden="true"></canvas>
+  </div>
+
+  <!-- [M3] ACTIVATION OVERLAY -->
+  <div id="activation-overlay" role="main">
+    <div class="ambient-ring"></div>
+    <div class="ambient-ring"></div>
+    <div class="ambient-ring"></div>
+    <div class="ambient-ring"></div>
+    <div class="brand-block">
+      <span class="brand-eyebrow">Hand &middot; Interaction &middot; Demo</span>
+      <h1 class="brand-title">Liquid Glass</h1>
+      <p class="brand-subtitle">raise your index finger to sculpt light</p>
+    </div>
+    <button id="btn-activate" aria-label="Activate hand detection">
+      <span class="btn-dot"></span>
+      Activate Detection
+    </button>
+    <p class="permission-hint">Webcam required &nbsp;&middot;&nbsp; No data stored or transmitted</p>
+  </div>
+
+  <!-- [M4] CONTROL PANEL BAR (auto-hide) -->
+  <div id="panel-trigger" aria-hidden="true"></div>
+  <div id="control-panel" role="toolbar" aria-label="Ripple controls">
+    <div class="panel-handle" aria-hidden="true"><div class="panel-handle-bar"></div></div>
+    <div class="panel-brand">
+      <span class="panel-brand-name">Liquid Glass</span>
+      <span class="panel-brand-sub">Controls</span>
+    </div>
+    <div class="panel-divider"></div>
+    <div class="panel-live-stat">
+      <span class="live-stat-value" id="live-ripple-count">0</span>
+      <span class="live-stat-label">Ripples</span>
+    </div>
+    <div class="panel-divider"></div>
+    <div class="ctrl-group">
+      <div class="ctrl-header"><span class="ctrl-name">Lifetime</span><span class="ctrl-value" id="val-lifetime">2.5s</span></div>
+      <input type="range" id="ctrl-lifetime" min="0.5" max="6" step="0.1" value="2.5" />
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-header"><span class="ctrl-name">Max Radius</span><span class="ctrl-value" id="val-radius">180</span></div>
+      <input type="range" id="ctrl-radius" min="60" max="420" step="10" value="180" />
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-header"><span class="ctrl-name">Spawn Dist</span><span class="ctrl-value" id="val-spawn">15</span></div>
+      <input type="range" id="ctrl-spawn" min="4" max="60" step="1" value="15" />
+    </div>
+    <div class="panel-divider"></div>
+    <div class="ctrl-group">
+      <div class="ctrl-header"><span class="ctrl-name">Refraction</span><span class="ctrl-value" id="val-refraction">1.00</span></div>
+      <input type="range" id="ctrl-refraction" min="0" max="3" step="0.05" value="1.0" />
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-header"><span class="ctrl-name">Ring Width</span><span class="ctrl-value" id="val-ring">12</span></div>
+      <input type="range" id="ctrl-ring" min="2" max="48" step="1" value="12" />
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-header"><span class="ctrl-name">Highlight</span><span class="ctrl-value" id="val-highlight">0.60</span></div>
+      <input type="range" id="ctrl-highlight" min="0" max="1.5" step="0.05" value="0.6" />
+    </div>
+    <div class="ctrl-group" style="min-width:88px">
+      <div class="ctrl-header"><span class="ctrl-name">Max Ripples</span><span class="ctrl-value" id="val-maxripples">40</span></div>
+      <input type="range" id="ctrl-maxripples" min="5" max="80" step="5" value="40" />
+    </div>
+    <div class="panel-divider"></div>
+    <button id="btn-reset" aria-label="Reset all controls">&#8635;&nbsp; Reset</button>
+    <div class="panel-divider"></div>
+    <button id="btn-cursor-toggle" aria-label="Toggle finger indicator" title="Toggle finger dot &amp; ring">
+      <span id="cursor-toggle-icon">&#9679;</span>&nbsp; Cursor
+    </button>
+  </div>
+
+  <!-- [M7] SHELL JAVASCRIPT -->
+  <script>
+    'use strict';
+
+    /*
+     * GLOBAL LG OBJECT
+     * Single source of truth. All phases read/write through window.LG.
+     */
+    window.LG = {
+      params: {
+        lifetime:   2.5,   // seconds each ripple lives
+        maxRadius:  180,   // px at end of life
+        spawnDist:  15,    // min px movement before spawning
+        refraction: 1.0,   // shader UV distortion multiplier
+        ringWidth:  12,    // ring feather width (px)
+        highlight:  0.60,  // glass shimmer brightness
+        maxRipples: 40,    // active ripple array cap
+      },
+      state: {
+        active:      false,  // true after activation button click
+        tracking:    false,  // true when gesture is active
+        rippleCount: 0,
+      },
+      dom: {},
+      // Phase stubs (overwritten by later phases)
+      onResize:    null,   // Phase 6 WebGL viewport update
+      startWebcam: null,   // Phase 2
+      initMP:      null,   // Phase 3
+    };
+
+    /* DOM references — wired into LG.dom for cross-phase access */
+    const webcamCanvas    = document.getElementById('webcam-canvas');
+    const rippleCanvas    = document.getElementById('ripple-canvas');
+    const cursor          = document.getElementById('cursor');
+    const cursorRing      = document.getElementById('cursor-ring');
+    const overlay         = document.getElementById('activation-overlay');
+    const statusBadge     = document.getElementById('status-badge');
+    const statusDot       = document.getElementById('status-dot');
+    const statusText      = document.getElementById('status-text');
+    const errorToast      = document.getElementById('error-toast');
+    const panel           = document.getElementById('control-panel');
+    const panelTrigger    = document.getElementById('panel-trigger');
+    const liveRippleCount = document.getElementById('live-ripple-count');
+
+    Object.assign(LG.dom, { webcamCanvas, rippleCanvas, statusBadge, statusDot, statusText, liveRippleCount });
+
+    /*
+     * [M6] CURSOR ANIMATION
+     * Dot: snaps directly to mouse position each frame.
+     * Ring: lerps toward mouse with lag (factor 0.13) for fluid feel.
+     */
+    let mx=-100, my=-100, rx=-100, ry=-100;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    (function animateCursor(){
+      cursor.style.left = mx + 'px';  cursor.style.top = my + 'px';
+      rx += (mx - rx) * 0.13;         ry += (my - ry) * 0.13;
+      cursorRing.style.left = rx + 'px'; cursorRing.style.top = ry + 'px';
+      requestAnimationFrame(animateCursor);
+    })();
+
+    /*
+     * CANVAS RESIZE
+     * Keeps both canvases pixel-perfect to viewport dimensions.
+     * Fires LG.onResize hook when Phase 6 WebGL renderer is attached.
+     */
+    function resizeCanvases() {
+      const w = window.innerWidth, h = window.innerHeight;
+      webcamCanvas.width = w;  webcamCanvas.height = h;
+      rippleCanvas.width = w;  rippleCanvas.height = h;
+      if (typeof LG.onResize === 'function') LG.onResize(w, h);
+    }
+    resizeCanvases();
+    window.addEventListener('resize', resizeCanvases);
+
+    /*
+     * [M4] CONTROL PANEL AUTO-HIDE
+     * Show on hover near bottom edge.
+     * Hide 2 seconds after mouse leaves panel or trigger zone.
+     */
+    let panelTimer = null;
+    function showPanel() { panel.classList.add('visible'); clearTimeout(panelTimer); }
+    function scheduleHide() { clearTimeout(panelTimer); panelTimer = setTimeout(() => panel.classList.remove('visible'), 2000); }
+    panelTrigger.addEventListener('mouseenter', showPanel);
+    panel.addEventListener('mouseenter', () => { clearTimeout(panelTimer); panel.classList.add('visible'); });
+    panel.addEventListener('mouseleave', scheduleHide);
+    panelTrigger.addEventListener('mouseleave', scheduleHide);
+
+    /*
+     * SLIDER DEFINITIONS
+     * Maps slider id suffix -> { default, formatter, LG.params key }
+     */
+    const SLIDERS = {
+      lifetime:   { val:2.5,  fmt:v=>v.toFixed(1)+'s', key:'lifetime'   },
+      radius:     { val:180,  fmt:v=>Math.round(v),     key:'maxRadius'  },
+      spawn:      { val:15,   fmt:v=>Math.round(v),     key:'spawnDist'  },
+      refraction: { val:1.0,  fmt:v=>v.toFixed(2),      key:'refraction' },
+      ring:       { val:12,   fmt:v=>Math.round(v),     key:'ringWidth'  },
+      highlight:  { val:0.6,  fmt:v=>v.toFixed(2),      key:'highlight'  },
+      maxripples: { val:40,   fmt:v=>Math.round(v),     key:'maxRipples' },
+    };
+
+    /* Bind sliders: input event -> update label + LG.params */
+    Object.entries(SLIDERS).forEach(([id, def]) => {
+      const slider = document.getElementById('ctrl-' + id);
+      const valEl  = document.getElementById('val-'  + id);
+      function sync() { const v = parseFloat(slider.value); valEl.textContent = def.fmt(v); LG.params[def.key] = v; }
+      slider.addEventListener('input', sync);
+      sync(); // initialise display from HTML default value
+    });
+
+    /* Reset button: restore all sliders to defaults */
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      Object.entries(SLIDERS).forEach(([id, def]) => {
+        const s = document.getElementById('ctrl-' + id);
+        s.value = def.val;
+        s.dispatchEvent(new Event('input'));
+      });
+    });
+
+    /*
+     * ACTIVATION BUTTON
+     * Phase 1: dismisses overlay, shows status badge.
+     * Calls LG.startWebcam (Phase 2) and LG.initMP (Phase 3) when ready.
+     */
+    document.getElementById('btn-activate').addEventListener('click', async () => {
+      LG.state.active = true;
+      overlay.classList.add('hidden');
+      statusBadge.classList.add('visible');
+      LG.setStatus('LIVE', false);
+      if (typeof LG.startWebcam === 'function') await LG.startWebcam();
+      if (typeof LG.initMP      === 'function') await LG.initMP();
+    });
+
+    /* GLOBAL HELPERS (used by all phases) */
+
+    /** Display error toast for 5 seconds */
+    LG.showError = msg => {
+      errorToast.textContent = '\u26A0  ' + msg;
+      errorToast.classList.add('show');
+      setTimeout(() => errorToast.classList.remove('show'), 5000);
+    };
+
+    /** Update status badge text and dot colour */
+    LG.setStatus = (text, isTracking) => {
+      statusText.textContent = text;
+      statusDot.className    = 'status-dot' + (isTracking ? ' tracking' : '');
+      LG.state.tracking      = isTracking;
+    };
+
+    /** Update the live ripple counter in the control panel */
+    LG.updateRippleCount = n => {
+      LG.state.rippleCount = n;
+      liveRippleCount.textContent = n;
+    };
+
+    /*
+    =================================================================
+    PHASE 1 MEMORY SNAPSHOT
+    -----------------------------------------------------------------
+    LG.params       OK  all 7 params from slider defaults
+    LG.dom          OK  canvas + badge DOM refs wired
+    Canvas sizing   OK  matches viewport, resize-safe, fires onResize
+    Cursor          OK  dot + lagging ring, rAF loop
+    Control panel   OK  auto-hide, all sliders bound + reset
+    Overlay         OK  dismisses + badge appears on click
+    Error toast     OK  LG.showError() helper
+    Status badge    OK  LG.setStatus() helper
+    Ripple counter  OK  LG.updateRippleCount() helper
+    Phase stubs     OK  LG.startWebcam / LG.initMP / LG.onResize
+
+    Next: Phase 2 -- Webcam Feed
+      Injects:   LG.startWebcam()
+      Writes to: webcamCanvas (2D drawImage each frame)
+      Reads:     LG.dom.webcamCanvas, LG.state
+    =================================================================
+    */
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MODULE 2  —  WEBCAM FEED
+       Responsibilities:
+         • getUserMedia (video only, front camera preferred)
+         • Stream frames into webcamCanvas via 2D drawImage each rAF
+         • Cover-fit: fill canvas maintaining aspect, crop surplus
+         • Horizontal mirror (selfie convention)
+         • Vertical orientation: drawn UPRIGHT in 2D canvas
+           (WebGL M6 will set UNPACK_FLIP_Y_WEBGL=true to compensate
+            for GL's inverted Y texture convention)
+         • Graceful degradation: permission denied / no device
+         • Exposes: LG.startWebcam(), LG.drawWebcam(), LG.webcamReady
+  ════════════════════════════════════════════════════════════════ -->
+  <script>
+    'use strict';
+
+    (function M2_WebcamFeed() {
+
+      /* ── Private state ─────────────────────────────────────────── */
+      const video = document.createElement('video');
+      video.setAttribute('autoplay', '');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('muted', '');
+      video.style.cssText = 'position:fixed;opacity:0;pointer-events:none;width:1px;height:1px;top:0;left:0;';
+      document.body.appendChild(video);
+
+      const ctx2d = LG.dom.webcamCanvas.getContext('2d');
+
+      LG.webcamReady = false;
+
+      /* ── Cover-fit geometry ────────────────────────────────────── */
+      function coverFit(vw, vh, cw, ch) {
+        const scale = Math.max(cw / vw, ch / vh);
+        const sw = vw * scale, sh = vh * scale;
+        return { sx: (cw - sw) / 2, sy: (ch - sh) / 2, sw, sh };
+      }
+
+      /* ── drawWebcam — called every rAF frame ───────────────────── */
+      LG.drawWebcam = function drawWebcam() {
+        if (!LG.webcamReady) return;
+        const vw = video.videoWidth, vh = video.videoHeight;
+        if (!vw || !vh) return;
+
+        const cw = LG.dom.webcamCanvas.width;
+        const ch = LG.dom.webcamCanvas.height;
+        const { sx, sy, sw, sh } = coverFit(vw, vh, cw, ch);
+
+        ctx2d.save();
+
+        /*
+         * ORIENTATION FIX
+         * Goal: image appears upright + horizontally mirrored (selfie).
+         *
+         * Horizontal mirror only (no vertical flip):
+         *   translate(cw, 0) + scale(-1, 1)
+         *   → maps drawImage x-origin to right edge, flips left↔right
+         *   → Y remains top-to-bottom (upright) ✓
+         *
+         * WebGL (M6) will compensate for GL's inverted-Y convention
+         * by setting gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+         * when uploading this canvas as a texture.
+         */
+        ctx2d.translate(cw, 0);
+        ctx2d.scale(-1, 1);
+        ctx2d.drawImage(video, sx, sy, sw, sh);
+
+        ctx2d.restore();
+      };
+
+      /* ── startWebcam — called by activation button ─────────────── */
+      LG.startWebcam = async function startWebcam() {
+        LG.setStatus('REQUESTING CAMERA…', false);
+
+        const constraints = {
+          video: {
+            facingMode:  'user',
+            width:       { ideal: 1280 },
+            height:      { ideal: 720 },
+            frameRate:   { ideal: 30, max: 60 },
+          },
+          audio: false,
+        };
+
+        let stream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (err) {
+          const denied   = err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError';
+          const noDevice = err.name === 'NotFoundError'   || err.name === 'DevicesNotFoundError';
+          LG.showError(
+            denied   ? '⚠  Camera permission denied — allow access in browser settings and reload.' :
+            noDevice ? '⚠  No camera found — connect a webcam and reload.' :
+                       '⚠  Camera error: ' + err.message
+          );
+          LG.setStatus('CAMERA ERROR', false);
+          return false;
+        }
+
+        video.srcObject = stream;
+
+        /* Wait for first frame metadata */
+        await new Promise((resolve, reject) => {
+          video.onloadedmetadata = resolve;
+          video.onerror = reject;
+        });
+
+        await video.play().catch(() => {/* autoplay already started */});
+
+        LG.webcamReady = true;
+        LG.setStatus('LOADING HAND TRACKING…', false);
+
+        /* Start the shared rAF render loop (M2 owns loop until M6 takes over) */
+        if (!LG._loopRunning) startLoop();
+
+        return true;
+      };
+
+      /* ── Lightweight rAF loop (replaced by M6's full-pipeline loop) */
+      function startLoop() {
+        LG._loopRunning = true;
+        (function loop() {
+          LG.drawWebcam();
+          /*
+           * M3-M8 will monkey-patch / replace this loop.
+           * If LG._mainLoop is defined (by M6), hand off to it.
+           */
+          if (typeof LG._mainLoop === 'function') {
+            LG._mainLoop();
+          } else {
+            requestAnimationFrame(loop);
+          }
+        })();
+      }
+
+      /*
+      ─────────────────────────────────────────────────────────────
+      M2 MEMORY SNAPSHOT
+        video element        hidden <video> appended to body
+        ctx2d                2D context on webcam-canvas
+        LG.webcamReady       bool — true once stream is playing
+        LG.drawWebcam()      draws one frame (cover-fit, mirror)
+        LG.startWebcam()     async — getUserMedia → play → ready
+        LG._loopRunning      guard flag for rAF loop
+        Orientation          upright + H-mirror ✓ (WebGL fix: M6)
+
+      Next: M3 — MediaPipe Hand Tracking
+        Injects: LG.initMP()
+        Reads:   video (direct), LG.dom.rippleCanvas dimensions
+        Emits:   LG.fingerPos { x, y } | null each frame
+      ─────────────────────────────────────────────────────────────
+      */
+
+    })();
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MODULE 3  —  MEDIAPIPE HAND TRACKING
+       Responsibilities:
+         • Lazy-load @mediapipe/hands + camera_utils from CDN
+           (scripts injected only after user activates — zero idle cost)
+         • Initialize Hands with modelComplexity:1, single hand
+         • Per-frame: receive 21 landmarks from onResults callback
+         • EMA smoothing (α=0.35) to kill jitter before gesture check
+         • Convert normalised MP coords → mirrored canvas pixel coords
+         • Invoke M4 detectGesture() → write LG.fingerPos {x,y}|null
+         • Expose: LG.initMP(), LG.fingerPos
+  ════════════════════════════════════════════════════════════════ -->
+  <script>
+    'use strict';
+
+    (function M3_HandTracking() {
+
+      /* ── EMA smoother ──────────────────────────────────────────── */
+      const EMA = 0.35;          // higher = snappier, lower = smoother
+      let smooth = null;         // array of {x,y,z} matching landmark count
+
+      function emaUpdate(raw) {
+        if (!smooth || smooth.length !== raw.length) {
+          smooth = raw.map(lm => ({ x: lm.x, y: lm.y, z: lm.z }));
+          return smooth;
+        }
+        for (let i = 0; i < raw.length; i++) {
+          smooth[i].x += EMA * (raw[i].x - smooth[i].x);
+          smooth[i].y += EMA * (raw[i].y - smooth[i].y);
+          smooth[i].z += EMA * (raw[i].z - smooth[i].z);
+        }
+        return smooth;
+      }
+
+      /* ── onResults — fires every frame from MediaPipe Camera ───── */
+      function onResults(results) {
+        if (
+          !results.multiHandLandmarks ||
+          results.multiHandLandmarks.length === 0
+        ) {
+          LG.fingerPos = null;
+          smooth = null;
+          return;
+        }
+
+        const lm = emaUpdate(results.multiHandLandmarks[0]);
+
+        /*
+         * Coordinate conversion:
+         *   MediaPipe x,y ∈ [0,1], origin top-left, x increases right.
+         *   webcam-canvas is drawn horizontally mirrored (M2).
+         *   So mirror x: canvasX = (1 - lm.x) * canvasWidth
+         *   Y is straight: canvasY = lm.y * canvasHeight
+         */
+        const cw = LG.dom.rippleCanvas.width;
+        const ch = LG.dom.rippleCanvas.height;
+
+        /*
+         * M4 detectGesture is defined in the next module.
+         * Guard: if M4 hasn't loaded yet (shouldn't happen in practice
+         * since scripts are sequential), skip gesture detection.
+         */
+        if (typeof LG.detectGesture !== 'function') return;
+
+        const { indexRaised } = LG.detectGesture(lm);
+
+        if (indexRaised) {
+          LG.fingerPos = {
+            x: (1 - lm[8].x) * cw,   // tip of index finger, mirrored
+            y: lm[8].y        * ch,
+          };
+        } else {
+          LG.fingerPos = null;
+        }
+      }
+
+      /* ── Lazy script loader ────────────────────────────────────── */
+      function loadScript(src) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src     = src;
+          s.onload  = resolve;
+          s.onerror = () => reject(new Error('Failed to load: ' + src));
+          document.head.appendChild(s);
+        });
+      }
+
+      /* ── initMP — called by activation flow (M1 shell) ─────────── */
+      LG.initMP = async function initMP() {
+        LG.setStatus('LOADING MEDIAPIPE…', false);
+
+        try {
+          await loadScript(
+            'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js'
+          );
+          await loadScript(
+            'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js'
+          );
+        } catch (err) {
+          LG.showError('⚠  MediaPipe CDN load failed — check network connection.');
+          LG.setStatus('MP LOAD ERROR', false);
+          return false;
+        }
+
+        /* Both scripts now available as globals: Hands, Camera */
+        let hands;
+        try {
+          hands = new Hands({                                         // eslint-disable-line no-undef
+            locateFile: file =>
+              `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`,
+          });
+
+          hands.setOptions({
+            selfieMode:             false,  // we handle mirroring ourselves (M2/M3)
+            maxNumHands:            1,
+            modelComplexity:        1,      // 0=lite 1=full — full for stable tips
+            minDetectionConfidence: 0.72,
+            minTrackingConfidence:  0.60,
+          });
+
+          hands.onResults(onResults);
+        } catch (err) {
+          LG.showError('⚠  MediaPipe Hands init failed: ' + err.message);
+          LG.setStatus('MP INIT ERROR', false);
+          return false;
+        }
+
+        /*
+         * MediaPipe Camera utility pumps video frames into the Hands
+         * pipeline. It also drives the webcam read, so LG.drawWebcam()
+         * (M2) must be called inside onFrame alongside hands.send().
+         */
+        const video = LG.dom.webcamCanvas
+          .closest('body')                           // get document context
+          .querySelector('video[autoplay]') ||
+          document.querySelector('video[autoplay]'); // fallback
+
+        if (!video) {
+          LG.showError('⚠  Could not locate video element for MediaPipe.');
+          return false;
+        }
+
+        try {
+          const camera = new Camera(video, {         // eslint-disable-line no-undef
+            onFrame: async () => {
+              LG.drawWebcam();                       // M2: paint frame to 2D canvas
+              await hands.send({ image: video });    // M3: run landmark detection
+            },
+            width:     1280,
+            height:    720,
+          });
+
+          await camera.start();
+        } catch (err) {
+          LG.showError('⚠  MediaPipe Camera start failed: ' + err.message);
+          LG.setStatus('MP CAMERA ERROR', false);
+          return false;
+        }
+
+        LG.setStatus('TRACKING ACTIVE', true);
+        LG.fingerPos = null;   // initialise fingerPos on LG
+
+        return true;
+      };
+
+      /*
+      ─────────────────────────────────────────────────────────────
+      M3 MEMORY SNAPSHOT
+        EMA smoother         α=0.35, resets on hand loss
+        onResults()          private — called by Hands pipeline
+        LG.initMP()          async — loads CDN scripts, inits Hands+Camera
+        LG.fingerPos         {x,y} in canvas px (mirrored) | null
+        selfieMode: false    M2 owns mirroring, MP must not double-flip
+        Camera.onFrame       drives both drawWebcam + hands.send
+
+      Next: M4 — Gesture Detection
+        Injects: LG.detectGesture(landmarks) → { indexRaised }
+        Reads:   smoothed landmark array (21 points)
+        Rules:   tip[8].y < pip[6].y, tips[12,16,20] folded
+      ─────────────────────────────────────────────────────────────
+      */
+
+    })();
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MODULE 4  —  GESTURE DETECTION
+       Responsibilities:
+         • Pure function: landmarks[] → { indexRaised, fingerTip }
+         • Index raised:  tip[8].y  < pip[6].y  (tip above PIP joint)
+         • Middle folded: tip[12].y > pip[10].y
+         • Ring folded:   tip[16].y > pip[14].y
+         • Pinky folded:  tip[20].y > pip[18].y
+         • Thumb neutral: ignored (avoids false negatives on wide hands)
+         • Exposes: LG.detectGesture(lm) → { indexRaised }
+  ════════════════════════════════════════════════════════════════ -->
+  <script>
+    'use strict';
+
+    (function M4_GestureDetection() {
+
+      /*
+       * Landmark index reference (MediaPipe 21-point hand model):
+       *
+       *   Wrist:   0
+       *   Thumb:   1(CMC) 2(MCP) 3(IP)  4(TIP)
+       *   Index:   5(MCP) 6(PIP) 7(DIP) 8(TIP)  ← we track this
+       *   Middle: 9(MCP) 10(PIP) 11(DIP) 12(TIP)
+       *   Ring:  13(MCP) 14(PIP) 15(DIP) 16(TIP)
+       *   Pinky: 17(MCP) 18(PIP) 19(DIP) 20(TIP)
+       *
+       * Y increases downward in MediaPipe's normalised coords.
+       * So "tip above PIP" means tip.y < pip.y.
+       */
+
+      /* ── Tolerance band ────────────────────────────────────────── */
+      /*
+       * A small Y-tolerance prevents flicker at the gesture boundary.
+       * Finger is considered "raised" only when tip clears PIP by at
+       * least RAISE_TOL (normalised units ≈ ~10px at 720p).
+       * Finger is considered "folded" only when tip is FOLD_TOL below
+       * PIP, preventing accidental triggers from naturally spread fingers.
+       */
+      const RAISE_TOL = 0.02;  // tip must be this far ABOVE pip to count as raised
+      const FOLD_TOL  = 0.00;  // tip must be AT or BELOW pip to count as folded
+
+      /* ── Core gesture function ─────────────────────────────────── */
+      LG.detectGesture = function detectGesture(lm) {
+        /*
+         * lm: smoothed landmark array from M3 EMA pass.
+         * Each entry: { x, y, z } normalised [0,1].
+         */
+
+        // Index finger: tip(8) vs PIP(6)
+        const indexRaised  = lm[8].y  < lm[6].y  - RAISE_TOL;
+
+        // Middle finger: tip(12) vs PIP(10) — must be folded
+        const middleFolded = lm[12].y > lm[10].y - FOLD_TOL;
+
+        // Ring finger: tip(16) vs PIP(14) — must be folded
+        const ringFolded   = lm[16].y > lm[14].y - FOLD_TOL;
+
+        // Pinky: tip(20) vs PIP(18) — must be folded
+        const pinkyFolded  = lm[20].y > lm[18].y - FOLD_TOL;
+
+        return {
+          indexRaised: indexRaised && middleFolded && ringFolded && pinkyFolded,
+        };
+      };
+
+      /*
+      ─────────────────────────────────────────────────────────────
+      M4 MEMORY SNAPSHOT
+        LG.detectGesture(lm)   pure fn, no state, safe to call every frame
+        RAISE_TOL = 0.02       prevents flicker at gesture boundary
+        FOLD_TOL  = 0.00       strict fold check — all three must be down
+        Thumb                  deliberately ignored (no false negatives)
+        Return shape           { indexRaised: bool }
+
+      Next: M5 — Ripple System
+        Injects: LG.ripples[], LG.spawnRipple(x,y), LG.updateRipples()
+        Reads:   LG.fingerPos, LG.params.{spawnDist, lifetime, maxRadius, maxRipples}
+        Emits:   packed Float32Array for M6 shader uniforms
+      ─────────────────────────────────────────────────────────────
+      */
+
+    })();
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MODULE 5  —  RIPPLE SYSTEM
+       Responsibilities:
+         • Maintain activeRipples[] pool (born, aged, culled each frame)
+         • Spawn: only when finger moved ≥ spawnDist px from last point
+         • Age each ripple 0→1 over its lifetime
+         • Radius: linear expand  age * maxRadius
+         • Opacity: full 0→0.6, smoothstep fade 0.6→1.0
+         • Cull: age ≥ 1.0 removed; pool capped at maxRipples (evict oldest)
+         • Pack ripple state into Float32Array for M6 shader upload
+         • Expose: LG.updateRipples(), LG.getRippleUniforms()
+         • Update LG live ripple counter each frame
+  ════════════════════════════════════════════════════════════════ -->
+  <script>
+    'use strict';
+
+    (function M5_RippleSystem() {
+
+      /* ── Pool & spawn tracking ─────────────────────────────────── */
+      const ripples = [];        // { x, y, bornAt }
+      let lastSpawn = null;      // { x, y } last spawn point (canvas px)
+
+      /* ── Smoothstep helper ─────────────────────────────────────── */
+      function smoothstep(edge0, edge1, x) {
+        const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+        return t * t * (3 - 2 * t);
+      }
+
+      /* ── spawnRipple ───────────────────────────────────────────── */
+      function spawnRipple(x, y) {
+        // Evict oldest if at cap
+        if (ripples.length >= LG.params.maxRipples) ripples.shift();
+        ripples.push({ x, y, bornAt: performance.now() });
+      }
+
+      /* ── updateRipples — call every frame ─────────────────────── */
+      LG.updateRipples = function updateRipples() {
+        const now      = performance.now();
+        const lifetime = LG.params.lifetime * 1000; // s → ms
+
+        /* 1. Cull expired ripples */
+        let i = 0;
+        while (i < ripples.length) {
+          if ((now - ripples[i].bornAt) >= lifetime) ripples.splice(i, 1);
+          else i++;
+        }
+
+        /* 2. Try to spawn from current finger position */
+        const fp = LG.fingerPos;
+
+        if (fp) {
+          if (!lastSpawn) {
+            // First frame of gesture — spawn immediately
+            lastSpawn = { x: fp.x, y: fp.y };
+            spawnRipple(fp.x, fp.y);
+          } else {
+            const dx   = fp.x - lastSpawn.x;
+            const dy   = fp.y - lastSpawn.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist >= LG.params.spawnDist) {
+              spawnRipple(fp.x, fp.y);
+              lastSpawn = { x: fp.x, y: fp.y };
+            }
+          }
+        } else {
+          // Hand lost — reset spawn anchor so next entry spawns immediately
+          lastSpawn = null;
+        }
+
+        /* 3. Update live counter in control panel */
+        LG.updateRippleCount(ripples.length);
+      };
+
+      /* ── getRippleUniforms — pack for WebGL upload ─────────────── */
+      /*
+       * Shader expects: uniform vec4 uRipples[MAX_RIPPLES]
+       *   .x = normalised centre X  (canvas px / canvas width)
+       *   .y = normalised centre Y  (1 - canvas px / canvas height)
+       *        ↑ Y-flipped because WebGL UV origin is bottom-left
+       *   .z = normalised radius    (px / max(width, height))
+       *   .w = opacity              [0, 1]
+       *
+       * Returns { data: Float32Array(MAX*4), count: int }
+       */
+      const MAX_RIPPLES = 40;
+      const _buf = new Float32Array(MAX_RIPPLES * 4); // reuse each frame
+
+      LG.getRippleUniforms = function getRippleUniforms() {
+        const now      = performance.now();
+        const lifetime = LG.params.lifetime * 1000;
+        const cw       = LG.dom.rippleCanvas.width;
+        const ch       = LG.dom.rippleCanvas.height;
+        const ref      = Math.max(cw, ch);   // normalise radius against longest axis
+
+        _buf.fill(0);
+
+        const count = Math.min(ripples.length, MAX_RIPPLES);
+        for (let i = 0; i < count; i++) {
+          const r   = ripples[i];
+          const age = Math.min(1, (now - r.bornAt) / lifetime); // 0 → 1
+
+          const radius  = age * LG.params.maxRadius;
+          const opacity = age < 0.6
+            ? 1.0
+            : 1.0 - smoothstep(0.6, 1.0, age);
+
+          _buf[i * 4 + 0] = r.x / cw;           // norm X
+          _buf[i * 4 + 1] = 1.0 - (r.y / ch);   // norm Y (GL flip)
+          _buf[i * 4 + 2] = radius / ref;        // norm radius
+          _buf[i * 4 + 3] = opacity;
+        }
+
+        return { data: _buf, count };
+      };
+
+      /*
+      ─────────────────────────────────────────────────────────────
+      M5 MEMORY SNAPSHOT
+        ripples[]              [{x,y,bornAt}] — live pool, max maxRipples
+        lastSpawn              {x,y} | null — spawn distance anchor
+        LG.updateRipples()     cull expired + try spawn from LG.fingerPos
+        LG.getRippleUniforms() → { data: Float32Array, count }
+        _buf                   Float32Array(160) — reused, zero-alloc per frame
+        Y-flip in uniforms     1-(y/ch) aligns canvas coords to GL UV space
+        MAX_RIPPLES = 40       must match #define / array size in M6 shader
+
+      Next: M6 — WebGL Shader Pipeline
+        Injects: LG.initWebGL(), LG._mainLoop()
+        Reads:   LG.getRippleUniforms(), LG.dom.webcamCanvas (as texture)
+        Shader:  refraction UV offset + glass shimmer highlight per ring
+      ─────────────────────────────────────────────────────────────
+      */
+
+    })();
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MODULE 6  —  WebGL SHADER PIPELINE + MAIN LOOP
+       Responsibilities:
+         • Inject #finger-dot CSS indicator (tracks LG.fingerPos live)
+         • initWebGL(): compile vert+frag shaders, full-screen quad,
+           webcam texture, cache uniform locations
+         • UNPACK_FLIP_Y_WEBGL=true — fixes upside-down texture (M2 fix)
+         • renderGL(): upload webcam-canvas as texture, set all uniforms,
+           convert px params → normalised UV space, draw call
+         • LG._mainLoop(): unified rAF — updateRipples → renderGL →
+           finger indicator → live counter
+         • LG.onResize(): resets GL viewport on window resize
+  ════════════════════════════════════════════════════════════════ -->
+  <script>
+    'use strict';
+
+    (function M6_WebGLRenderer() {
+
+      /* ── Finger tracking indicator ─────────────────────────────── */
+      /*
+       * Simple CSS ring that follows LG.fingerPos each frame.
+       * Gives immediate gesture feedback even before ripples are visible.
+       * Two layers: solid dot (snaps) + diffuse glow ring.
+       */
+      const style = document.createElement('style');
+      style.textContent = `
+        #finger-dot {
+          position: fixed;
+          width: 18px; height: 18px;
+          border-radius: 50%;
+          background: rgba(168, 216, 240, 0.9);
+          box-shadow:
+            0 0 0 6px rgba(168, 216, 240, 0.18),
+            0 0 22px 6px rgba(168, 216, 240, 0.35);
+          pointer-events: none;
+          z-index: 40;
+          transform: translate(-50%, -50%) scale(0);
+          transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1),
+                      opacity  0.18s ease;
+          opacity: 0;
+          will-change: left, top, transform;
+        }
+        #finger-dot.active {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+        #finger-ring {
+          position: fixed;
+          width: 52px; height: 52px;
+          border-radius: 50%;
+          border: 1.5px solid rgba(168, 216, 240, 0.4);
+          pointer-events: none;
+          z-index: 39;
+          transform: translate(-50%, -50%);
+          opacity: 0;
+          transition: opacity 0.2s ease;
+          will-change: left, top;
+        }
+        #finger-ring.active { opacity: 1; }
+      `;
+      document.head.appendChild(style);
+
+      const fingerDot  = document.createElement('div');
+      fingerDot.id     = 'finger-dot';
+      document.body.appendChild(fingerDot);
+
+      const fingerRing = document.createElement('div');
+      fingerRing.id    = 'finger-ring';
+      document.body.appendChild(fingerRing);
+
+      /* Lagging ring pos for fluid feel (same pattern as M1 cursor) */
+      let rx = -200, ry = -200;
+
+      /* ── Finger indicator visibility toggle ────────────────────── */
+      LG.showFingerCursor = true;   // default: visible
+
+      const btnToggle = document.getElementById('btn-cursor-toggle');
+      btnToggle.classList.add('on'); // starts ON
+
+      btnToggle.addEventListener('click', () => {
+        LG.showFingerCursor = !LG.showFingerCursor;
+        btnToggle.classList.toggle('on', LG.showFingerCursor);
+        /* If turning off, immediately hide both elements */
+        if (!LG.showFingerCursor) {
+          fingerDot.classList.remove('active');
+          fingerRing.classList.remove('active');
+        }
+      });
+
+      function updateFingerIndicator() {
+        if (!LG.showFingerCursor) return;   // toggle is OFF — skip entirely
+        const fp = LG.fingerPos;
+        if (fp) {
+          fingerDot.style.left = fp.x + 'px';
+          fingerDot.style.top  = fp.y + 'px';
+          fingerDot.classList.add('active');
+
+          /* Ring lags behind dot */
+          rx += (fp.x - rx) * 0.18;
+          ry += (fp.y - ry) * 0.18;
+          fingerRing.style.left = rx + 'px';
+          fingerRing.style.top  = ry + 'px';
+          fingerRing.classList.add('active');
+        } else {
+          fingerDot.classList.remove('active');
+          fingerRing.classList.remove('active');
+        }
+      }
+
+      /* ── GLSL Sources ──────────────────────────────────────────── */
+      const VERT = `
+        attribute vec2 aPos;
+        varying   vec2 vUV;
+        void main() {
+          /* Full-screen quad: aPos ∈ [-1,1]  →  UV ∈ [0,1] */
+          vUV         = aPos * 0.5 + 0.5;
+          gl_Position = vec4(aPos, 0.0, 1.0);
+        }
+      `;
+
+      /*
+       * FRAGMENT SHADER
+       * For each fragment (screen pixel):
+       *   1. Accumulate refraction UV offset from all active ripple rings
+       *   2. Accumulate highlight intensity from same rings
+       *   3. Sample webcam texture at distorted UV
+       *   4. Add cool-blue glass shimmer
+       *
+       * uRipples[i]:
+       *   .x  centre X (normalised, 0=left  1=right)
+       *   .y  centre Y (normalised, 0=bottom 1=top — GL convention)
+       *   .z  radius   (normalised against max(width,height))
+       *   .w  opacity  [0,1]
+       *
+       * uRingWidth        ring feather half-width in UV space
+       * uRefractionStr    peak UV displacement per ring
+       * uHighlight        shimmer brightness multiplier
+       */
+      const FRAG = `
+        precision highp float;
+        varying vec2 vUV;
+
+        uniform sampler2D uWebcam;
+        uniform vec4      uRipples[40];
+        uniform int       uRippleCount;
+        uniform float     uRingWidth;
+        uniform float     uRefractionStr;
+        uniform float     uHighlight;
+
+        void main() {
+          vec2  totalOffset    = vec2(0.0);
+          float totalHighlight = 0.0;
+
+          for (int i = 0; i < 40; i++) {
+            if (i >= uRippleCount) break;
+
+            vec2  centre  = uRipples[i].xy;
+            float radius  = uRipples[i].z;
+            float opacity = uRipples[i].w;
+
+            vec2  delta   = vUV - centre;
+            float dist    = length(delta);
+
+            /* Smooth ring: peaks at dist==radius, falls off by uRingWidth */
+            float ringDist = abs(dist - radius);
+            float ring     = 1.0 - smoothstep(0.0, uRingWidth, ringDist);
+
+            /* Refraction: push UV outward along the ring normal */
+            vec2 normal    = (dist > 0.0001) ? normalize(delta) : vec2(0.707, 0.707);
+            totalOffset   += normal * ring * uRefractionStr * opacity;
+
+            totalHighlight += ring * opacity;
+          }
+
+          /* Distort UV, clamp to avoid edge bleed */
+          vec2 uv = clamp(vUV + totalOffset, 0.001, 0.999);
+
+          vec4 color = texture2D(uWebcam, uv);
+
+          /* Glass shimmer: cool blue-white at ring peaks */
+          float shimmer = clamp(totalHighlight * uHighlight, 0.0, 1.0);
+          color.rgb    += shimmer * vec3(0.72, 0.87, 1.0);
+
+          /* Subtle darkening behind each ring for depth illusion */
+          float shadow  = clamp(totalHighlight * uHighlight * 0.28, 0.0, 0.5);
+          color.rgb    -= shadow * vec3(0.18, 0.12, 0.05);
+
+          gl_FragColor  = color;
+        }
+      `;
+
+      /* ── WebGL state ───────────────────────────────────────────── */
+      let gl, prog, webcamTex, u = {};
+
+      function compileShader(type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          throw new Error('Shader compile:\n' + gl.getShaderInfoLog(s));
+        }
+        return s;
+      }
+
+      /* ── initWebGL ─────────────────────────────────────────────── */
+      LG.initWebGL = function initWebGL() {
+        const canvas = LG.dom.rippleCanvas;
+
+        gl = canvas.getContext('webgl', {
+          alpha:     true,         // transparent so webcam-canvas shows through if needed
+          antialias: false,        // not needed — shader works at pixel level
+          depth:     false,
+          stencil:   false,
+        });
+
+        if (!gl) {
+          LG.showError('⚠  WebGL not supported — try Chrome or Firefox.');
+          return false;
+        }
+
+        /* Compile & link */
+        try {
+          const vert = compileShader(gl.VERTEX_SHADER,   VERT);
+          const frag = compileShader(gl.FRAGMENT_SHADER, FRAG);
+          prog       = gl.createProgram();
+          gl.attachShader(prog, vert); gl.attachShader(prog, frag);
+          gl.linkProgram(prog);
+          if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+            throw new Error('Link: ' + gl.getProgramInfoLog(prog));
+          }
+        } catch (err) {
+          LG.showError('⚠  Shader error — see console.');
+          console.error('[M6 WebGL]', err);
+          return false;
+        }
+
+        gl.useProgram(prog);
+
+        /* Full-screen quad — two triangles covering NDC [-1,1]² */
+        const verts = new Float32Array([-1,-1,  1,-1,  -1,1,  1,1]);
+        const buf   = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+        const aPos = gl.getAttribLocation(prog, 'aPos');
+        gl.enableVertexAttribArray(aPos);
+        gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+        /* Cache uniform locations */
+        u.webcam       = gl.getUniformLocation(prog, 'uWebcam');
+        u.ripples      = gl.getUniformLocation(prog, 'uRipples[0]');
+        u.rippleCount  = gl.getUniformLocation(prog, 'uRippleCount');
+        u.ringWidth    = gl.getUniformLocation(prog, 'uRingWidth');
+        u.refractionStr= gl.getUniformLocation(prog, 'uRefractionStr');
+        u.highlight    = gl.getUniformLocation(prog, 'uHighlight');
+
+        /* Webcam texture */
+        webcamTex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, webcamTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        /*
+         * ── UPSIDE-DOWN FIX ──────────────────────────────────────
+         * Canvas Y=0 is the TOP row. GL texture Y=0 is the BOTTOM row.
+         * Without this flag, texImage2D uploads rows in reverse → image
+         * appears vertically flipped on screen.
+         * UNPACK_FLIP_Y_WEBGL=true tells the driver to reverse rows at
+         * upload time, so GL Y=0 matches the canvas bottom row.
+         * M2 draws the webcam upright (no vertical flip in drawImage),
+         * so after this correction the image is correctly oriented.
+         */
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+        /* Viewport */
+        gl.viewport(0, 0, canvas.width, canvas.height);
+
+        /* Resize hook for M1 shell */
+        LG.onResize = (w, h) => gl.viewport(0, 0, w, h);
+
+        return true;
+      };
+
+      /* ── renderGL — called every frame ─────────────────────────── */
+      function renderGL() {
+        if (!gl || !LG.webcamReady) return;
+
+        const cw = LG.dom.rippleCanvas.width;
+        const ch = LG.dom.rippleCanvas.height;
+        const ref = Math.max(cw, ch);
+
+        /* Upload current webcam-canvas frame as texture */
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, webcamTex);
+        gl.texImage2D(
+          gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,
+          gl.UNSIGNED_BYTE, LG.dom.webcamCanvas
+        );
+
+        /* Set uniforms */
+        gl.uniform1i(u.webcam, 0);
+
+        /* Convert px params → normalised UV space */
+        gl.uniform1f(u.ringWidth,
+          LG.params.ringWidth / ref);           // px → UV
+
+        gl.uniform1f(u.refractionStr,
+          LG.params.refraction * 0.012);        // slider ×  base scale
+
+        gl.uniform1f(u.highlight,
+          LG.params.highlight);
+
+        /* Upload ripple data */
+        const { data, count } = LG.getRippleUniforms();
+        gl.uniform4fv(u.ripples, data);
+        gl.uniform1i(u.rippleCount, count);
+
+        /* Draw */
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+
+      /* ── Unified main loop ─────────────────────────────────────── */
+      /*
+       * Replaces M2's stub loop. Called once; self-schedules via rAF.
+       * Sequence each frame:
+       *   1. updateRipples  — cull expired, try spawn from fingerPos
+       *   2. renderGL       — upload texture + draw shader pass
+       *   3. finger UI      — move CSS indicator to fingerPos
+       */
+      function startMainLoop() {
+        function loop() {
+          LG.updateRipples();
+          renderGL();
+          updateFingerIndicator();
+          requestAnimationFrame(loop);
+        }
+        /* Signal M2's stub loop to hand off */
+        LG._mainLoop = () => { /* no-op — ownership transferred */ };
+        requestAnimationFrame(loop);
+      }
+
+      /*
+       * initWebGL + startMainLoop are called by the activation flow.
+       * M1 shell already calls LG.initMP() after LG.startWebcam().
+       * We hook into the same chain by patching the activation listener.
+       * Patch: wrap existing btn-activate click to also init WebGL.
+       */
+      const btnActivate = document.getElementById('btn-activate');
+      const _origClick  = btnActivate.onclick;
+
+      btnActivate.addEventListener('click', async function onActivate() {
+        /*
+         * Wait one tick so M1's own click handler (startWebcam + initMP)
+         * fires first — then we init WebGL & start the render loop.
+         */
+        await new Promise(r => setTimeout(r, 0));
+        if (LG.initWebGL()) {
+          startMainLoop();
+        }
+      }, { once: true });
+
+      /*
+      ─────────────────────────────────────────────────────────────
+      M6 MEMORY SNAPSHOT
+        #finger-dot / #finger-ring   CSS indicators, z-index 39-40
+        UNPACK_FLIP_Y_WEBGL = true   canonical upside-down fix
+        gl.TRIANGLE_STRIP 4 verts    full-screen quad, zero index buffer
+        uRingWidth                   params.ringWidth / max(cw,ch)
+        uRefractionStr               params.refraction × 0.012
+        GLSL loop: i < 40            matches M5 MAX_RIPPLES constant
+        LG.onResize → gl.viewport    wired to M1 resize handler
+        startMainLoop                takes over from M2 stub rAF loop
+
+      Next: M7 — Control Panel (already wired in M1 shell)
+             M8 — Integration polish + error states
+      ─────────────────────────────────────────────────────────────
+      */
+
+    })();
+  </script>
+</body>
+</html>
