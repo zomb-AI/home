@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZombAI AirBrush</title>
+  <style>
+    :root{
+      --bg:#050914;
+      --panel:rgba(7,14,28,.62);
+      --panel-border:rgba(112,255,218,.18);
+      --text:#effbff;
+      --muted:#9ab6c8;
+      --accent:#78ffe8;
+      --accent2:#87d7ff;
+      --danger:#ff8d8d;
+      --shadow:0 18px 45px rgba(0,0,0,.35);
+      --radius:20px;
+      --drawer-w:min(360px,92vw);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+    #app{position:fixed;inset:0;background:radial-gradient(circle at top, #07101d, #02050c 70%)}
+    #inputVideo,#drawCanvas,#overlayCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    #inputVideo{transform:scaleX(-1);filter:brightness(1);z-index:1}
+    #drawCanvas,#overlayCanvas{transform:scaleX(-1)}
+    #drawCanvas{z-index:2}
+    #overlayCanvas{z-index:3;pointer-events:none}
+    #ui{position:absolute;inset:0;pointer-events:none;z-index:4}
+    .panel,.menu-toggle{pointer-events:auto;background:var(--panel);border:1px solid var(--panel-border);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);box-shadow:var(--shadow);border-radius:var(--radius)}
+    .menu-toggle{position:absolute;left:14px;top:14px;width:56px;height:56px;display:grid;place-items:center;cursor:pointer;z-index:6}
+    .hamburger{width:22px;height:14px;position:relative}
+    .hamburger span{position:absolute;left:0;right:0;height:2px;border-radius:2px;background:#dffff8;box-shadow:0 0 12px rgba(120,255,232,.35)}
+    .hamburger span:nth-child(1){top:0}.hamburger span:nth-child(2){top:6px}.hamburger span:nth-child(3){top:12px}
+    .drawer{position:absolute;left:14px;top:78px;bottom:14px;width:var(--drawer-w);display:flex;transform:translateX(0);transition:transform .28s ease,opacity .28s ease}
+    .drawer.collapsed{transform:translateX(calc(-1 * (var(--drawer-w) + 10px)))}
+    .drawer-content{width:100%;padding:14px;overflow:auto;max-height:calc(100vh - 92px);scrollbar-width:thin}
+    .drawer-content::-webkit-scrollbar{width:8px}
+    .drawer-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:999px}
+    .brand{padding:14px 14px 12px;position:relative;overflow:hidden;margin-bottom:12px}
+    .brand::before{content:'';position:absolute;inset:-30% auto auto -10%;width:170px;height:170px;background:radial-gradient(circle, rgba(120,255,232,.22), transparent 70%);pointer-events:none}
+    .brand::after{content:'';position:absolute;right:-30px;bottom:-30px;width:170px;height:170px;background:radial-gradient(circle, rgba(135,215,255,.18), transparent 70%);pointer-events:none}
+    .zline{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+    .zlogo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#78ffe8,#87d7ff);display:grid;place-items:center;color:#04131c;font-weight:900;box-shadow:0 0 32px rgba(120,255,232,.28)}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-size:12px;color:#dbfcf6}
+    .dot{width:8px;height:8px;border-radius:50%;background:#78ffe8;box-shadow:0 0 14px #78ffe8}
+    .brand h1{font-size:24px;line-height:1.05;margin:8px 0 6px;letter-spacing:.2px}
+    .brand p{margin:0;color:var(--muted);font-size:13px;position:relative;z-index:1}
+    .controls{padding:14px}
+    .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#c7eff1;margin:0 0 10px}
+    .row{display:flex;align-items:center;gap:10px;margin:10px 0;min-width:0}
+    .row label{font-size:13px;color:#d9f5f7;min-width:92px}
+    .row input[type="range"], .row select{flex:1;min-width:0}
+    .row output{min-width:52px;text-align:right;color:var(--accent);font-size:12px}
+    select{appearance:none;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.14);padding:10px 12px;border-radius:12px}
+    .swatches{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
+    .swatch{width:100%;min-width:0;height:34px;border-radius:999px;border:2px solid rgba(255,255,255,.22);cursor:pointer;transition:.2s transform,.2s border-color, box-shadow .2s ease;box-shadow:0 0 18px transparent}
+    .swatch:hover,.swatch.active{transform:translateY(-1px) scale(1.03);border-color:#fff;box-shadow:0 0 20px currentColor}
+    .buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+    button{appearance:none;border:none;cursor:pointer;color:#04131c;background:linear-gradient(135deg,#d9fff9,#d2e8ff);padding:12px 14px;border-radius:14px;font-weight:800;letter-spacing:.02em;box-shadow:0 8px 18px rgba(110,231,255,.15);transition:transform .16s ease, opacity .16s ease;min-width:0}
+    button:hover{transform:translateY(-1px)}
+    button.secondary{background:rgba(255,255,255,.08);color:#f4f8ff;border:1px solid rgba(255,255,255,.14);box-shadow:none}
+    button.danger{background:#ffd9d9;color:#3c1010}
+    .legend-inline{display:grid;gap:8px;margin-top:8px}
+    .legend-item{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:#e7f0fb}
+    .legend-item span{color:var(--muted);text-align:right}
+    .tiny{font-size:11px;color:var(--muted);line-height:1.45;margin-top:10px}
+    .status-float{position:absolute;right:18px;top:18px;padding:12px 14px;max-width:min(360px,60vw);font-size:13px;color:#ebf5ff;pointer-events:auto}
+    .status-float strong{color:var(--accent)}
+    .footer-chip{position:absolute;right:18px;bottom:18px;padding:10px 14px;font-size:12px;color:#c7f6ff;pointer-events:auto}
+    .footer-chip strong{color:var(--accent2)}
+    .toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);pointer-events:none;background:rgba(7,17,31,.78);border:1px solid rgba(255,255,255,.14);padding:10px 14px;border-radius:999px;color:#eef6ff;font-size:13px;backdrop-filter:blur(12px);opacity:0;transition:opacity .25s ease,transform .25s ease}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+    .splash{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%, rgba(18,35,66,.96), rgba(3,7,14,.98) 65%);z-index:50;transition:opacity .5s ease, visibility .5s ease}
+    .splash.hide{opacity:0;visibility:hidden}
+    .splash-card{display:flex;flex-direction:column;align-items:center;gap:18px}
+    .orb{width:94px;height:94px;border-radius:50%;background:conic-gradient(from 0deg, #78ffe8, #87d7ff, #ff7bf5, #ffd86f, #78ffe8);position:relative;animation:spin 1.4s linear infinite, pulse 1.4s ease-in-out infinite}
+    .orb::after{content:'';position:absolute;inset:10px;border-radius:50%;background:radial-gradient(circle, rgba(7,12,26,1), rgba(7,12,26,.9));box-shadow:inset 0 0 24px rgba(255,255,255,.08)}
+    .splash h2{margin:0;font-size:34px;letter-spacing:.03em}.splash p{margin:0;color:#b9d7e8;letter-spacing:.22em;text-transform:uppercase;font-size:12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{50%{transform:scale(1.06)}}
+    @media (max-width:900px){
+      .drawer{left:12px;top:74px;bottom:12px;width:min(330px,92vw)}
+      .drawer.collapsed{transform:translateX(calc(-1 * (min(330px,92vw) + 8px)))}
+      .status-float{right:12px;top:12px;max-width:62vw}
+      .footer-chip{right:12px;bottom:12px}
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <video id="inputVideo" playsinline muted></video>
+  <canvas id="drawCanvas"></canvas>
+  <canvas id="overlayCanvas"></canvas>
+
+  <div id="ui">
+    <div class="menu-toggle" id="drawerToggle" title="Toggle menu">
+      <div class="hamburger"><span></span><span></span><span></span></div>
+    </div>
+
+    <div class="drawer collapsed" id="leftDrawer">
+      <div class="panel drawer-content">
+        <div class="panel brand">
+          <div class="zline">
+            <div class="zlogo">Z</div>
+            <div class="badge"><span class="dot"></span> ZombAI AirBrush</div>
+          </div>
+          <h1>Gesture Doodle Studio</h1>
+          <p>Cleaner view, brighter palette, floating menu, predefined presets, pinch drag, and pinch-in or pinch-out resizing on a selected doodle.</p>
+        </div>
+
+        <div class="panel controls">
+          <div class="section-title">Brush + View</div>
+          <div class="row"><label for="brushSize">Thickness</label><input id="brushSize" type="range" min="2" max="48" value="8" /><output id="brushSizeOut">8</output></div>
+          <div class="row"><label for="glowSize">Glow</label><input id="glowSize" type="range" min="0" max="54" value="18" /><output id="glowSizeOut">18</output></div>
+          <div class="row"><label for="smoothness">Smooth</label><input id="smoothness" type="range" min="0" max="0.95" step="0.05" value="0.55" /><output id="smoothnessOut">0.55</output></div>
+          <div class="row"><label for="brightness">Screen Light</label><input id="brightness" type="range" min="40" max="160" value="100" /><output id="brightnessOut">100%</output></div>
+
+          <div class="section-title" style="margin-top:14px">Render Preset</div>
+          <div class="row"><label for="renderMode">Mode</label><select id="renderMode"><option value="freehand">Freehand</option><option value="number">Numbers</option><option value="shape">Shapes</option></select></div>
+          <div class="row"><label for="numberPreset">Number</label><select id="numberPreset"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></div>
+          <div class="row"><label for="shapePreset">Shape</label><select id="shapePreset"><option value="circle">Circle</option><option value="square">Square</option><option value="triangle">Triangle</option><option value="star">Star</option><option value="heart">Heart</option><option value="diamond">Diamond</option></select></div>
+
+          <div class="row"><label>Palette</label></div>
+          <div class="swatches" id="swatches"></div>
+
+          <div class="section-title" style="margin-top:14px">Gestures</div>
+          <div class="legend-inline">
+            <div class="legend-item"><strong>Draw</strong> <span>Index finger up</span></div>
+            <div class="legend-item"><strong>Erase</strong> <span>Open palm away from selection</span></div>
+            <div class="legend-item"><strong>Drag doodle</strong> <span>Pinch near a doodle</span></div>
+            <div class="legend-item"><strong>Resize doodle</strong> <span>Open palm on selected doodle, pinch in or out</span></div>
+            <div class="legend-item"><strong>Idle</strong> <span>Closed fist / no gesture</span></div>
+          </div>
+          <div class="buttons">
+            <button id="startBtn">Start Camera</button>
+            <button id="pauseBtn" class="secondary">Pause Draw</button>
+            <button id="clearBtn" class="danger">Clear Canvas</button>
+            <button id="saveBtn" class="secondary">Save PNG</button>
+            <button id="deselectBtn" class="secondary">Deselect</button>
+            <button id="fitLightBtn" class="secondary">Reset Light</button>
+          </div>
+          <div class="tiny">The floating hamburger is always visible. The panel auto-hides, while your doodles and menu stay bright because screen light now affects only the camera feed.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel status-float" id="statusPanel">Status: <strong>Idle</strong><br><span style="color:var(--muted)">Press Start Camera</span></div>
+    <div class="panel footer-chip">Powered by <strong>ZombAI</strong> · AirBrush Neon Glass Lab</div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="splash" id="splashScreen">
+    <div class="splash-card">
+      <div class="orb"></div>
+      <h2>ZombAI AirBrush</h2>
+      <p>Loading Gesture Studio</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script>
+(() => {
+  const video = document.getElementById('inputVideo');
+  const drawCanvas = document.getElementById('drawCanvas');
+  const overlayCanvas = document.getElementById('overlayCanvas');
+  const dctx = drawCanvas.getContext('2d');
+  const octx = overlayCanvas.getContext('2d');
+  const statusPanel = document.getElementById('statusPanel');
+  const toast = document.getElementById('toast');
+  const splashScreen = document.getElementById('splashScreen');
+  const leftDrawer = document.getElementById('leftDrawer');
+  const drawerToggle = document.getElementById('drawerToggle');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const deselectBtn = document.getElementById('deselectBtn');
+  const fitLightBtn = document.getElementById('fitLightBtn');
+  const brushSize = document.getElementById('brushSize');
+  const glowSize = document.getElementById('glowSize');
+  const smoothness = document.getElementById('smoothness');
+  const brightness = document.getElementById('brightness');
+  const renderMode = document.getElementById('renderMode');
+  const numberPreset = document.getElementById('numberPreset');
+  const shapePreset = document.getElementById('shapePreset');
+  const brushSizeOut = document.getElementById('brushSizeOut');
+  const glowSizeOut = document.getElementById('glowSizeOut');
+  const smoothnessOut = document.getElementById('smoothnessOut');
+  const brightnessOut = document.getElementById('brightnessOut');
+  const swatches = document.getElementById('swatches');
+
+  const palette = ['#ffffff','#00f5ff','#34ff87','#f5ff3b','#ff8c1a','#ff4df3','#8e7dff','#ff3b3b','#00a6ff','#7dffef','#ffcf5a','#c7ff5a'];
+  let brushColor = palette[1];
+  let running = false;
+  let drawingPaused = false;
+  let mpCamera = null;
+  let hands = null;
+  let smoothedPoint = null;
+  let lastGesture = 'idle';
+  let lastProcessTs = 0;
+  let activePath = null;
+  let items = [];
+  let dragState = null;
+  let scaleState = null;
+  let selectedItem = null;
+  let toastTimer = null;
+  let drawerHideTimer = null;
+  let lastStampTs = 0;
+  const targetFpsGap = 1000/30;
+  const eraserRadius = 60;
+  const pinchSelectRadius = 90;
+  const scaleSelectRadius = 160;
+
+  function resize(){
+    const w = window.innerWidth, h = window.innerHeight, dpr = window.devicePixelRatio || 1;
+    [drawCanvas, overlayCanvas].forEach(c => {
+      c.width = w*dpr; c.height = h*dpr; c.style.width = w+'px'; c.style.height = h+'px';
+    });
+    dctx.setTransform(dpr,0,0,dpr,0,0);
+    octx.setTransform(dpr,0,0,dpr,0,0);
+    renderDrawing();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function showToast(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+  }
+  function updateStatus(mode, detail=''){
+    statusPanel.innerHTML = `Status: <strong>${mode}</strong><br><span style="color:var(--muted)">${detail}</span>`;
+  }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+  function normToScreen(lm){ return { x:(1-lm.x)*window.innerWidth, y:lm.y*window.innerHeight }; }
+  function extended(lms, tip, pip){ return lms[tip].y < lms[pip].y; }
+  function thumbExtended(lms){ return Math.abs(lms[4].x - lms[2].x) > 0.06; }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function handSpread(lms){
+    const palm = lms[0];
+    const tips = [4,8,12,16,20];
+    return tips.reduce((sum, idx) => sum + Math.hypot(lms[idx].x-palm.x, lms[idx].y-palm.y), 0) / tips.length;
+  }
+
+  function classifyGesture(lms){
+    const index = extended(lms,8,6);
+    const middle = extended(lms,12,10);
+    const ring = extended(lms,16,14);
+    const pinky = extended(lms,20,18);
+    const thumb = thumbExtended(lms);
+    const pinchDistance = Math.hypot(lms[8].x-lms[4].x, lms[8].y-lms[4].y);
+    if (pinchDistance < 0.045) return { name:'pinch', spread: handSpread(lms) };
+    if (index && !middle && !ring && !pinky) return { name:'draw', spread: handSpread(lms) };
+    if (index && middle && ring && pinky && thumb) return { name:'erase', spread: handSpread(lms) };
+    if (!index && !middle && !ring && !pinky) return { name:'idle', spread: handSpread(lms) };
+    return { name:'idle', spread: handSpread(lms) };
+  }
+
+  function getCentroid(points){
+    if (!points.length) return {x:0,y:0};
+    const sum = points.reduce((acc,p) => ({x:acc.x+p.x, y:acc.y+p.y}), {x:0,y:0});
+    return {x:sum.x/points.length, y:sum.y/points.length};
+  }
+
+  function makePath(point){
+    return { kind:'path', color:brushColor, size:Number(brushSize.value), glow:Number(glowSize.value), offsetX:0, offsetY:0, scale:1, points:[{...point}] };
+  }
+
+  function currentPreset(){
+    if (renderMode.value === 'number') return { kind:'number', value:numberPreset.value };
+    if (renderMode.value === 'shape') return { kind:'shape', value:shapePreset.value };
+    return { kind:'freehand', value:'freehand' };
+  }
+
+  function makeStamp(point){
+    const preset = currentPreset();
+    return { kind:'stamp', stampType:preset.kind, stampValue:preset.value, x:point.x, y:point.y, color:brushColor, size:Number(brushSize.value) * 3.1, glow:Number(glowSize.value), scale:1, rotation:0 };
+  }
+
+  function drawShape(ctx, shape, x, y, size){
+    const r = size/2;
+    ctx.beginPath();
+    if (shape === 'circle') {
+      ctx.arc(x,y,r,0,Math.PI*2);
+    } else if (shape === 'square') {
+      ctx.rect(x-r, y-r, size, size);
+    } else if (shape === 'triangle') {
+      ctx.moveTo(x, y-r);
+      ctx.lineTo(x+r, y+r);
+      ctx.lineTo(x-r, y+r);
+      ctx.closePath();
+    } else if (shape === 'diamond') {
+      ctx.moveTo(x, y-r);
+      ctx.lineTo(x+r, y);
+      ctx.lineTo(x, y+r);
+      ctx.lineTo(x-r, y);
+      ctx.closePath();
+    } else if (shape === 'star') {
+      for (let i=0;i<10;i++){
+        const rr = i%2===0 ? r : r*0.45;
+        const a = -Math.PI/2 + i*Math.PI/5;
+        const px = x + Math.cos(a)*rr;
+        const py = y + Math.sin(a)*rr;
+        if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.closePath();
+    } else if (shape === 'heart') {
+      ctx.moveTo(x, y + r*0.9);
+      ctx.bezierCurveTo(x-r*1.2, y+r*0.2, x-r*1.1, y-r*0.7, x, y-r*0.15);
+      ctx.bezierCurveTo(x+r*1.1, y-r*0.7, x+r*1.2, y+r*0.2, x, y+r*0.9);
+      ctx.closePath();
+    }
+  }
+
+  function renderItem(item){
+    dctx.save();
+    dctx.lineCap = 'round'; dctx.lineJoin = 'round';
+    dctx.strokeStyle = item.color; dctx.fillStyle = item.color;
+    dctx.shadowBlur = item.glow; dctx.shadowColor = item.color;
+    if (item.kind === 'path') {
+      dctx.lineWidth = item.size * item.scale;
+      const pts = item.points;
+      if (!pts.length) { dctx.restore(); return; }
+      dctx.beginPath();
+      dctx.moveTo(pts[0].x + item.offsetX, pts[0].y + item.offsetY);
+      for (let i=1;i<pts.length;i++) dctx.lineTo(pts[i].x + item.offsetX, pts[i].y + item.offsetY);
+      if (pts.length === 1) {
+        const p = pts[0];
+        dctx.arc(p.x + item.offsetX, p.y + item.offsetY, (item.size * item.scale)/2, 0, Math.PI*2);
+        dctx.fill();
+      } else dctx.stroke();
+    } else {
+      const sz = item.size * item.scale;
+      dctx.translate(item.x, item.y);
+      dctx.rotate(item.rotation || 0);
+      if (item.stampType === 'number') {
+        dctx.font = `900 ${sz}px Inter, Arial, sans-serif`;
+        dctx.textAlign = 'center'; dctx.textBaseline = 'middle';
+        dctx.fillText(item.stampValue, 0, 0);
+      } else if (item.stampType === 'shape') {
+        drawShape(dctx, item.stampValue, 0, 0, sz);
+        dctx.lineWidth = Math.max(2, sz*0.08);
+        dctx.stroke();
+      }
+    }
+    dctx.restore();
+  }
+
+  function renderDrawing(){
+    dctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+    for (const item of items) renderItem(item);
+    if (activePath) renderItem(activePath);
+  }
+
+  function pointToSegmentDistance(p, a, b){
+    const dx = b.x - a.x, dy = b.y - a.y;
+    if (dx === 0 && dy === 0) return dist(p,a);
+    const t = Math.max(0, Math.min(1, ((p.x-a.x)*dx + (p.y-a.y)*dy)/(dx*dx+dy*dy)));
+    return dist(p, {x:a.x + t*dx, y:a.y + t*dy});
+  }
+
+  function itemHitDistance(item, point){
+    if (item.kind === 'stamp') return dist(point, item) - (item.size * item.scale * 0.65);
+    const pts = item.points;
+    if (!pts.length) return Infinity;
+    let best = Infinity;
+    for (let i=0;i<pts.length;i++){
+      const current = {x:pts[i].x + item.offsetX, y:pts[i].y + item.offsetY};
+      best = Math.min(best, dist(point, current));
+      if (i>0){
+        const prev = {x:pts[i-1].x + item.offsetX, y:pts[i-1].y + item.offsetY};
+        best = Math.min(best, pointToSegmentDistance(point, prev, current));
+      }
+    }
+    return best - (item.size * item.scale * 0.5);
+  }
+
+  function eraseAt(point){
+    const before = items.length;
+    items = items.filter(item => itemHitDistance(item, point) > eraserRadius);
+    if (selectedItem && !items.includes(selectedItem)) selectedItem = null;
+    if (before !== items.length) renderDrawing();
+  }
+
+  function beginPath(point){ activePath = makePath(point); }
+  function extendPath(point){
+    if (!activePath) beginPath(point);
+    const pts = activePath.points;
+    const prev = pts[pts.length-1];
+    if (dist(prev, point) > 1.5) pts.push({...point});
+    renderDrawing();
+  }
+  function commitPath(){
+    if (activePath && activePath.points.length){ items.push(activePath); selectedItem = activePath; }
+    activePath = null; renderDrawing();
+  }
+
+  function placeStamp(point){
+    const now = performance.now();
+    if (now - lastStampTs < 140) return;
+    lastStampTs = now;
+    const stamp = makeStamp(point);
+    items.push(stamp);
+    selectedItem = stamp;
+    renderDrawing();
+  }
+
+  function findNearestItem(point){
+    let best = null, bestDistance = Infinity;
+    for (let i=items.length-1;i>=0;i--){
+      const d = itemHitDistance(items[i], point);
+      if (d < bestDistance){ bestDistance = d; best = items[i]; }
+    }
+    return bestDistance <= pinchSelectRadius ? {item: best, distance: bestDistance} : null;
+  }
+
+  function itemCenter(item){
+    if (item.kind === 'stamp') return {x:item.x, y:item.y};
+    const c = getCentroid(item.points);
+    return {x:c.x + item.offsetX, y:c.y + item.offsetY};
+  }
+
+  function startDrag(point){
+    const hit = findNearestItem(point);
+    if (!hit) return false;
+    selectedItem = hit.item;
+    const c = itemCenter(hit.item);
+    dragState = { item: hit.item, startPoint:{...point}, baseCenter:{...c}, baseOffsetX: hit.item.offsetX || 0, baseOffsetY: hit.item.offsetY || 0, baseX: hit.item.x || 0, baseY: hit.item.y || 0 };
+    return true;
+  }
+
+  function updateDrag(point){
+    if (!dragState) return;
+    const dx = point.x - dragState.startPoint.x;
+    const dy = point.y - dragState.startPoint.y;
+    if (dragState.item.kind === 'stamp') { dragState.item.x = dragState.baseX + dx; dragState.item.y = dragState.baseY + dy; }
+    else { dragState.item.offsetX = dragState.baseOffsetX + dx; dragState.item.offsetY = dragState.baseOffsetY + dy; }
+    renderDrawing();
+  }
+  function stopDrag(){ dragState = null; }
+
+  function startScale(spread, point){
+    if (!selectedItem) return false;
+    const center = itemCenter(selectedItem);
+    if (dist(center, point) > scaleSelectRadius) return false;
+    scaleState = { item:selectedItem, baseSpread:spread, baseScale:selectedItem.scale || 1 };
+    return true;
+  }
+
+  function updateScale(spread){
+    if (!scaleState || !scaleState.item) return;
+    const factor = spread / Math.max(0.0001, scaleState.baseSpread);
+    scaleState.item.scale = clamp(scaleState.baseScale * factor, 0.35, 6);
+    renderDrawing();
+  }
+  function stopScale(){ scaleState = null; }
+
+  function playTone(freq, duration=0.08, type='sine', gainValue=0.03){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!playTone.ctx) playTone.ctx = new Ctx();
+    const ctx = playTone.ctx;
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.value = 0.0001;
+    osc.connect(gain); gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+    gain.gain.exponentialRampToValueAtTime(gainValue, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.start(now); osc.stop(now + duration + 0.02);
+  }
+
+  function gestureSound(gesture){
+    const tones = { draw: [720,'triangle'], erase:[220,'sawtooth'], pinch:[520,'square'], idle:[360,'sine'] };
+    const [freq,type] = tones[gesture] || tones.idle;
+    playTone(freq, 0.09, type, 0.025);
+  }
+
+  function drawOverlay(landmarks, gesture, point){
+    octx.clearRect(0,0,window.innerWidth,window.innerHeight);
+    if (selectedItem) {
+      const c = itemCenter(selectedItem);
+      const ring = selectedItem.kind === 'stamp' ? selectedItem.size * selectedItem.scale * 0.8 : 52;
+      octx.save();
+      octx.strokeStyle = 'rgba(255,212,0,.96)';
+      octx.shadowBlur = 18; octx.shadowColor = 'rgba(255,212,0,.8)'; octx.lineWidth = 2.6;
+      octx.setLineDash([8,6]);
+      octx.beginPath(); octx.arc(c.x, c.y, ring, 0, Math.PI*2); octx.stroke();
+      octx.restore();
+    }
+    if (!landmarks || !point) return;
+    const ringColor = gesture === 'erase' ? 'rgba(255,120,120,.98)' : gesture === 'pinch' ? 'rgba(135,215,255,.98)' : 'rgba(120,255,232,.98)';
+    octx.save();
+    octx.strokeStyle = ringColor;
+    octx.shadowBlur = 20; octx.shadowColor = ringColor; octx.lineWidth = 2.6;
+    octx.beginPath();
+    octx.arc(point.x, point.y, gesture === 'erase' ? eraserRadius : gesture === 'pinch' ? 28 : Number(brushSize.value)*1.3 + 10, 0, Math.PI*2);
+    octx.stroke();
+    octx.beginPath(); octx.fillStyle = ringColor; octx.arc(point.x, point.y, 4.5, 0, Math.PI*2); octx.fill();
+    octx.restore();
+  }
+
+  function setupSwatches(){
+    palette.forEach((c, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'swatch' + (idx===1 ? ' active' : '');
+      btn.style.background = c; btn.type = 'button';
+      btn.addEventListener('click', () => {
+        brushColor = c;
+        [...swatches.children].forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      swatches.appendChild(btn);
+    });
+  }
+  setupSwatches();
+
+  function applyBrightness(){
+    const val = Number(brightness.value);
+    brightnessOut.value = val + '%';
+    video.style.filter = `brightness(${(val/100).toFixed(2)})`;
+  }
+
+  [brushSize, glowSize, smoothness, brightness].forEach(el => el.addEventListener('input', () => {
+    brushSizeOut.value = brushSize.value; glowSizeOut.value = glowSize.value; smoothnessOut.value = smoothness.value;
+    applyBrightness();
+  }));
+  fitLightBtn.addEventListener('click', () => { brightness.value = 100; applyBrightness(); showToast('Screen light reset'); });
+  brushSizeOut.value = brushSize.value; glowSizeOut.value = glowSize.value; smoothnessOut.value = smoothness.value; applyBrightness();
+
+  function openDrawer(){
+    leftDrawer.classList.remove('collapsed');
+    clearTimeout(drawerHideTimer);
+    drawerHideTimer = setTimeout(() => leftDrawer.classList.add('collapsed'), 3600);
+  }
+  function toggleDrawer(){
+    if (leftDrawer.classList.contains('collapsed')) openDrawer();
+    else leftDrawer.classList.add('collapsed');
+  }
+  drawerToggle.addEventListener('click', toggleDrawer);
+  leftDrawer.addEventListener('mouseenter', () => { clearTimeout(drawerHideTimer); leftDrawer.classList.remove('collapsed'); });
+  leftDrawer.addEventListener('mouseleave', () => { drawerHideTimer = setTimeout(() => leftDrawer.classList.add('collapsed'), 1200); });
+  setTimeout(() => splashScreen.classList.add('hide'), 1700);
+
+  renderMode.addEventListener('change', () => {
+    const mode = renderMode.value;
+    numberPreset.parentElement.style.display = mode === 'number' ? 'flex' : 'none';
+    shapePreset.parentElement.style.display = mode === 'shape' ? 'flex' : 'none';
+  });
+  renderMode.dispatchEvent(new Event('change'));
+
+  function saveImage(){
+    const out = document.createElement('canvas');
+    out.width = window.innerWidth; out.height = window.innerHeight;
+    const ctx = out.getContext('2d');
+    ctx.translate(out.width,0); ctx.scale(-1,1);
+    ctx.filter = video.style.filter || 'brightness(1)';
+    ctx.drawImage(video, 0, 0, out.width, out.height);
+    ctx.filter = 'none';
+    ctx.drawImage(drawCanvas, 0, 0, out.width, out.height);
+    const a = document.createElement('a');
+    a.href = out.toDataURL('image/png'); a.download = 'zombai-airbrush-v2.png'; a.click();
+  }
+
+  async function initHands(){
+    hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({ maxNumHands:1, modelComplexity:1, minDetectionConfidence:0.68, minTrackingConfidence:0.6, selfieMode:true });
+    hands.onResults((results) => {
+      const now = performance.now();
+      if (now - lastProcessTs < targetFpsGap) return;
+      lastProcessTs = now;
+
+      const landmarks = results.multiHandLandmarks?.[0];
+      if (!landmarks){
+        drawOverlay(null); smoothedPoint = null;
+        if (activePath) commitPath();
+        stopDrag(); stopScale();
+        if (running) updateStatus(drawingPaused ? 'Paused' : 'Searching hand', 'Show your hand in front of the camera');
+        return;
+      }
+
+      const gestureInfo = classifyGesture(landmarks);
+      const gesture = gestureInfo.name;
+      const rawPoint = gesture === 'pinch'
+        ? normToScreen({x:(landmarks[8].x+landmarks[4].x)/2, y:(landmarks[8].y+landmarks[4].y)/2})
+        : normToScreen(landmarks[8]);
+      const t = 1 - Number(smoothness.value);
+      if (!smoothedPoint) smoothedPoint = {...rawPoint};
+      smoothedPoint = { x: lerp(smoothedPoint.x, rawPoint.x, t), y: lerp(smoothedPoint.y, rawPoint.y, t) };
+
+      if (gesture !== lastGesture){
+        const msgMap = { draw:'Draw mode', erase:selectedItem ? 'Resize / Erase mode' : 'Erase mode', pinch:'Drag mode', idle:'Idle mode' };
+        updateStatus(msgMap[gesture], drawingPaused ? 'Tracking active, drawing paused' : 'Gesture recognized');
+        gestureSound(gesture);
+        lastGesture = gesture;
+      }
+
+      drawOverlay(landmarks, gesture, smoothedPoint);
+      if (drawingPaused) return;
+
+      if (gesture === 'draw'){
+        stopDrag(); stopScale();
+        if (renderMode.value === 'freehand') extendPath(smoothedPoint);
+        else { if (activePath) commitPath(); placeStamp(smoothedPoint); }
+      } else if (gesture === 'erase'){
+        if (activePath) commitPath();
+        stopDrag();
+        const selectionNear = selectedItem && dist(itemCenter(selectedItem), smoothedPoint) <= scaleSelectRadius;
+        if (selectionNear) { if (!scaleState) startScale(gestureInfo.spread, smoothedPoint); updateScale(gestureInfo.spread); }
+        else { stopScale(); eraseAt(smoothedPoint); }
+      } else if (gesture === 'pinch'){
+        if (activePath) commitPath();
+        stopScale();
+        if (!dragState) startDrag(smoothedPoint);
+        updateDrag(smoothedPoint);
+      } else {
+        if (activePath) commitPath();
+        stopDrag(); stopScale();
+      }
+    });
+  }
+
+  async function startCamera(){
+    try {
+      if (running) return;
+      if (!hands) await initHands();
+      playTone(660,0.06,'triangle',0.02);
+      if (mpCamera) { try { mpCamera.stop(); } catch (_) {} }
+      mpCamera = new Camera(video, {
+        onFrame: async () => { if (hands) await hands.send({ image: video }); },
+        width:1280,
+        height:720
+      });
+      await mpCamera.start();
+      running = true;
+      updateStatus('Live', 'Use gestures to draw, erase, drag, and resize');
+      splashScreen.classList.add('hide');
+      openDrawer();
+      showToast('Camera started');
+    } catch (err) {
+      console.error(err);
+      updateStatus('Camera error', 'Run on localhost/HTTPS and allow camera permission');
+      showToast('Camera access failed');
+    }
+  }
+
+  startBtn.addEventListener('click', startCamera);
+  pauseBtn.addEventListener('click', () => {
+    drawingPaused = !drawingPaused;
+    pauseBtn.textContent = drawingPaused ? 'Resume Draw' : 'Pause Draw';
+    updateStatus(drawingPaused ? 'Paused' : 'Live', drawingPaused ? 'Hand tracking is still active' : 'Use gestures to draw');
+    showToast(drawingPaused ? 'Drawing paused' : 'Drawing resumed');
+    playTone(drawingPaused ? 280 : 640, 0.08, 'triangle', 0.02);
+  });
+  clearBtn.addEventListener('click', () => { items = []; activePath = null; dragState = null; scaleState = null; selectedItem = null; renderDrawing(); showToast('Canvas cleared'); playTone(180, 0.08, 'sawtooth', 0.02); });
+  saveBtn.addEventListener('click', saveImage);
+  deselectBtn.addEventListener('click', () => { selectedItem = null; dragState = null; scaleState = null; drawOverlay(null); showToast('Selection cleared'); renderDrawing(); });
+
+  updateStatus('Idle', 'Press Start Camera');
+})();
+</script>
+</body>
+</html>
