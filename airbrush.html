@@ -1,161 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZombAI AirBrush</title>
-  <style>
-    :root{
-      --bg:#050914;
-      --panel:rgba(7,14,28,.62);
-      --panel-border:rgba(112,255,218,.18);
-      --text:#effbff;
-      --muted:#9ab6c8;
-      --accent:#78ffe8;
-      --accent2:#87d7ff;
-      --danger:#ff8d8d;
-      --shadow:0 18px 45px rgba(0,0,0,.35);
-      --radius:20px;
-      --drawer-w:min(360px,92vw);
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
-    #app{position:fixed;inset:0;background:radial-gradient(circle at top, #07101d, #02050c 70%)}
-    #inputVideo,#drawCanvas,#overlayCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    #inputVideo{transform:scaleX(-1);filter:brightness(1);z-index:1}
-    #drawCanvas,#overlayCanvas{transform:scaleX(-1)}
-    #drawCanvas{z-index:2}
-    #overlayCanvas{z-index:3;pointer-events:none}
-    #ui{position:absolute;inset:0;pointer-events:none;z-index:4}
-    .panel,.menu-toggle{pointer-events:auto;background:var(--panel);border:1px solid var(--panel-border);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);box-shadow:var(--shadow);border-radius:var(--radius)}
-    .menu-toggle{position:absolute;left:14px;top:14px;width:56px;height:56px;display:grid;place-items:center;cursor:pointer;z-index:6}
-    .hamburger{width:22px;height:14px;position:relative}
-    .hamburger span{position:absolute;left:0;right:0;height:2px;border-radius:2px;background:#dffff8;box-shadow:0 0 12px rgba(120,255,232,.35)}
-    .hamburger span:nth-child(1){top:0}.hamburger span:nth-child(2){top:6px}.hamburger span:nth-child(3){top:12px}
-    .drawer{position:absolute;left:14px;top:78px;bottom:14px;width:var(--drawer-w);display:flex;transform:translateX(0);transition:transform .28s ease,opacity .28s ease}
-    .drawer.collapsed{transform:translateX(calc(-1 * (var(--drawer-w) + 10px)))}
-    .drawer-content{width:100%;padding:14px;overflow:auto;max-height:calc(100vh - 92px);scrollbar-width:thin}
-    .drawer-content::-webkit-scrollbar{width:8px}
-    .drawer-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:999px}
-    .brand{padding:14px 14px 12px;position:relative;overflow:hidden;margin-bottom:12px}
-    .brand::before{content:'';position:absolute;inset:-30% auto auto -10%;width:170px;height:170px;background:radial-gradient(circle, rgba(120,255,232,.22), transparent 70%);pointer-events:none}
-    .brand::after{content:'';position:absolute;right:-30px;bottom:-30px;width:170px;height:170px;background:radial-gradient(circle, rgba(135,215,255,.18), transparent 70%);pointer-events:none}
-    .zline{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
-    .zlogo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#78ffe8,#87d7ff);display:grid;place-items:center;color:#04131c;font-weight:900;box-shadow:0 0 32px rgba(120,255,232,.28)}
-    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-size:12px;color:#dbfcf6}
-    .dot{width:8px;height:8px;border-radius:50%;background:#78ffe8;box-shadow:0 0 14px #78ffe8}
-    .brand h1{font-size:24px;line-height:1.05;margin:8px 0 6px;letter-spacing:.2px}
-    .brand p{margin:0;color:var(--muted);font-size:13px;position:relative;z-index:1}
-    .controls{padding:14px}
-    .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#c7eff1;margin:0 0 10px}
-    .row{display:flex;align-items:center;gap:10px;margin:10px 0;min-width:0}
-    .row label{font-size:13px;color:#d9f5f7;min-width:92px}
-    .row input[type="range"], .row select{flex:1;min-width:0}
-    .row output{min-width:52px;text-align:right;color:var(--accent);font-size:12px}
-    select{appearance:none;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.14);padding:10px 12px;border-radius:12px}
-    .swatches{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
-    .swatch{width:100%;min-width:0;height:34px;border-radius:999px;border:2px solid rgba(255,255,255,.22);cursor:pointer;transition:.2s transform,.2s border-color, box-shadow .2s ease;box-shadow:0 0 18px transparent}
-    .swatch:hover,.swatch.active{transform:translateY(-1px) scale(1.03);border-color:#fff;box-shadow:0 0 20px currentColor}
-    .buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
-    button{appearance:none;border:none;cursor:pointer;color:#04131c;background:linear-gradient(135deg,#d9fff9,#d2e8ff);padding:12px 14px;border-radius:14px;font-weight:800;letter-spacing:.02em;box-shadow:0 8px 18px rgba(110,231,255,.15);transition:transform .16s ease, opacity .16s ease;min-width:0}
-    button:hover{transform:translateY(-1px)}
-    button.secondary{background:rgba(255,255,255,.08);color:#f4f8ff;border:1px solid rgba(255,255,255,.14);box-shadow:none}
-    button.danger{background:#ffd9d9;color:#3c1010}
-    .legend-inline{display:grid;gap:8px;margin-top:8px}
-    .legend-item{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:#e7f0fb}
-    .legend-item span{color:var(--muted);text-align:right}
-    .tiny{font-size:11px;color:var(--muted);line-height:1.45;margin-top:10px}
-    .status-float{position:absolute;right:18px;top:18px;padding:12px 14px;max-width:min(360px,60vw);font-size:13px;color:#ebf5ff;pointer-events:auto}
-    .status-float strong{color:var(--accent)}
-    .footer-chip{position:absolute;right:18px;bottom:18px;padding:10px 14px;font-size:12px;color:#c7f6ff;pointer-events:auto}
-    .footer-chip strong{color:var(--accent2)}
-    .toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);pointer-events:none;background:rgba(7,17,31,.78);border:1px solid rgba(255,255,255,.14);padding:10px 14px;border-radius:999px;color:#eef6ff;font-size:13px;backdrop-filter:blur(12px);opacity:0;transition:opacity .25s ease,transform .25s ease}
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
-    .splash{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%, rgba(18,35,66,.96), rgba(3,7,14,.98) 65%);z-index:50;transition:opacity .5s ease, visibility .5s ease}
-    .splash.hide{opacity:0;visibility:hidden}
-    .splash-card{display:flex;flex-direction:column;align-items:center;gap:18px}
-    .orb{width:94px;height:94px;border-radius:50%;background:conic-gradient(from 0deg, #78ffe8, #87d7ff, #ff7bf5, #ffd86f, #78ffe8);position:relative;animation:spin 1.4s linear infinite, pulse 1.4s ease-in-out infinite}
-    .orb::after{content:'';position:absolute;inset:10px;border-radius:50%;background:radial-gradient(circle, rgba(7,12,26,1), rgba(7,12,26,.9));box-shadow:inset 0 0 24px rgba(255,255,255,.08)}
-    .splash h2{margin:0;font-size:34px;letter-spacing:.03em}.splash p{margin:0;color:#b9d7e8;letter-spacing:.22em;text-transform:uppercase;font-size:12px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @keyframes pulse{50%{transform:scale(1.06)}}
-    @media (max-width:900px){
-      .drawer{left:12px;top:74px;bottom:12px;width:min(330px,92vw)}
-      .drawer.collapsed{transform:translateX(calc(-1 * (min(330px,92vw) + 8px)))}
-      .status-float{right:12px;top:12px;max-width:62vw}
-      .footer-chip{right:12px;bottom:12px}
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ZombAI AirBrush Ultra</title>
+<style>
+  :root{
+    --panel-bg: rgba(8,16,32,.58);
+    --panel-border: rgba(120,255,240,.18);
+    --text: #eafcff;
+    --muted:#93acc8;
+    --accent:#6efff1;
+    --accent2:#4cc3ff;
+    --danger:#ff8f8f;
+    --drawer-w:min(360px,90vw);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+  #app{position:fixed;inset:0;background:radial-gradient(circle at top,#081322,#03060d 72%)}
+  #inputVideo,#drawCanvas,#fxCanvas,#overlayCanvas,.camera-dim{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  #inputVideo,#drawCanvas,#fxCanvas,#overlayCanvas{transform:scaleX(-1)}
+  #inputVideo{filter:brightness(var(--cam-brightness,1));}
+  .camera-dim{pointer-events:none;background:#000;opacity:var(--cam-dim,0)}
+  #ui{position:absolute;inset:0;pointer-events:none}
+  .panel{pointer-events:auto;background:var(--panel-bg);border:1px solid var(--panel-border);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);box-shadow:0 16px 50px rgba(0,0,0,.35);border-radius:20px}
+  .menu-btn{position:absolute;left:14px;top:16px;z-index:12;width:54px;height:54px;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:rgba(8,16,32,.72);backdrop-filter:blur(14px);display:grid;place-items:center;pointer-events:auto;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.28)}
+  .menu-btn:hover{transform:translateY(-1px)}
+  .menu-btn .bars{width:22px;height:16px;position:relative}
+  .menu-btn .bars span{position:absolute;left:0;right:0;height:2px;background:#dffff8;border-radius:99px;box-shadow:0 0 14px rgba(110,255,241,.32)}
+  .menu-btn .bars span:nth-child(1){top:0}.menu-btn .bars span:nth-child(2){top:7px}.menu-btn .bars span:nth-child(3){bottom:0}
+  .drawer{position:absolute;left:14px;top:82px;bottom:14px;width:var(--drawer-w);padding:12px;overflow:auto;transform:translateX(-112%);transition:transform .28s ease, opacity .28s ease;opacity:.12;z-index:11}
+  .drawer.open{transform:translateX(0);opacity:1}
+  .drawer::-webkit-scrollbar{width:8px}.drawer::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:99px}
+  .brand{padding:14px;position:relative;overflow:hidden;margin-bottom:12px}
+  .brand::before{content:'';position:absolute;left:-20px;top:-35px;width:180px;height:180px;background:radial-gradient(circle,rgba(110,255,241,.16),transparent 70%)}
+  .brand::after{content:'';position:absolute;right:-20px;bottom:-35px;width:170px;height:170px;background:radial-gradient(circle,rgba(76,195,255,.15),transparent 70%)}
+  .zrow{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+  .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#03131c;background:linear-gradient(135deg,#71fff0,#58c9ff);box-shadow:0 0 30px rgba(110,255,241,.32)}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border-radius:999px;font-size:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+  .dot{width:8px;height:8px;border-radius:50%;background:#71fff0;box-shadow:0 0 14px #71fff0}
+  .brand h1{margin:10px 0 6px;font-size:24px;line-height:1.03}.brand p{margin:0;color:var(--muted);font-size:13px;position:relative;z-index:1}
+  .section{padding:14px;margin-bottom:12px}
+  .section-title{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#c8f9f2;margin:0 0 12px}
+  .row{display:flex;align-items:center;gap:10px;margin:9px 0}
+  .row label{min-width:96px;font-size:13px;color:#ddf8fb}.row input[type='range'], .row select{flex:1}.row output{min-width:46px;text-align:right;color:var(--accent);font-size:12px}
+  .swatches{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
+  .swatch{width:100%;height:34px;border-radius:999px;border:2px solid rgba(255,255,255,.18);cursor:pointer;box-shadow:0 0 0 transparent;transition:.18s transform,.18s box-shadow,.18s border-color}
+  .swatch:hover,.swatch.active{transform:translateY(-1px) scale(1.03);border-color:#fff;box-shadow:0 0 18px currentColor}
+  .preset-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
+  .preset{padding:10px 6px;border-radius:14px;text-align:center;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);cursor:pointer;user-select:none;overflow:hidden;text-overflow:ellipsis}
+  .preset.active{outline:2px solid rgba(110,255,241,.5);box-shadow:0 0 18px rgba(110,255,241,.16) inset}
+  .buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+  button{appearance:none;border:none;cursor:pointer;padding:12px 14px;border-radius:14px;font-weight:800;background:linear-gradient(135deg,#dbfffa,#d6ebff);color:#05131c;transition:transform .16s ease;min-width:0}
+  button:hover{transform:translateY(-1px)}
+  button.secondary{background:rgba(255,255,255,.07);color:var(--text);border:1px solid rgba(255,255,255,.12)}
+  button.danger{background:#ffd7d7;color:#421313}
+  .tiny{font-size:11px;line-height:1.45;color:var(--muted);margin-top:10px}
+  .status{position:absolute;right:16px;top:16px;z-index:10;max-width:min(360px,62vw);padding:12px 14px;font-size:13px}.status strong{color:var(--accent)}
+  .footer{position:absolute;right:16px;bottom:16px;z-index:10;padding:10px 14px;font-size:12px}.footer strong{color:var(--accent2)}
+  .toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(7,17,31,.78);border:1px solid rgba(255,255,255,.12);padding:10px 14px;border-radius:999px;backdrop-filter:blur(12px);opacity:0;transition:opacity .25s ease, transform .25s ease;z-index:20}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+  .splash{position:fixed;inset:0;display:grid;place-items:center;z-index:30;background:radial-gradient(circle at 50% 35%, rgba(16,34,63,.96), rgba(2,5,12,.99) 66%);transition:opacity .5s ease, visibility .5s ease}
+  .splash.hide{opacity:0;visibility:hidden}
+  .splash-card{text-align:center;display:flex;flex-direction:column;align-items:center;gap:18px}
+  .orb{width:98px;height:98px;border-radius:50%;position:relative;background:conic-gradient(from 0deg,#72fff1,#5ac6ff,#ff51d9,#ffe36a,#72fff1);animation:spin 1.35s linear infinite,pulse 1.35s ease-in-out infinite}
+  .orb::after{content:'';position:absolute;inset:10px;border-radius:50%;background:radial-gradient(circle,#06111d,#07111d 70%,rgba(7,17,29,.8));box-shadow:inset 0 0 28px rgba(255,255,255,.07)}
+  .splash h2{margin:0;font-size:34px}.splash p{margin:0;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#bdd7e6}
+  @keyframes spin{to{transform:rotate(360deg)}} @keyframes pulse{50%{transform:scale(1.06)}}
+  @media (max-width:900px){
+    .drawer{width:min(330px,92vw)}
+    .status{right:12px;top:12px;max-width:65vw}.footer{right:12px;bottom:12px}
+  }
+</style>
 </head>
 <body>
 <div id="app">
   <video id="inputVideo" playsinline muted></video>
   <canvas id="drawCanvas"></canvas>
+  <canvas id="fxCanvas"></canvas>
   <canvas id="overlayCanvas"></canvas>
+  <div class="camera-dim"></div>
 
   <div id="ui">
-    <div class="menu-toggle" id="drawerToggle" title="Toggle menu">
-      <div class="hamburger"><span></span><span></span><span></span></div>
-    </div>
+    <div class="menu-btn" id="menuBtn" title="Open menu"><div class="bars"><span></span><span></span><span></span></div></div>
 
-    <div class="drawer collapsed" id="leftDrawer">
-      <div class="panel drawer-content">
-        <div class="panel brand">
-          <div class="zline">
-            <div class="zlogo">Z</div>
-            <div class="badge"><span class="dot"></span> ZombAI AirBrush</div>
-          </div>
-          <h1>Gesture Doodle Studio</h1>
-          <p>Cleaner view, brighter palette, floating menu, predefined presets, pinch drag, and pinch-in or pinch-out resizing on a selected doodle.</p>
+    <div class="panel drawer" id="drawer">
+      <div class="panel brand">
+        <div class="zrow"><div class="logo">Z</div><div class="pill"><span class="dot"></span> ZombAI AirBrush Ultra</div></div>
+        <h1>Cyberpunk Gesture Studio</h1>
+        <p>Neon gradient strokes, dual glow aura, flowing light animation, particle sparks, pressure-based thickness, presets, drag, and resize.</p>
+      </div>
+
+      <div class="panel section">
+        <div class="section-title">Brush + View</div>
+        <div class="row"><label for="brushBase">Base Size</label><input id="brushBase" type="range" min="2" max="32" value="8"><output id="brushBaseOut">8</output></div>
+        <div class="row"><label for="glowSize">Glow</label><input id="glowSize" type="range" min="0" max="48" value="16"><output id="glowSizeOut">16</output></div>
+        <div class="row"><label for="smoothness">Smooth</label><input id="smoothness" type="range" min="0" max="0.95" step="0.05" value="0.55"><output id="smoothnessOut">0.55</output></div>
+        <div class="row"><label for="flowSpeed">Flow</label><input id="flowSpeed" type="range" min="0" max="4" step="0.1" value="1.2"><output id="flowSpeedOut">1.2</output></div>
+        <div class="row"><label for="brightness">Cam Light</label><input id="brightness" type="range" min="35" max="160" value="100"><output id="brightnessOut">100%</output></div>
+        <div class="row"><label for="modeSelect">Mode</label><select id="modeSelect"><option value="freehand">Freehand</option><option value="numbers">Numbers</option><option value="shapes">Shapes</option></select></div>
+        <div class="row"><label>Primary</label></div>
+        <div class="swatches" id="swatches1"></div>
+        <div class="row"><label>Secondary</label></div>
+        <div class="swatches" id="swatches2"></div>
+        <div class="tiny">Cam Light affects only the camera feed, not doodles or menus.</div>
+      </div>
+
+      <div class="panel section">
+        <div class="section-title">Preset Stamps</div>
+        <div class="preset-grid" id="presetGrid"></div>
+      </div>
+
+      <div class="panel section">
+        <div class="section-title">Gestures</div>
+        <div class="tiny" style="margin-top:0">
+          Index finger up = draw / stamp<br>
+          Pinch near doodle = select + drag<br>
+          Open palm on selected doodle = resize selected doodle<br>
+          Open palm away from selection = erase near hand
         </div>
-
-        <div class="panel controls">
-          <div class="section-title">Brush + View</div>
-          <div class="row"><label for="brushSize">Thickness</label><input id="brushSize" type="range" min="2" max="48" value="8" /><output id="brushSizeOut">8</output></div>
-          <div class="row"><label for="glowSize">Glow</label><input id="glowSize" type="range" min="0" max="54" value="18" /><output id="glowSizeOut">18</output></div>
-          <div class="row"><label for="smoothness">Smooth</label><input id="smoothness" type="range" min="0" max="0.95" step="0.05" value="0.55" /><output id="smoothnessOut">0.55</output></div>
-          <div class="row"><label for="brightness">Screen Light</label><input id="brightness" type="range" min="40" max="160" value="100" /><output id="brightnessOut">100%</output></div>
-
-          <div class="section-title" style="margin-top:14px">Render Preset</div>
-          <div class="row"><label for="renderMode">Mode</label><select id="renderMode"><option value="freehand">Freehand</option><option value="number">Numbers</option><option value="shape">Shapes</option></select></div>
-          <div class="row"><label for="numberPreset">Number</label><select id="numberPreset"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></div>
-          <div class="row"><label for="shapePreset">Shape</label><select id="shapePreset"><option value="circle">Circle</option><option value="square">Square</option><option value="triangle">Triangle</option><option value="star">Star</option><option value="heart">Heart</option><option value="diamond">Diamond</option></select></div>
-
-          <div class="row"><label>Palette</label></div>
-          <div class="swatches" id="swatches"></div>
-
-          <div class="section-title" style="margin-top:14px">Gestures</div>
-          <div class="legend-inline">
-            <div class="legend-item"><strong>Draw</strong> <span>Index finger up</span></div>
-            <div class="legend-item"><strong>Erase</strong> <span>Open palm away from selection</span></div>
-            <div class="legend-item"><strong>Drag doodle</strong> <span>Pinch near a doodle</span></div>
-            <div class="legend-item"><strong>Resize doodle</strong> <span>Open palm on selected doodle, pinch in or out</span></div>
-            <div class="legend-item"><strong>Idle</strong> <span>Closed fist / no gesture</span></div>
-          </div>
-          <div class="buttons">
-            <button id="startBtn">Start Camera</button>
-            <button id="pauseBtn" class="secondary">Pause Draw</button>
-            <button id="clearBtn" class="danger">Clear Canvas</button>
-            <button id="saveBtn" class="secondary">Save PNG</button>
-            <button id="deselectBtn" class="secondary">Deselect</button>
-            <button id="fitLightBtn" class="secondary">Reset Light</button>
-          </div>
-          <div class="tiny">The floating hamburger is always visible. The panel auto-hides, while your doodles and menu stay bright because screen light now affects only the camera feed.</div>
+        <div class="buttons">
+          <button id="startBtn">Start Camera</button>
+          <button id="pauseBtn" class="secondary">Pause Draw</button>
+          <button id="clearBtn" class="danger">Clear Canvas</button>
+          <button id="saveBtn" class="secondary">Save PNG</button>
         </div>
       </div>
     </div>
 
-    <div class="panel status-float" id="statusPanel">Status: <strong>Idle</strong><br><span style="color:var(--muted)">Press Start Camera</span></div>
-    <div class="panel footer-chip">Powered by <strong>ZombAI</strong> · AirBrush Neon Glass Lab</div>
+    <div class="panel status" id="statusPanel">Status: <strong>Idle</strong><br><span style="color:var(--muted)">Press Start Camera</span></div>
+    <div class="panel footer">Powered by <strong>ZombAI</strong> · Neon Flow Engine</div>
   </div>
+
   <div class="toast" id="toast"></div>
-  <div class="splash" id="splashScreen">
-    <div class="splash-card">
-      <div class="orb"></div>
-      <h2>ZombAI AirBrush</h2>
-      <p>Loading Gesture Studio</p>
-    </div>
-  </div>
+  <div class="splash" id="splashScreen"><div class="splash-card"><div class="orb"></div><h2>ZombAI AirBrush</h2><p>Loading Neon Flow Engine</p></div></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
@@ -164,66 +142,76 @@
 (() => {
   const video = document.getElementById('inputVideo');
   const drawCanvas = document.getElementById('drawCanvas');
+  const fxCanvas = document.getElementById('fxCanvas');
   const overlayCanvas = document.getElementById('overlayCanvas');
   const dctx = drawCanvas.getContext('2d');
+  const fctx = fxCanvas.getContext('2d');
   const octx = overlayCanvas.getContext('2d');
+  const root = document.documentElement;
+
+  const splashScreen = document.getElementById('splashScreen');
+  const drawer = document.getElementById('drawer');
+  const menuBtn = document.getElementById('menuBtn');
   const statusPanel = document.getElementById('statusPanel');
   const toast = document.getElementById('toast');
-  const splashScreen = document.getElementById('splashScreen');
-  const leftDrawer = document.getElementById('leftDrawer');
-  const drawerToggle = document.getElementById('drawerToggle');
+
+  const brushBase = document.getElementById('brushBase');
+  const glowSize = document.getElementById('glowSize');
+  const smoothness = document.getElementById('smoothness');
+  const flowSpeed = document.getElementById('flowSpeed');
+  const brightness = document.getElementById('brightness');
+  const modeSelect = document.getElementById('modeSelect');
+  const brushBaseOut = document.getElementById('brushBaseOut');
+  const glowSizeOut = document.getElementById('glowSizeOut');
+  const smoothnessOut = document.getElementById('smoothnessOut');
+  const flowSpeedOut = document.getElementById('flowSpeedOut');
+  const brightnessOut = document.getElementById('brightnessOut');
+  const swatches1 = document.getElementById('swatches1');
+  const swatches2 = document.getElementById('swatches2');
+  const presetGrid = document.getElementById('presetGrid');
+
   const startBtn = document.getElementById('startBtn');
   const pauseBtn = document.getElementById('pauseBtn');
   const clearBtn = document.getElementById('clearBtn');
   const saveBtn = document.getElementById('saveBtn');
-  const deselectBtn = document.getElementById('deselectBtn');
-  const fitLightBtn = document.getElementById('fitLightBtn');
-  const brushSize = document.getElementById('brushSize');
-  const glowSize = document.getElementById('glowSize');
-  const smoothness = document.getElementById('smoothness');
-  const brightness = document.getElementById('brightness');
-  const renderMode = document.getElementById('renderMode');
-  const numberPreset = document.getElementById('numberPreset');
-  const shapePreset = document.getElementById('shapePreset');
-  const brushSizeOut = document.getElementById('brushSizeOut');
-  const glowSizeOut = document.getElementById('glowSizeOut');
-  const smoothnessOut = document.getElementById('smoothnessOut');
-  const brightnessOut = document.getElementById('brightnessOut');
-  const swatches = document.getElementById('swatches');
 
-  const palette = ['#ffffff','#00f5ff','#34ff87','#f5ff3b','#ff8c1a','#ff4df3','#8e7dff','#ff3b3b','#00a6ff','#7dffef','#ffcf5a','#c7ff5a'];
-  let brushColor = palette[1];
+  const primaryPalette = ['#ffffff','#00f5ff','#39ff14','#ffe600','#ff7a00','#ff2bd6','#9d7bff','#ff3b3b'];
+  const secondaryPalette = ['#00f5ff','#ff2bd6','#71fff0','#5ac6ff','#ffd86f','#ff6cf5','#ffffff','#39ff14'];
+  const numberPresets = ['0','1','2','3','4','5','6','7','8','9'];
+  const shapePresets = ['circle','square','triangle','star','heart','diamond'];
+
+  let primaryColor = primaryPalette[1];
+  let secondaryColor = secondaryPalette[1];
   let running = false;
   let drawingPaused = false;
-  let mpCamera = null;
   let hands = null;
+  let mpCamera = null;
   let smoothedPoint = null;
-  let lastGesture = 'idle';
   let lastProcessTs = 0;
-  let activePath = null;
+  let lastFrameTs = performance.now();
+  let lastGesture = 'idle';
+  let activeItem = null;
   let items = [];
-  let dragState = null;
-  let scaleState = null;
   let selectedItem = null;
+  let dragState = null;
+  let resizeState = null;
+  let particles = [];
   let toastTimer = null;
-  let drawerHideTimer = null;
-  let lastStampTs = 0;
+  let menuHideTimer = null;
+  let flowTick = 0;
+  const eraserRadius = 64;
+  const pinchSelectRadius = 95;
   const targetFpsGap = 1000/30;
-  const eraserRadius = 60;
-  const pinchSelectRadius = 90;
-  const scaleSelectRadius = 160;
 
-  function resize(){
-    const w = window.innerWidth, h = window.innerHeight, dpr = window.devicePixelRatio || 1;
-    [drawCanvas, overlayCanvas].forEach(c => {
+  function resizeCanvases(){
+    const w = innerWidth, h = innerHeight, dpr = devicePixelRatio || 1;
+    [drawCanvas, fxCanvas, overlayCanvas].forEach(c => {
       c.width = w*dpr; c.height = h*dpr; c.style.width = w+'px'; c.style.height = h+'px';
     });
-    dctx.setTransform(dpr,0,0,dpr,0,0);
-    octx.setTransform(dpr,0,0,dpr,0,0);
+    [dctx,fctx,octx].forEach(ctx => ctx.setTransform(dpr,0,0,dpr,0,0));
     renderDrawing();
   }
-  window.addEventListener('resize', resize);
-  resize();
+  addEventListener('resize', resizeCanvases); resizeCanvases();
 
   function showToast(msg){
     toast.textContent = msg; toast.classList.add('show');
@@ -232,152 +220,235 @@
   function updateStatus(mode, detail=''){
     statusPanel.innerHTML = `Status: <strong>${mode}</strong><br><span style="color:var(--muted)">${detail}</span>`;
   }
+  function openMenu(){
+    drawer.classList.add('open');
+    clearTimeout(menuHideTimer);
+    menuHideTimer = setTimeout(() => drawer.classList.remove('open'), 4200);
+  }
+  menuBtn.addEventListener('click', () => drawer.classList.toggle('open'));
+  drawer.addEventListener('mouseenter', () => { clearTimeout(menuHideTimer); drawer.classList.add('open'); });
+  drawer.addEventListener('mouseleave', () => { menuHideTimer = setTimeout(() => drawer.classList.remove('open'), 1200); });
+  setTimeout(() => splashScreen.classList.add('hide'), 1700);
+
+  function applyBrightness(){
+    const value = Number(brightness.value);
+    brightnessOut.value = value + '%';
+    root.style.setProperty('--cam-brightness', String(value/100));
+    root.style.setProperty('--cam-dim', String(value < 100 ? (100-value)/100*0.45 : 0));
+  }
+  function syncOutputs(){
+    brushBaseOut.value = brushBase.value;
+    glowSizeOut.value = glowSize.value;
+    smoothnessOut.value = smoothness.value;
+    flowSpeedOut.value = flowSpeed.value;
+    applyBrightness();
+  }
+  [brushBase, glowSize, smoothness, flowSpeed, brightness].forEach(el => el.addEventListener('input', syncOutputs));
+  syncOutputs();
+
+  function buildSwatches(container, colors, onPick, initial){
+    colors.forEach((color, idx) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'swatch' + (color === initial ? ' active' : '');
+      b.style.background = color;
+      b.style.color = color;
+      b.addEventListener('click', () => {
+        [...container.children].forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        onPick(color, idx);
+      });
+      container.appendChild(b);
+    });
+  }
+  buildSwatches(swatches1, primaryPalette, c => primaryColor = c, primaryColor);
+  buildSwatches(swatches2, secondaryPalette, c => secondaryColor = c, secondaryColor);
+
+  function populatePresets(){
+    const list = modeSelect.value === 'numbers' ? numberPresets : modeSelect.value === 'shapes' ? shapePresets : ['freehand'];
+    presetGrid.innerHTML = '';
+    list.forEach((preset, i) => {
+      const d = document.createElement('div');
+      d.className = 'preset' + (i === 0 ? ' active' : '');
+      d.textContent = preset;
+      d.dataset.value = preset;
+      d.addEventListener('click', () => {
+        [...presetGrid.children].forEach(x => x.classList.remove('active'));
+        d.classList.add('active');
+      });
+      presetGrid.appendChild(d);
+    });
+  }
+  modeSelect.addEventListener('change', populatePresets);
+  populatePresets();
+  const getActivePreset = () => presetGrid.querySelector('.preset.active')?.dataset.value || (modeSelect.value === 'freehand' ? 'freehand' : 'circle');
+
+  function normToScreen(lm){ return { x:(1-lm.x)*innerWidth, y:lm.y*innerHeight }; }
   function lerp(a,b,t){ return a + (b-a)*t; }
   function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
-  function normToScreen(lm){ return { x:(1-lm.x)*window.innerWidth, y:lm.y*window.innerHeight }; }
   function extended(lms, tip, pip){ return lms[tip].y < lms[pip].y; }
-  function thumbExtended(lms){ return Math.abs(lms[4].x - lms[2].x) > 0.06; }
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-
-  function handSpread(lms){
-    const palm = lms[0];
-    const tips = [4,8,12,16,20];
-    return tips.reduce((sum, idx) => sum + Math.hypot(lms[idx].x-palm.x, lms[idx].y-palm.y), 0) / tips.length;
-  }
+  function thumbExtended(lms){ return Math.abs(lms[4].x-lms[2].x) > 0.06; }
 
   function classifyGesture(lms){
-    const index = extended(lms,8,6);
-    const middle = extended(lms,12,10);
-    const ring = extended(lms,16,14);
-    const pinky = extended(lms,20,18);
-    const thumb = thumbExtended(lms);
-    const pinchDistance = Math.hypot(lms[8].x-lms[4].x, lms[8].y-lms[4].y);
-    if (pinchDistance < 0.045) return { name:'pinch', spread: handSpread(lms) };
-    if (index && !middle && !ring && !pinky) return { name:'draw', spread: handSpread(lms) };
-    if (index && middle && ring && pinky && thumb) return { name:'erase', spread: handSpread(lms) };
-    if (!index && !middle && !ring && !pinky) return { name:'idle', spread: handSpread(lms) };
-    return { name:'idle', spread: handSpread(lms) };
+    const index = extended(lms,8,6), middle = extended(lms,12,10), ring = extended(lms,16,14), pinky = extended(lms,20,18), thumb = thumbExtended(lms);
+    const pinch = Math.hypot(lms[8].x-lms[4].x, lms[8].y-lms[4].y);
+    if (pinch < 0.045) return 'pinch';
+    if (index && !middle && !ring && !pinky) return 'draw';
+    if (index && middle && ring && pinky && thumb) return 'openpalm';
+    return 'idle';
   }
 
-  function getCentroid(points){
-    if (!points.length) return {x:0,y:0};
-    const sum = points.reduce((acc,p) => ({x:acc.x+p.x, y:acc.y+p.y}), {x:0,y:0});
-    return {x:sum.x/points.length, y:sum.y/points.length};
+  function createFxGradient(ctx, x1,y1,x2,y2, c1,c2, shift=0){
+    const g = ctx.createLinearGradient(x1,y1,x2,y2);
+    const s = (shift % 1 + 1) % 1;
+    g.addColorStop(0, c1);
+    g.addColorStop(Math.min(.5 + .25*Math.sin(s*Math.PI*2), .86), c2);
+    g.addColorStop(1, c1);
+    return g;
   }
 
-  function makePath(point){
-    return { kind:'path', color:brushColor, size:Number(brushSize.value), glow:Number(glowSize.value), offsetX:0, offsetY:0, scale:1, points:[{...point}] };
+  function drawPathSegment(ctx, pts, item, selected){
+    if (!pts.length) return;
+    const first = pts[0], last = pts[pts.length-1];
+    const x1 = first.x + item.offsetX, y1 = first.y + item.offsetY;
+    const x2 = last.x + item.offsetX, y2 = last.y + item.offsetY;
+    const gradient = createFxGradient(ctx, x1,y1,x2,y2, item.color, item.color2, flowTick * item.flow);
+    ctx.save();
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = item.baseSize * item.scale;
+
+    ctx.globalAlpha = .42;
+    ctx.shadowBlur = item.glow * 2.7 * item.scale;
+    ctx.shadowColor = item.color2;
+    ctx.beginPath(); ctx.moveTo(x1,y1);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x + item.offsetX, pts[i].y + item.offsetY);
+    ctx.stroke();
+
+    ctx.globalAlpha = .86;
+    ctx.shadowBlur = item.glow * 1.5 * item.scale;
+    ctx.shadowColor = item.color;
+    ctx.stroke();
+
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = Math.max(1.2, item.baseSize * item.scale * .34);
+    ctx.strokeStyle = 'rgba(255,255,255,.72)';
+    ctx.stroke();
+
+    if (selected) {
+      ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2; ctx.setLineDash([8,8]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.restore();
   }
 
-  function currentPreset(){
-    if (renderMode.value === 'number') return { kind:'number', value:numberPreset.value };
-    if (renderMode.value === 'shape') return { kind:'shape', value:shapePreset.value };
-    return { kind:'freehand', value:'freehand' };
-  }
-
-  function makeStamp(point){
-    const preset = currentPreset();
-    return { kind:'stamp', stampType:preset.kind, stampValue:preset.value, x:point.x, y:point.y, color:brushColor, size:Number(brushSize.value) * 3.1, glow:Number(glowSize.value), scale:1, rotation:0 };
-  }
-
-  function drawShape(ctx, shape, x, y, size){
-    const r = size/2;
+  function drawStamp(ctx, item, selected){
+    const p = item.points[0];
+    const x = p.x + item.offsetX, y = p.y + item.offsetY;
+    const size = item.size * item.scale;
+    const gradient = createFxGradient(ctx, x-size,y-size,x+size,y+size, item.color, item.color2, flowTick * item.flow);
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.strokeStyle = gradient;
+    ctx.fillStyle = gradient;
+    ctx.globalAlpha = .96;
+    ctx.lineWidth = Math.max(2, size * .12);
+    ctx.shadowBlur = item.glow * 2.2 * item.scale;
+    ctx.shadowColor = item.color2;
     ctx.beginPath();
-    if (shape === 'circle') {
-      ctx.arc(x,y,r,0,Math.PI*2);
-    } else if (shape === 'square') {
-      ctx.rect(x-r, y-r, size, size);
-    } else if (shape === 'triangle') {
-      ctx.moveTo(x, y-r);
-      ctx.lineTo(x+r, y+r);
-      ctx.lineTo(x-r, y+r);
-      ctx.closePath();
-    } else if (shape === 'diamond') {
-      ctx.moveTo(x, y-r);
-      ctx.lineTo(x+r, y);
-      ctx.lineTo(x, y+r);
-      ctx.lineTo(x-r, y);
-      ctx.closePath();
-    } else if (shape === 'star') {
-      for (let i=0;i<10;i++){
-        const rr = i%2===0 ? r : r*0.45;
-        const a = -Math.PI/2 + i*Math.PI/5;
-        const px = x + Math.cos(a)*rr;
-        const py = y + Math.sin(a)*rr;
-        if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
-      }
-      ctx.closePath();
-    } else if (shape === 'heart') {
-      ctx.moveTo(x, y + r*0.9);
-      ctx.bezierCurveTo(x-r*1.2, y+r*0.2, x-r*1.1, y-r*0.7, x, y-r*0.15);
-      ctx.bezierCurveTo(x+r*1.1, y-r*0.7, x+r*1.2, y+r*0.2, x, y+r*0.9);
-      ctx.closePath();
+    const type = item.preset;
+    if (/^\d$/.test(type)) {
+      ctx.font = `900 ${size*1.2}px Inter, Arial, sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.strokeText(type,0,0); ctx.shadowBlur = item.glow * 1.2 * item.scale; ctx.shadowColor = item.color; ctx.fillText(type,0,0);
+    } else {
+      pathShape(ctx, type, size);
+      ctx.stroke();
+      ctx.shadowBlur = item.glow * 1.2 * item.scale; ctx.shadowColor = item.color; ctx.stroke();
     }
+    if (selected){
+      ctx.shadowBlur = 0; ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.setLineDash([6,6]); ctx.beginPath(); ctx.arc(0,0,size*1.15,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.restore();
   }
 
-  function renderItem(item){
-    dctx.save();
-    dctx.lineCap = 'round'; dctx.lineJoin = 'round';
-    dctx.strokeStyle = item.color; dctx.fillStyle = item.color;
-    dctx.shadowBlur = item.glow; dctx.shadowColor = item.color;
-    if (item.kind === 'path') {
-      dctx.lineWidth = item.size * item.scale;
-      const pts = item.points;
-      if (!pts.length) { dctx.restore(); return; }
-      dctx.beginPath();
-      dctx.moveTo(pts[0].x + item.offsetX, pts[0].y + item.offsetY);
-      for (let i=1;i<pts.length;i++) dctx.lineTo(pts[i].x + item.offsetX, pts[i].y + item.offsetY);
-      if (pts.length === 1) {
-        const p = pts[0];
-        dctx.arc(p.x + item.offsetX, p.y + item.offsetY, (item.size * item.scale)/2, 0, Math.PI*2);
-        dctx.fill();
-      } else dctx.stroke();
-    } else {
-      const sz = item.size * item.scale;
-      dctx.translate(item.x, item.y);
-      dctx.rotate(item.rotation || 0);
-      if (item.stampType === 'number') {
-        dctx.font = `900 ${sz}px Inter, Arial, sans-serif`;
-        dctx.textAlign = 'center'; dctx.textBaseline = 'middle';
-        dctx.fillText(item.stampValue, 0, 0);
-      } else if (item.stampType === 'shape') {
-        drawShape(dctx, item.stampValue, 0, 0, sz);
-        dctx.lineWidth = Math.max(2, sz*0.08);
-        dctx.stroke();
-      }
+  function pathShape(ctx, type, size){
+    switch(type){
+      case 'circle': ctx.arc(0,0,size,0,Math.PI*2); break;
+      case 'square': ctx.rect(-size,-size,size*2,size*2); break;
+      case 'triangle': ctx.moveTo(0,-size); ctx.lineTo(size,size); ctx.lineTo(-size,size); ctx.closePath(); break;
+      case 'diamond': ctx.moveTo(0,-size); ctx.lineTo(size,0); ctx.lineTo(0,size); ctx.lineTo(-size,0); ctx.closePath(); break;
+      case 'star':
+        for(let i=0;i<10;i++){ const r = i%2===0 ? size : size*.45; const a = -Math.PI/2 + i*Math.PI/5; const px = Math.cos(a)*r, py=Math.sin(a)*r; if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);} ctx.closePath();
+        break;
+      case 'heart':
+        ctx.moveTo(0,size*.9);
+        ctx.bezierCurveTo(size*1.4,size*.1,size*.9,-size*1.2,0,-size*.35);
+        ctx.bezierCurveTo(-size*.9,-size*1.2,-size*1.4,size*.1,0,size*.9);
+        break;
+      default: ctx.arc(0,0,size,0,Math.PI*2);
     }
-    dctx.restore();
   }
 
   function renderDrawing(){
-    dctx.clearRect(0,0,window.innerWidth,window.innerHeight);
-    for (const item of items) renderItem(item);
-    if (activePath) renderItem(activePath);
+    dctx.clearRect(0,0,innerWidth,innerHeight);
+    flowTick += Number(flowSpeed.value) * 0.01;
+    items.forEach(item => item.type === 'path' ? drawPathSegment(dctx, item.points, item, selectedItem === item) : drawStamp(dctx, item, selectedItem === item));
+    if (activeItem) activeItem.type === 'path' ? drawPathSegment(dctx, activeItem.points, activeItem, false) : drawStamp(dctx, activeItem, false);
+  }
+
+  function spawnParticles(point, item, speed){
+    const burst = Math.min(8, 2 + Math.floor(speed * .5));
+    for (let i=0;i<burst;i++) {
+      particles.push({
+        x: point.x, y: point.y,
+        vx: (Math.random()-0.5) * (0.8 + speed * 0.08),
+        vy: (Math.random()-0.5) * (0.8 + speed * 0.08),
+        life: 24 + Math.random() * 20,
+        maxLife: 24 + Math.random() * 20,
+        size: 1 + Math.random() * 3,
+        color: Math.random() > 0.5 ? item.color : item.color2
+      });
+    }
+  }
+
+  function renderParticles(){
+    fctx.clearRect(0,0,innerWidth,innerHeight);
+    for (let i=particles.length-1;i>=0;i--){
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.01; p.life -= 1;
+      if (p.life <= 0) { particles.splice(i,1); continue; }
+      const alpha = p.life / p.maxLife;
+      fctx.save();
+      fctx.globalAlpha = alpha;
+      fctx.fillStyle = p.color;
+      fctx.shadowBlur = 14; fctx.shadowColor = p.color;
+      fctx.beginPath(); fctx.arc(p.x,p.y,p.size,0,Math.PI*2); fctx.fill();
+      fctx.restore();
+    }
   }
 
   function pointToSegmentDistance(p, a, b){
-    const dx = b.x - a.x, dy = b.y - a.y;
-    if (dx === 0 && dy === 0) return dist(p,a);
-    const t = Math.max(0, Math.min(1, ((p.x-a.x)*dx + (p.y-a.y)*dy)/(dx*dx+dy*dy)));
-    return dist(p, {x:a.x + t*dx, y:a.y + t*dy});
+    const dx = b.x-a.x, dy = b.y-a.y;
+    if (dx===0 && dy===0) return dist(p,a);
+    const t = Math.max(0, Math.min(1, ((p.x-a.x)*dx + (p.y-a.y)*dy)/(dx*dx + dy*dy)));
+    return dist(p, {x:a.x+t*dx, y:a.y+t*dy});
   }
-
   function itemHitDistance(item, point){
-    if (item.kind === 'stamp') return dist(point, item) - (item.size * item.scale * 0.65);
-    const pts = item.points;
-    if (!pts.length) return Infinity;
-    let best = Infinity;
+    if (item.type === 'stamp') return dist(point, {x:item.points[0].x + item.offsetX, y:item.points[0].y + item.offsetY}) - item.size*item.scale;
+    let best = Infinity; const pts = item.points;
     for (let i=0;i<pts.length;i++){
-      const current = {x:pts[i].x + item.offsetX, y:pts[i].y + item.offsetY};
-      best = Math.min(best, dist(point, current));
-      if (i>0){
-        const prev = {x:pts[i-1].x + item.offsetX, y:pts[i-1].y + item.offsetY};
-        best = Math.min(best, pointToSegmentDistance(point, prev, current));
-      }
+      const cur = {x:pts[i].x + item.offsetX, y:pts[i].y + item.offsetY};
+      best = Math.min(best, dist(point, cur));
+      if (i>0){ const prev = {x:pts[i-1].x + item.offsetX, y:pts[i-1].y + item.offsetY}; best = Math.min(best, pointToSegmentDistance(point, prev, cur)); }
     }
-    return best - (item.size * item.scale * 0.5);
+    return best - item.baseSize*item.scale*.5;
   }
-
+  function nearestItem(point){
+    let best = null, bestD = Infinity;
+    for(let i=items.length-1;i>=0;i--){ const d = itemHitDistance(items[i], point); if (d < bestD){ bestD = d; best = items[i]; }}
+    return bestD <= pinchSelectRadius ? {item:best,d:bestD} : null;
+  }
   function eraseAt(point){
     const before = items.length;
     items = items.filter(item => itemHitDistance(item, point) > eraserRadius);
@@ -385,242 +456,108 @@
     if (before !== items.length) renderDrawing();
   }
 
-  function beginPath(point){ activePath = makePath(point); }
-  function extendPath(point){
-    if (!activePath) beginPath(point);
-    const pts = activePath.points;
-    const prev = pts[pts.length-1];
-    if (dist(prev, point) > 1.5) pts.push({...point});
+  function createBaseItem(point){
+    const isStamp = modeSelect.value !== 'freehand';
+    return isStamp ? {
+      type:'stamp', preset:getActivePreset(), points:[{...point}], offsetX:0, offsetY:0, size:26, scale:1,
+      color:primaryColor, color2:secondaryColor, glow:Number(glowSize.value), flow:Number(flowSpeed.value)
+    } : {
+      type:'path', points:[{...point}], offsetX:0, offsetY:0, scale:1,
+      color:primaryColor, color2:secondaryColor, glow:Number(glowSize.value), flow:Number(flowSpeed.value),
+      baseSize:Number(brushBase.value), sizes:[Number(brushBase.value)]
+    };
+  }
+  function beginDraw(point){ activeItem = createBaseItem(point); if (activeItem.type === 'stamp'){ items.push(activeItem); selectedItem = activeItem; activeItem = null; renderDrawing(); } }
+  function extendDraw(point, speed){
+    if (!activeItem) beginDraw(point);
+    if (!activeItem || activeItem.type !== 'path') return;
+    const pts = activeItem.points; const prev = pts[pts.length-1];
+    if (dist(prev, point) < 1.4) return;
+    const pressure = Math.min(2.4, Math.max(.55, 1.6 - Math.min(speed, 36)/28));
+    activeItem.baseSize = Number(brushBase.value) * pressure;
+    activeItem.glow = Number(glowSize.value);
+    activeItem.flow = Number(flowSpeed.value);
+    pts.push({...point});
+    spawnParticles(point, activeItem, speed);
     renderDrawing();
   }
-  function commitPath(){
-    if (activePath && activePath.points.length){ items.push(activePath); selectedItem = activePath; }
-    activePath = null; renderDrawing();
-  }
-
-  function placeStamp(point){
-    const now = performance.now();
-    if (now - lastStampTs < 140) return;
-    lastStampTs = now;
-    const stamp = makeStamp(point);
-    items.push(stamp);
-    selectedItem = stamp;
-    renderDrawing();
-  }
-
-  function findNearestItem(point){
-    let best = null, bestDistance = Infinity;
-    for (let i=items.length-1;i>=0;i--){
-      const d = itemHitDistance(items[i], point);
-      if (d < bestDistance){ bestDistance = d; best = items[i]; }
-    }
-    return bestDistance <= pinchSelectRadius ? {item: best, distance: bestDistance} : null;
-  }
-
-  function itemCenter(item){
-    if (item.kind === 'stamp') return {x:item.x, y:item.y};
-    const c = getCentroid(item.points);
-    return {x:c.x + item.offsetX, y:c.y + item.offsetY};
-  }
+  function commitDraw(){ if (activeItem){ items.push(activeItem); selectedItem = activeItem; activeItem = null; renderDrawing(); } }
 
   function startDrag(point){
-    const hit = findNearestItem(point);
-    if (!hit) return false;
+    const hit = nearestItem(point); if (!hit) return false;
     selectedItem = hit.item;
-    const c = itemCenter(hit.item);
-    dragState = { item: hit.item, startPoint:{...point}, baseCenter:{...c}, baseOffsetX: hit.item.offsetX || 0, baseOffsetY: hit.item.offsetY || 0, baseX: hit.item.x || 0, baseY: hit.item.y || 0 };
+    dragState = { item:hit.item, start:{...point}, ox:hit.item.offsetX, oy:hit.item.offsetY };
+    renderDrawing();
     return true;
   }
-
-  function updateDrag(point){
-    if (!dragState) return;
-    const dx = point.x - dragState.startPoint.x;
-    const dy = point.y - dragState.startPoint.y;
-    if (dragState.item.kind === 'stamp') { dragState.item.x = dragState.baseX + dx; dragState.item.y = dragState.baseY + dy; }
-    else { dragState.item.offsetX = dragState.baseOffsetX + dx; dragState.item.offsetY = dragState.baseOffsetY + dy; }
-    renderDrawing();
-  }
+  function updateDrag(point){ if (!dragState) return; dragState.item.offsetX = dragState.ox + (point.x - dragState.start.x); dragState.item.offsetY = dragState.oy + (point.y - dragState.start.y); renderDrawing(); }
   function stopDrag(){ dragState = null; }
-
-  function startScale(spread, point){
+  function startResize(lms){
     if (!selectedItem) return false;
-    const center = itemCenter(selectedItem);
-    if (dist(center, point) > scaleSelectRadius) return false;
-    scaleState = { item:selectedItem, baseSpread:spread, baseScale:selectedItem.scale || 1 };
+    const palm = normToScreen(lms[0]);
+    const hit = itemHitDistance(selectedItem, palm);
+    if (hit > 140) return false;
+    const spread = handSpread(lms);
+    resizeState = { item:selectedItem, startSpread:spread, startScale:selectedItem.scale };
     return true;
   }
-
-  function updateScale(spread){
-    if (!scaleState || !scaleState.item) return;
-    const factor = spread / Math.max(0.0001, scaleState.baseSpread);
-    scaleState.item.scale = clamp(scaleState.baseScale * factor, 0.35, 6);
-    renderDrawing();
+  function handSpread(lms){
+    const tips = [4,8,12,16,20].map(i => normToScreen(lms[i]));
+    const center = tips.reduce((a,p)=>({x:a.x+p.x/5,y:a.y+p.y/5}),{x:0,y:0});
+    return tips.reduce((sum,p)=>sum+dist(center,p),0)/tips.length;
   }
-  function stopScale(){ scaleState = null; }
+  function updateResize(lms){ if (!resizeState) return; const ratio = handSpread(lms)/resizeState.startSpread; resizeState.item.scale = Math.max(.35, Math.min(4.2, resizeState.startScale * ratio)); renderDrawing(); }
+  function stopResize(){ resizeState = null; }
 
-  function playTone(freq, duration=0.08, type='sine', gainValue=0.03){
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    if (!playTone.ctx) playTone.ctx = new Ctx();
-    const ctx = playTone.ctx;
-    if (ctx.state === 'suspended') ctx.resume();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type; osc.frequency.value = freq;
-    gain.gain.value = 0.0001;
-    osc.connect(gain); gain.connect(ctx.destination);
-    const now = ctx.currentTime;
-    gain.gain.exponentialRampToValueAtTime(gainValue, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    osc.start(now); osc.stop(now + duration + 0.02);
-  }
-
-  function gestureSound(gesture){
-    const tones = { draw: [720,'triangle'], erase:[220,'sawtooth'], pinch:[520,'square'], idle:[360,'sine'] };
-    const [freq,type] = tones[gesture] || tones.idle;
-    playTone(freq, 0.09, type, 0.025);
-  }
-
-  function drawOverlay(landmarks, gesture, point){
-    octx.clearRect(0,0,window.innerWidth,window.innerHeight);
-    if (selectedItem) {
-      const c = itemCenter(selectedItem);
-      const ring = selectedItem.kind === 'stamp' ? selectedItem.size * selectedItem.scale * 0.8 : 52;
-      octx.save();
-      octx.strokeStyle = 'rgba(255,212,0,.96)';
-      octx.shadowBlur = 18; octx.shadowColor = 'rgba(255,212,0,.8)'; octx.lineWidth = 2.6;
-      octx.setLineDash([8,6]);
-      octx.beginPath(); octx.arc(c.x, c.y, ring, 0, Math.PI*2); octx.stroke();
-      octx.restore();
-    }
-    if (!landmarks || !point) return;
-    const ringColor = gesture === 'erase' ? 'rgba(255,120,120,.98)' : gesture === 'pinch' ? 'rgba(135,215,255,.98)' : 'rgba(120,255,232,.98)';
+  function drawOverlay(point, gesture){
+    octx.clearRect(0,0,innerWidth,innerHeight);
+    if (!point) return;
+    const color = gesture === 'pinch' ? 'rgba(88,201,255,.98)' : gesture === 'openpalm' ? 'rgba(255,124,200,.95)' : 'rgba(113,255,240,.98)';
     octx.save();
-    octx.strokeStyle = ringColor;
-    octx.shadowBlur = 20; octx.shadowColor = ringColor; octx.lineWidth = 2.6;
-    octx.beginPath();
-    octx.arc(point.x, point.y, gesture === 'erase' ? eraserRadius : gesture === 'pinch' ? 28 : Number(brushSize.value)*1.3 + 10, 0, Math.PI*2);
-    octx.stroke();
-    octx.beginPath(); octx.fillStyle = ringColor; octx.arc(point.x, point.y, 4.5, 0, Math.PI*2); octx.fill();
+    octx.strokeStyle = color; octx.shadowColor = color; octx.shadowBlur = 18; octx.lineWidth = 2.6;
+    const r = gesture === 'openpalm' ? (selectedItem ? 34 : eraserRadius) : gesture === 'pinch' ? 28 : Number(brushBase.value)*1.4 + 12;
+    octx.beginPath(); octx.arc(point.x, point.y, r, 0, Math.PI*2); octx.stroke();
+    octx.fillStyle = color; octx.beginPath(); octx.arc(point.x, point.y, 4.5, 0, Math.PI*2); octx.fill();
     octx.restore();
   }
 
-  function setupSwatches(){
-    palette.forEach((c, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'swatch' + (idx===1 ? ' active' : '');
-      btn.style.background = c; btn.type = 'button';
-      btn.addEventListener('click', () => {
-        brushColor = c;
-        [...swatches.children].forEach(el => el.classList.remove('active'));
-        btn.classList.add('active');
-      });
-      swatches.appendChild(btn);
-    });
+  function playTone(freq, duration=.08, type='sine', gainValue=.025){
+    const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
+    if (!playTone.ctx) playTone.ctx = new Ctx(); const ctx = playTone.ctx; if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = type; osc.frequency.value = freq; gain.gain.value = 0.0001; osc.connect(gain); gain.connect(ctx.destination);
+    const now = ctx.currentTime; gain.gain.exponentialRampToValueAtTime(gainValue, now + .01); gain.gain.exponentialRampToValueAtTime(0.0001, now + duration); osc.start(now); osc.stop(now + duration + .02);
   }
-  setupSwatches();
-
-  function applyBrightness(){
-    const val = Number(brightness.value);
-    brightnessOut.value = val + '%';
-    video.style.filter = `brightness(${(val/100).toFixed(2)})`;
-  }
-
-  [brushSize, glowSize, smoothness, brightness].forEach(el => el.addEventListener('input', () => {
-    brushSizeOut.value = brushSize.value; glowSizeOut.value = glowSize.value; smoothnessOut.value = smoothness.value;
-    applyBrightness();
-  }));
-  fitLightBtn.addEventListener('click', () => { brightness.value = 100; applyBrightness(); showToast('Screen light reset'); });
-  brushSizeOut.value = brushSize.value; glowSizeOut.value = glowSize.value; smoothnessOut.value = smoothness.value; applyBrightness();
-
-  function openDrawer(){
-    leftDrawer.classList.remove('collapsed');
-    clearTimeout(drawerHideTimer);
-    drawerHideTimer = setTimeout(() => leftDrawer.classList.add('collapsed'), 3600);
-  }
-  function toggleDrawer(){
-    if (leftDrawer.classList.contains('collapsed')) openDrawer();
-    else leftDrawer.classList.add('collapsed');
-  }
-  drawerToggle.addEventListener('click', toggleDrawer);
-  leftDrawer.addEventListener('mouseenter', () => { clearTimeout(drawerHideTimer); leftDrawer.classList.remove('collapsed'); });
-  leftDrawer.addEventListener('mouseleave', () => { drawerHideTimer = setTimeout(() => leftDrawer.classList.add('collapsed'), 1200); });
-  setTimeout(() => splashScreen.classList.add('hide'), 1700);
-
-  renderMode.addEventListener('change', () => {
-    const mode = renderMode.value;
-    numberPreset.parentElement.style.display = mode === 'number' ? 'flex' : 'none';
-    shapePreset.parentElement.style.display = mode === 'shape' ? 'flex' : 'none';
-  });
-  renderMode.dispatchEvent(new Event('change'));
-
-  function saveImage(){
-    const out = document.createElement('canvas');
-    out.width = window.innerWidth; out.height = window.innerHeight;
-    const ctx = out.getContext('2d');
-    ctx.translate(out.width,0); ctx.scale(-1,1);
-    ctx.filter = video.style.filter || 'brightness(1)';
-    ctx.drawImage(video, 0, 0, out.width, out.height);
-    ctx.filter = 'none';
-    ctx.drawImage(drawCanvas, 0, 0, out.width, out.height);
-    const a = document.createElement('a');
-    a.href = out.toDataURL('image/png'); a.download = 'zombai-airbrush-v2.png'; a.click();
-  }
+  function gestureSound(gesture){ const map = {draw:[720,'triangle'], pinch:[520,'square'], openpalm:[280,'sawtooth'], idle:[360,'sine']}; const [f,t] = map[gesture] || map.idle; playTone(f,.09,t,.022); }
 
   async function initHands(){
-    hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-    hands.setOptions({ maxNumHands:1, modelComplexity:1, minDetectionConfidence:0.68, minTrackingConfidence:0.6, selfieMode:true });
-    hands.onResults((results) => {
-      const now = performance.now();
-      if (now - lastProcessTs < targetFpsGap) return;
-      lastProcessTs = now;
-
-      const landmarks = results.multiHandLandmarks?.[0];
-      if (!landmarks){
-        drawOverlay(null); smoothedPoint = null;
-        if (activePath) commitPath();
-        stopDrag(); stopScale();
-        if (running) updateStatus(drawingPaused ? 'Paused' : 'Searching hand', 'Show your hand in front of the camera');
-        return;
-      }
-
-      const gestureInfo = classifyGesture(landmarks);
-      const gesture = gestureInfo.name;
-      const rawPoint = gesture === 'pinch'
-        ? normToScreen({x:(landmarks[8].x+landmarks[4].x)/2, y:(landmarks[8].y+landmarks[4].y)/2})
-        : normToScreen(landmarks[8]);
-      const t = 1 - Number(smoothness.value);
-      if (!smoothedPoint) smoothedPoint = {...rawPoint};
-      smoothedPoint = { x: lerp(smoothedPoint.x, rawPoint.x, t), y: lerp(smoothedPoint.y, rawPoint.y, t) };
-
+    hands = new Hands({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({ maxNumHands:1, modelComplexity:1, minDetectionConfidence:.68, minTrackingConfidence:.6, selfieMode:true });
+    hands.onResults(results => {
+      const now = performance.now(); if (now - lastProcessTs < targetFpsGap) return; const dt = Math.max(16, now - lastProcessTs || 16); lastProcessTs = now;
+      const lms = results.multiHandLandmarks?.[0];
+      if (!lms){ smoothedPoint = null; if (activeItem) commitDraw(); stopDrag(); stopResize(); drawOverlay(null); if (running) updateStatus(drawingPaused ? 'Paused' : 'Searching hand', 'Show your hand in front of the camera'); return; }
+      const gesture = classifyGesture(lms);
+      const raw = gesture === 'pinch' ? normToScreen({x:(lms[4].x+lms[8].x)/2,y:(lms[4].y+lms[8].y)/2}) : normToScreen(lms[8]);
+      const t = 1 - Number(smoothness.value); if (!smoothedPoint) smoothedPoint = {...raw}; smoothedPoint = {x:lerp(smoothedPoint.x,raw.x,t), y:lerp(smoothedPoint.y,raw.y,t)};
+      const speed = dist(smoothedPoint, raw) / (dt/16);
       if (gesture !== lastGesture){
-        const msgMap = { draw:'Draw mode', erase:selectedItem ? 'Resize / Erase mode' : 'Erase mode', pinch:'Drag mode', idle:'Idle mode' };
-        updateStatus(msgMap[gesture], drawingPaused ? 'Tracking active, drawing paused' : 'Gesture recognized');
-        gestureSound(gesture);
-        lastGesture = gesture;
+        const msg = {draw:'Draw mode', pinch:'Drag mode', openpalm:(selectedItem ? 'Resize / Erase mode' : 'Erase mode'), idle:'Idle mode'};
+        updateStatus(msg[gesture], drawingPaused ? 'Tracking active, drawing paused' : 'Gesture recognized'); gestureSound(gesture); lastGesture = gesture;
       }
-
-      drawOverlay(landmarks, gesture, smoothedPoint);
+      drawOverlay(smoothedPoint, gesture);
       if (drawingPaused) return;
 
       if (gesture === 'draw'){
-        stopDrag(); stopScale();
-        if (renderMode.value === 'freehand') extendPath(smoothedPoint);
-        else { if (activePath) commitPath(); placeStamp(smoothedPoint); }
-      } else if (gesture === 'erase'){
-        if (activePath) commitPath();
-        stopDrag();
-        const selectionNear = selectedItem && dist(itemCenter(selectedItem), smoothedPoint) <= scaleSelectRadius;
-        if (selectionNear) { if (!scaleState) startScale(gestureInfo.spread, smoothedPoint); updateScale(gestureInfo.spread); }
-        else { stopScale(); eraseAt(smoothedPoint); }
+        stopDrag(); stopResize();
+        extendDraw(smoothedPoint, speed);
       } else if (gesture === 'pinch'){
-        if (activePath) commitPath();
-        stopScale();
-        if (!dragState) startDrag(smoothedPoint);
-        updateDrag(smoothedPoint);
+        if (activeItem) commitDraw(); stopResize(); if (!dragState) startDrag(smoothedPoint); updateDrag(smoothedPoint);
+      } else if (gesture === 'openpalm'){
+        if (activeItem) commitDraw(); stopDrag();
+        if (selectedItem && (resizeState || startResize(lms))) updateResize(lms); else eraseAt(smoothedPoint);
       } else {
-        if (activePath) commitPath();
-        stopDrag(); stopScale();
+        if (activeItem) commitDraw(); stopDrag(); stopResize();
       }
     });
   }
@@ -629,37 +566,28 @@
     try {
       if (running) return;
       if (!hands) await initHands();
-      playTone(660,0.06,'triangle',0.02);
-      if (mpCamera) { try { mpCamera.stop(); } catch (_) {} }
-      mpCamera = new Camera(video, {
-        onFrame: async () => { if (hands) await hands.send({ image: video }); },
-        width:1280,
-        height:720
-      });
+      if (mpCamera) { try { mpCamera.stop(); } catch(e){} }
+      mpCamera = new Camera(video, { onFrame: async () => { if (hands) await hands.send({ image: video }); }, width:1280, height:720 });
       await mpCamera.start();
-      running = true;
-      updateStatus('Live', 'Use gestures to draw, erase, drag, and resize');
-      splashScreen.classList.add('hide');
-      openDrawer();
-      showToast('Camera started');
+      running = true; splashScreen.classList.add('hide'); openMenu(); updateStatus('Live', 'Use gestures to draw, stamp, drag, resize, and erase'); showToast('Camera started'); playTone(660,.06,'triangle',.02);
     } catch (err) {
-      console.error(err);
-      updateStatus('Camera error', 'Run on localhost/HTTPS and allow camera permission');
-      showToast('Camera access failed');
+      console.error(err); updateStatus('Camera error', 'Run on localhost/HTTPS and allow camera permission'); showToast('Camera access failed');
     }
   }
 
+  function saveImage(){
+    const out = document.createElement('canvas'); out.width = innerWidth; out.height = innerHeight; const ctx = out.getContext('2d');
+    ctx.translate(out.width,0); ctx.scale(-1,1); ctx.filter = `brightness(${Number(brightness.value)/100})`; ctx.drawImage(video,0,0,out.width,out.height); ctx.filter='none'; ctx.drawImage(drawCanvas,0,0,out.width,out.height); ctx.drawImage(fxCanvas,0,0,out.width,out.height);
+    const a = document.createElement('a'); a.href = out.toDataURL('image/png'); a.download = 'zombai-airbrush-ultra.png'; a.click();
+  }
+
+  function loop(){ renderDrawing(); renderParticles(); requestAnimationFrame(loop); }
+  loop();
+
   startBtn.addEventListener('click', startCamera);
-  pauseBtn.addEventListener('click', () => {
-    drawingPaused = !drawingPaused;
-    pauseBtn.textContent = drawingPaused ? 'Resume Draw' : 'Pause Draw';
-    updateStatus(drawingPaused ? 'Paused' : 'Live', drawingPaused ? 'Hand tracking is still active' : 'Use gestures to draw');
-    showToast(drawingPaused ? 'Drawing paused' : 'Drawing resumed');
-    playTone(drawingPaused ? 280 : 640, 0.08, 'triangle', 0.02);
-  });
-  clearBtn.addEventListener('click', () => { items = []; activePath = null; dragState = null; scaleState = null; selectedItem = null; renderDrawing(); showToast('Canvas cleared'); playTone(180, 0.08, 'sawtooth', 0.02); });
+  pauseBtn.addEventListener('click', () => { drawingPaused = !drawingPaused; pauseBtn.textContent = drawingPaused ? 'Resume Draw' : 'Pause Draw'; updateStatus(drawingPaused ? 'Paused' : 'Live', drawingPaused ? 'Tracking active, drawing paused' : 'Use gestures to draw'); playTone(drawingPaused ? 280 : 640, .08, 'triangle', .02); });
+  clearBtn.addEventListener('click', () => { items = []; activeItem = null; selectedItem = null; particles = []; renderDrawing(); renderParticles(); showToast('Canvas cleared'); playTone(180,.08,'sawtooth',.02); });
   saveBtn.addEventListener('click', saveImage);
-  deselectBtn.addEventListener('click', () => { selectedItem = null; dragState = null; scaleState = null; drawOverlay(null); showToast('Selection cleared'); renderDrawing(); });
 
   updateStatus('Idle', 'Press Start Camera');
 })();
