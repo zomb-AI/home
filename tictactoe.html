@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>ZombAI Tic-Tac-Toe</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --cyan:    #00f5ff;
+  --pink:    #ff2d78;
+  --green:   #39ff14;
+  --amber:   #ffb300;
+  --dim:     rgba(0,245,255,0.12);
+  --border:  rgba(0,245,255,0.28);
+  --x-col:   #ff2d78;
+  --o-col:   #00f5ff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;cursor:none}
+
+/* ── Video layers ── */
+#video{
+  position:fixed;inset:0;width:100%;height:100%;
+  object-fit:cover;transform:scaleX(-1);
+  opacity:1;pointer-events:none;z-index:0;
+}
+/* Dark holographic tint over the feed */
+#videoTint{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:rgba(0,8,20,0.42);
+}
+/* Landmark canvas — coords manually mirrored in JS to match CSS-flipped video */
+#landmarkCanvas{
+  position:fixed;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:2;
+}
+
+/* ── Scan-line overlay ── */
+#scanlines{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,245,255,0.018) 2px,rgba(0,245,255,0.018) 4px);
+}
+
+/* ── Vignette ── */
+#vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 52%,rgba(0,0,0,0.72) 100%);
+}
+
+/* ── HUD top bar ── */
+#topBar{
+  position:fixed;top:0;left:0;right:0;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  padding:10px 16px;
+  background:linear-gradient(180deg,rgba(0,0,0,0.88),transparent);
+  font-family:'Orbitron',monospace;
+}
+.brand{font-size:clamp(12px,2vw,18px);font-weight:900;letter-spacing:0.18em;color:var(--cyan);text-shadow:0 0 18px rgba(0,245,255,0.7);white-space:nowrap}
+.brand span{color:var(--pink)}
+#topBarRight{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+#handStatus{
+  display:flex;align-items:center;gap:6px;
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  color:rgba(0,245,255,0.6);letter-spacing:0.1em;
+  white-space:nowrap;
+  padding:5px 10px;
+  background:rgba(0,0,0,0.4);
+  border:1px solid rgba(0,245,255,0.18);
+  border-radius:20px;
+}
+#statusDot{width:8px;height:8px;border-radius:50%;background:#333;flex-shrink:0;transition:all 0.3s}
+#statusDot.live{background:var(--green);box-shadow:0 0 10px var(--green)}
+#statusDot.gesture{background:var(--amber);box-shadow:0 0 12px var(--amber);animation:blink 0.4s infinite alternate}
+#statusDot.fire{background:var(--pink);box-shadow:0 0 14px var(--pink);animation:blink 0.2s infinite alternate}
+@keyframes blink{from{opacity:0.5}to{opacity:1}}
+
+/* ── Turn indicator ── */
+#turnBar{
+  position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:10;
+  display:flex;align-items:center;gap:12px;
+  padding:7px 20px;
+  background:rgba(0,0,0,0.55);
+  border:1px solid var(--border);border-radius:30px;
+  backdrop-filter:blur(8px);
+  font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.4vw,13px);
+  letter-spacing:0.14em;color:rgba(255,255,255,0.6);
+  transition:all 0.3s;
+  white-space:nowrap;
+}
+#turnBar.x-turn{border-color:rgba(255,45,120,0.55);color:var(--pink);text-shadow:0 0 8px var(--pink)}
+#turnBar.o-turn{border-color:rgba(0,245,255,0.55);color:var(--cyan);text-shadow:0 0 8px var(--cyan)}
+#turnSymbol{font-size:16px;font-weight:700}
+
+/* ── Board wrapper ── */
+#boardWrap{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+  z-index:5;
+}
+#board{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:0;position:relative;
+}
+
+/* ── Grid lines (CSS drawn) ── */
+#board::before,#board::after{
+  content:'';position:absolute;background:rgba(0,245,255,0.75);
+  box-shadow:0 0 8px #00f5ff, 0 0 22px rgba(0,245,255,0.6), 0 0 40px rgba(0,245,255,0.25);
+  pointer-events:none;
+}
+#board::before{left:33.33%;top:0;bottom:0;width:2px}
+#board::after {left:66.66%;top:0;bottom:0;width:2px}
+.hLine{
+  position:absolute;left:0;right:0;height:2px;
+  background:rgba(0,245,255,0.75);
+  box-shadow:0 0 8px #00f5ff, 0 0 22px rgba(0,245,255,0.6), 0 0 40px rgba(0,245,255,0.25);
+  pointer-events:none;z-index:1;
+}
+.hLine:nth-child(1){top:33.33%}
+.hLine:nth-child(2){top:66.66%}
+
+/* ── Cells ── */
+.cell{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  cursor:none;transition:background 0.18s;
+  background:transparent;
+}
+.cell.hovered{background:rgba(0,245,255,0.06)}
+.cell-symbol{
+  font-family:'Orbitron',monospace;font-weight:900;
+  pointer-events:none;user-select:none;
+  opacity:0;transform:scale(0.4) rotate(-15deg);
+  transition:opacity 0.25s ease,transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+.cell-symbol.visible{opacity:1;transform:scale(1) rotate(0deg)}
+.cell-symbol.x-sym{color:var(--x-col);text-shadow:0 0 22px var(--x-col),0 0 48px rgba(255,45,120,0.4)}
+.cell-symbol.o-sym{color:var(--o-col);text-shadow:0 0 22px var(--o-col),0 0 48px rgba(0,245,255,0.4)}
+
+/* Hover fill charge ring */
+.cell .chargeRing{
+  position:absolute;width:54px;height:54px;border-radius:50%;
+  border:2px solid rgba(0,245,255,0.0);pointer-events:none;
+  transform:scale(0.5);opacity:0;transition:none;
+}
+.cell.hovered .chargeRing{
+  border-color:rgba(0,245,255,0.55);
+  animation:chargeGrow 0.9s ease forwards;
+}
+@keyframes chargeGrow{
+  0%{transform:scale(0.4);opacity:0}
+  40%{opacity:0.8}
+  100%{transform:scale(1);opacity:0.2}
+}
+
+/* Tap ripple */
+.ripple{
+  position:absolute;border-radius:50%;
+  border:2px solid var(--cyan);
+  animation:rippleOut 0.5s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes rippleOut{
+  0%{width:10px;height:10px;margin:-5px;opacity:1}
+  100%{width:90px;height:90px;margin:-45px;opacity:0}
+}
+
+/* ── Win line ── */
+#winLine{
+  position:absolute;background:linear-gradient(90deg,transparent,var(--green),transparent);
+  height:3px;border-radius:2px;box-shadow:0 0 18px var(--green),0 0 36px rgba(57,255,20,0.4);
+  transform-origin:left center;opacity:0;
+  transition:opacity 0.2s;pointer-events:none;z-index:20;
+}
+#winLine.show{opacity:1;animation:winGlow 1.2s ease-in-out infinite alternate}
+@keyframes winGlow{from{box-shadow:0 0 18px var(--green),0 0 36px rgba(57,255,20,0.4)}to{box-shadow:0 0 28px var(--green),0 0 60px rgba(57,255,20,0.7)}}
+
+/* ── Result banner ── */
+#resultBanner{
+  position:fixed;inset:0;z-index:25;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity 0.4s;
+}
+#resultBanner.show{opacity:1;pointer-events:all}
+#resultText{
+  font-family:'Orbitron',monospace;font-weight:900;
+  font-size:clamp(28px,5vw,64px);letter-spacing:0.12em;
+  text-align:center;line-height:1.1;
+  text-shadow:0 0 30px currentColor,0 0 60px currentColor;
+}
+#resultText.win {color:var(--green)}
+#resultText.lose{color:var(--pink)}
+#resultText.draw{color:var(--amber)}
+#resultSub{
+  margin-top:14px;font-family:'Share Tech Mono',monospace;
+  font-size:14px;letter-spacing:0.2em;color:rgba(255,255,255,0.45);
+}
+#restartBtn{
+  margin-top:32px;padding:14px 36px;
+  background:transparent;
+  border:1px solid var(--cyan);border-radius:4px;
+  font-family:'Orbitron',monospace;font-size:13px;font-weight:700;
+  letter-spacing:0.22em;color:var(--cyan);
+  cursor:pointer;text-transform:uppercase;
+  box-shadow:0 0 18px rgba(0,245,255,0.25),inset 0 0 18px rgba(0,245,255,0.05);
+  transition:all 0.2s;
+}
+#restartBtn:hover{
+  background:rgba(0,245,255,0.1);
+  box-shadow:0 0 28px rgba(0,245,255,0.5),inset 0 0 28px rgba(0,245,255,0.12);
+}
+
+/* ── Score panel ── */
+#scores{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:10;display:flex;gap:28px;align-items:center;
+  padding:10px 24px;background:rgba(0,0,0,0.55);
+  border:1px solid var(--border);border-radius:30px;
+  backdrop-filter:blur(8px);
+}
+.score-item{text-align:center;font-family:'Share Tech Mono',monospace}
+.score-label{font-size:10px;letter-spacing:0.25em;color:rgba(255,255,255,0.35)}
+.score-val{font-size:22px;font-weight:700;font-family:'Orbitron',monospace}
+.score-val.x{color:var(--x-col);text-shadow:0 0 10px var(--x-col)}
+.score-val.o{color:var(--o-col);text-shadow:0 0 10px var(--o-col)}
+.score-val.d{color:var(--amber);text-shadow:0 0 10px var(--amber)}
+.score-div{width:1px;height:30px;background:var(--border)}
+
+/* ── Gesture tap bar ── */
+#tapBar{
+  position:fixed;left:50%;bottom:80px;transform:translateX(-50%);
+  z-index:10;display:flex;align-items:center;gap:10px;
+  padding:8px 18px;background:rgba(0,0,0,0.5);
+  border:1px solid rgba(0,245,255,0.2);border-radius:20px;
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  letter-spacing:0.12em;color:rgba(255,255,255,0.35);
+  transition:all 0.2s;
+}
+#tapBar.ready{border-color:rgba(255,45,120,0.6);color:var(--pink)}
+#tapProgress{width:60px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+#tapFill{height:100%;width:0%;background:var(--pink);border-radius:2px;transition:width 0.08s linear}
+
+/* ── Fingertip cursor ── */
+#cursor{
+  position:fixed;z-index:15;pointer-events:none;
+  width:24px;height:24px;margin:-12px;
+  border-radius:50%;
+  border:2px solid rgba(0,245,255,0.9);
+  box-shadow:0 0 14px rgba(0,245,255,0.6),0 0 28px rgba(0,245,255,0.3);
+  transition:transform 0.08s ease,border-color 0.15s,box-shadow 0.15s;
+  display:none;
+}
+#cursor.active{display:block}
+#cursor.hovering{
+  border-color:var(--pink);
+  box-shadow:0 0 14px rgba(255,45,120,0.7),0 0 28px rgba(255,45,120,0.4);
+  transform:scale(1.4);
+}
+#cursor.tapping{
+  border-color:var(--green);
+  box-shadow:0 0 18px var(--green),0 0 36px rgba(57,255,20,0.5);
+  transform:scale(0.6);
+}
+#cursorDot{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:4px;height:4px;border-radius:50%;background:var(--cyan);
+  box-shadow:0 0 6px var(--cyan);
+}
+
+/* ── Skeleton toggle button ── */
+#skeletonToggle{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;
+  background:rgba(0,0,0,0.55);
+  border:1px solid rgba(0,245,255,0.28);border-radius:20px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  letter-spacing:0.1em;color:rgba(0,245,255,0.55);
+  cursor:pointer;user-select:none;white-space:nowrap;
+  transition:border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+#skeletonToggle:hover{
+  border-color:rgba(0,245,255,0.6);color:var(--cyan);
+  box-shadow:0 0 12px rgba(0,245,255,0.2);
+}
+#skeletonToggle.off{
+  border-color:rgba(255,255,255,0.12);color:rgba(255,255,255,0.25);
+}
+#skelDot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 6px var(--cyan);
+  transition:background 0.2s, box-shadow 0.2s;
+}
+#skeletonToggle.off #skelDot{
+  background:rgba(255,255,255,0.2);box-shadow:none;
+}
+
+/* ── Presentation mode toggle ── */
+#presentToggle{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;
+  background:rgba(0,0,0,0.55);
+  border:1px solid rgba(255,45,120,0.28);border-radius:20px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  letter-spacing:0.1em;color:rgba(255,45,120,0.55);
+  cursor:pointer;user-select:none;white-space:nowrap;
+  transition:border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+#presentToggle:hover{
+  border-color:rgba(255,45,120,0.7);color:var(--pink);
+  box-shadow:0 0 12px rgba(255,45,120,0.25);
+}
+#presentToggle.active{
+  border-color:rgba(255,45,120,0.75);color:var(--pink);
+  box-shadow:0 0 14px rgba(255,45,120,0.3),inset 0 0 10px rgba(255,45,120,0.08);
+}
+#presentToggle.active #presentDot{
+  background:var(--pink);box-shadow:0 0 8px var(--pink);
+  animation:blink 0.6s infinite alternate;
+}
+#presentDot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,45,120,0.3);
+  transition:background 0.2s, box-shadow 0.2s;
+}
+
+/* ── Presentation mode badge ── */
+#presentBadge{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  z-index:11;
+  display:none;
+  align-items:center;gap:8px;
+  padding:5px 16px;
+  background:rgba(255,45,120,0.1);
+  border:1px solid rgba(255,45,120,0.45);
+  border-radius:20px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  letter-spacing:0.18em;color:var(--pink);
+  animation:badgePulse 2s ease-in-out infinite;
+}
+#presentBadge.show{display:flex}
+@keyframes badgePulse{0%,100%{opacity:0.7}50%{opacity:1}}
+#palmPrompt{
+  position:fixed;inset:0;z-index:8;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;
+  transition:opacity 0.5s;
+}
+#palmPrompt.hidden{opacity:0}
+.palm-icon{font-size:72px;animation:float 2.8s ease-in-out infinite;line-height:1}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.palm-text{
+  margin-top:20px;font-family:'Orbitron',monospace;font-weight:700;
+  font-size:clamp(14px,2.5vw,22px);letter-spacing:0.22em;
+  color:rgba(0,245,255,0.75);text-shadow:0 0 20px rgba(0,245,255,0.45);
+  text-align:center;text-transform:uppercase;
+}
+.palm-sub{
+  margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:12px;
+  letter-spacing:0.2em;color:rgba(255,255,255,0.3);text-align:center;
+}
+
+/* ── No-camera fallback ── */
+#noCam{
+  position:fixed;inset:0;z-index:50;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:#000;font-family:'Orbitron',monospace;color:var(--pink);
+  font-size:18px;letter-spacing:0.1em;text-align:center;gap:16px;
+}
+#noCam p{color:rgba(255,255,255,0.4);font-family:'Share Tech Mono',monospace;font-size:13px}
+
+/* ── Mobile responsive ── */
+@media (max-width: 480px){
+  #topBar{ padding:8px 10px; gap:6px; }
+  #topBarRight{ gap:5px; }
+  #skeletonToggle, #presentToggle{ padding:4px 9px; font-size:9px; }
+  #handStatus{ font-size:9px; padding:4px 8px; }
+  #turnBar{ top:auto; bottom:112px; font-size:9px; padding:5px 14px; }
+  #scores{ bottom:12px; gap:16px; padding:8px 14px; }
+  .score-val{ font-size:18px; }
+  #tapBar{ bottom:68px; font-size:10px; }
+  #presentBadge{ top:auto; bottom:145px; font-size:9px; }
+}
+
+#aiThink{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:8;opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+#aiThink.show{opacity:1}
+.ai-ring{
+  width:80px;height:80px;border-radius:50%;
+  border:2px solid transparent;
+  border-top-color:var(--cyan);border-right-color:rgba(0,245,255,0.3);
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<video id="video" playsinline muted autoplay></video>
+<div id="videoTint"></div>
+<canvas id="landmarkCanvas"></canvas>
+<div id="scanlines"></div>
+<div id="vignette"></div>
+
+<!-- Top HUD -->
+<div id="topBar">
+  <div class="brand">ZOMB<span>AI</span> · NEURAL GRID</div>
+  <div id="topBarRight">
+    <div id="presentToggle" title="Toggle presentation (AI vs AI) mode">
+      <div id="presentDot"></div>
+      <span id="presentLabel">DEMO OFF</span>
+    </div>
+    <div id="skeletonToggle" title="Toggle hand skeleton (H)">
+      <div id="skelDot"></div>
+      <span id="skelLabel">SKELETON ON</span>
+    </div>
+    <div id="handStatus">
+      <div id="statusDot"></div>
+      <span id="handLabel">INITIALIZING</span>
+    </div>
+  </div>
+</div>
+
+<!-- Presentation badge -->
+<div id="presentBadge">⬡ DEMO MODE · AI VS AI</div>
+
+<!-- Turn indicator -->
+<div id="turnBar">
+  <span id="turnSymbol">◈</span>
+  <span id="turnText">SHOW PALM TO BEGIN</span>
+</div>
+
+<!-- Palm prompt -->
+<div id="palmPrompt">
+  <div class="palm-icon">🖐</div>
+  <div class="palm-text">Show Your Palm</div>
+  <div class="palm-sub">Hold open hand to initialize new game</div>
+</div>
+
+<!-- Game board -->
+<div id="boardWrap">
+  <div id="board">
+    <div class="hLine"></div>
+    <div class="hLine"></div>
+    <!-- 9 cells injected by JS -->
+  </div>
+</div>
+
+<!-- Win line -->
+<div id="winLine"></div>
+
+<!-- Cursor -->
+<div id="cursor"><div id="cursorDot"></div></div>
+
+<!-- Tap progress bar -->
+<div id="tapBar">
+  <span>HOLD TO PLACE</span>
+  <div id="tapProgress"><div id="tapFill"></div></div>
+</div>
+
+<!-- AI thinking -->
+<div id="aiThink"><div class="ai-ring"></div></div>
+
+<!-- Score panel -->
+<div id="scores">
+  <div class="score-item">
+    <div class="score-label">YOU · X</div>
+    <div class="score-val x" id="scoreX">0</div>
+  </div>
+  <div class="score-div"></div>
+  <div class="score-item">
+    <div class="score-label">DRAWS</div>
+    <div class="score-val d" id="scoreD">0</div>
+  </div>
+  <div class="score-div"></div>
+  <div class="score-item">
+    <div class="score-label">AI · O</div>
+    <div class="score-val o" id="scoreO">0</div>
+  </div>
+</div>
+
+<!-- Result banner -->
+<div id="resultBanner">
+  <div id="resultText"></div>
+  <div id="resultSub"></div>
+  <button id="restartBtn">⟳ NEW GAME</button>
+</div>
+
+<!-- No camera fallback -->
+<div id="noCam">
+  <span>⚠ CAMERA ACCESS DENIED</span>
+  <p>Please allow camera permission and reload this page.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script>
+'use strict';
+// ─────────────────────────────────────────────────
+//  DOM REFS
+// ─────────────────────────────────────────────────
+const video          = document.getElementById('video');
+const lmCanvas       = document.getElementById('landmarkCanvas');
+const lctx           = lmCanvas.getContext('2d');
+const cursor         = document.getElementById('cursor');
+const cursorDot      = document.getElementById('cursorDot');
+const tapFill        = document.getElementById('tapFill');
+const tapBar         = document.getElementById('tapBar');
+const turnBar        = document.getElementById('turnBar');
+const turnSymbol     = document.getElementById('turnSymbol');
+const turnText       = document.getElementById('turnText');
+const statusDot      = document.getElementById('statusDot');
+const handLabel      = document.getElementById('handLabel');
+const resultBanner   = document.getElementById('resultBanner');
+const resultText     = document.getElementById('resultText');
+const resultSub      = document.getElementById('resultSub');
+const restartBtn     = document.getElementById('restartBtn');
+const aiThink        = document.getElementById('aiThink');
+const palmPrompt     = document.getElementById('palmPrompt');
+const noCamEl        = document.getElementById('noCam');
+const boardEl        = document.getElementById('board');
+const boardWrap      = document.getElementById('boardWrap');
+const winLineEl      = document.getElementById('winLine');
+const scoreXEl       = document.getElementById('scoreX');
+const scoreOEl       = document.getElementById('scoreO');
+const scoreDEl       = document.getElementById('scoreD');
+
+let VW = window.innerWidth, VH = window.innerHeight;
+
+// ─────────────────────────────────────────────────
+//  SKELETON TOGGLE
+// ─────────────────────────────────────────────────
+let showSkeleton = false; // OFF by default
+const skeletonToggleEl = document.getElementById('skeletonToggle');
+const skelLabelEl      = document.getElementById('skelLabel');
+
+function setSkeletonVisible(on){
+  showSkeleton = on;
+  if(on){
+    skeletonToggleEl.classList.remove('off');
+    skelLabelEl.textContent = 'SKELETON ON';
+  } else {
+    skeletonToggleEl.classList.add('off');
+    skelLabelEl.textContent = 'SKELETON OFF';
+    lctx.clearRect(0,0,VW,VH); // clear immediately when toggled off
+  }
+}
+setSkeletonVisible(false); // start OFF
+
+skeletonToggleEl.addEventListener('click', () => setSkeletonVisible(!showSkeleton));
+document.addEventListener('keydown', e => {
+  if(e.key === 'h' || e.key === 'H') setSkeletonVisible(!showSkeleton);
+});
+
+// ─────────────────────────────────────────────────
+//  PRESENTATION MODE (AI vs AI auto-play)
+// ─────────────────────────────────────────────────
+let presentationMode = false;
+let presentationTimer = null;
+const presentToggleEl = document.getElementById('presentToggle');
+const presentLabelEl  = document.getElementById('presentLabel');
+const presentBadge    = document.getElementById('presentBadge');
+
+function setPresentationMode(on){
+  presentationMode = on;
+  if(on){
+    presentToggleEl.classList.add('active');
+    presentLabelEl.textContent = 'DEMO ON';
+    presentBadge.classList.add('show');
+    // Start immediately
+    startPresentationGame();
+  } else {
+    presentToggleEl.classList.remove('active');
+    presentLabelEl.textContent = 'DEMO OFF';
+    presentBadge.classList.remove('show');
+    clearTimeout(presentationTimer);
+    // Return to normal palm-start state
+    resultBanner.classList.remove('show');
+    palmPrompt.classList.remove('hidden');
+    palmPrompt.querySelector('.palm-text').textContent = 'Show Your Palm';
+    palmPrompt.querySelector('.palm-sub').textContent = 'Hold open hand to initialize new game';
+    gameStarted = false;
+    gameActive  = false;
+    turnBar.className = '';
+    turnSymbol.textContent = '◈';
+    turnText.textContent = 'SHOW PALM TO BEGIN';
+    tapFill.style.width = '0%';
+    palmHoldCount = 0;
+  }
+}
+
+function startPresentationGame(){
+  if(!presentationMode) return;
+  // Reset board
+  board = Array(9).fill(null);
+  gameActive  = true;
+  gameStarted = true;
+  humanTurn   = false; // AI starts (as X)
+  palmHoldCount = 0;
+  cellEls.forEach(c => {
+    c.classList.remove('hovered');
+    c.querySelector('.cell-symbol').className = 'cell-symbol';
+    c.querySelector('.cell-symbol').textContent = '';
+  });
+  winLineEl.classList.remove('show');
+  winLineEl.style.opacity = '0';
+  resultBanner.classList.remove('show');
+  aiThink.classList.remove('show');
+  palmPrompt.classList.add('hidden');
+  // Randomise who goes first for variety
+  const xIsAI1 = Math.random() < 0.5;
+  setTurn('x');
+  // Both sides are AI — schedule first move
+  presentationTimer = setTimeout(() => presentationAiMove('X', xIsAI1), 700);
+}
+
+// Slightly randomised AI so games aren't identical
+function getPresentationMove(mark, strong){
+  const opp = mark === 'X' ? 'O' : 'X';
+  if(strong){
+    // Win
+    for(let i=0;i<9;i++) if(!board[i]){ board[i]=mark; const w=checkWin(board,mark); board[i]=null; if(w) return i; }
+    // Block
+    for(let i=0;i<9;i++) if(!board[i]){ board[i]=opp; const w=checkWin(board,opp); board[i]=null; if(w) return i; }
+  }
+  // Strategic with a bit of noise
+  const order = [4,0,2,6,8,1,3,5,7];
+  const empties = order.filter(i => !board[i]);
+  if(empties.length === 0) return -1;
+  // 30% chance to pick a random empty cell for variety
+  if(Math.random() < 0.28) return empties[Math.floor(Math.random()*empties.length)];
+  return empties[0];
+}
+
+function presentationAiMove(mark, strong){
+  if(!presentationMode || !gameActive) return;
+  aiThink.classList.add('show');
+  const delay = 380 + Math.random()*350;
+  presentationTimer = setTimeout(() => {
+    if(!presentationMode || !gameActive){ aiThink.classList.remove('show'); return; }
+    const idx = getPresentationMove(mark, strong);
+    aiThink.classList.remove('show');
+    if(idx === -1) return;
+    placeMove(idx, mark);
+    // Check result
+    const combo = checkWin(board, mark);
+    if(combo){
+      gameActive = false;
+      drawWinLine(combo);
+      if(mark==='X'){scoreX++;scoreXEl.textContent=scoreX;}
+      else{scoreO++;scoreOEl.textContent=scoreO;}
+      setTimeout(() => {
+        showResult(mark==='X'?'win':'lose', mark);
+        // Auto-restart after 2.2s
+        if(presentationMode){
+          presentationTimer = setTimeout(() => {
+            resultBanner.classList.remove('show');
+            startPresentationGame();
+          }, 2200);
+        }
+      }, 550);
+      return;
+    }
+    if(checkDraw(board)){
+      gameActive = false;
+      scoreD++; scoreDEl.textContent = scoreD;
+      setTimeout(() => {
+        showResult('draw', null);
+        if(presentationMode){
+          presentationTimer = setTimeout(() => {
+            resultBanner.classList.remove('show');
+            startPresentationGame();
+          }, 1800);
+        }
+      }, 300);
+      return;
+    }
+    // Next move
+    const nextMark = mark === 'X' ? 'O' : 'X';
+    setTurn(nextMark.toLowerCase());
+    // Alternate "strong" logic to simulate two different AI players
+    presentationTimer = setTimeout(() => presentationAiMove(nextMark, !strong), 480 + Math.random()*300);
+  }, delay);
+}
+
+presentToggleEl.addEventListener('click', () => setPresentationMode(!presentationMode));
+document.addEventListener('keydown', e => {
+  if(e.key === 'p' || e.key === 'P') setPresentationMode(!presentationMode);
+});
+
+
+function resize(){
+  VW = window.innerWidth; VH = window.innerHeight;
+  lmCanvas.width  = VW;
+  lmCanvas.height = VH;
+  layoutBoard();
+}
+window.addEventListener('resize', resize);
+
+// ─────────────────────────────────────────────────
+//  BOARD LAYOUT
+// ─────────────────────────────────────────────────
+const CELL_SIZE_FACTOR = 0.18; // fraction of min(VW,VH)
+let cellSz = 0, boardX = 0, boardY = 0, boardSz = 0;
+
+function layoutBoard(){
+  cellSz  = Math.round(Math.min(VW, VH) * CELL_SIZE_FACTOR);
+  boardSz = cellSz * 3;
+  boardEl.style.width  = boardSz + 'px';
+  boardEl.style.height = boardSz + 'px';
+  document.querySelectorAll('.cell').forEach(c => {
+    c.style.width  = cellSz + 'px';
+    c.style.height = cellSz + 'px';
+  });
+  document.querySelectorAll('.cell-symbol').forEach(s => {
+    s.style.fontSize = Math.round(cellSz * 0.52) + 'px';
+  });
+  const rect = boardEl.getBoundingClientRect();
+  boardX = rect.left; boardY = rect.top;
+}
+
+// ─────────────────────────────────────────────────
+//  GAME STATE
+// ─────────────────────────────────────────────────
+let board        = Array(9).fill(null);
+let gameActive   = false;
+let humanTurn    = true;
+let gameStarted  = false; // becomes true after palm gesture
+let scoreX = 0, scoreO = 0, scoreD = 0;
+
+const WIN_COMBOS = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+function checkWin(b, mark){
+  return WIN_COMBOS.find(([a,c,d]) => b[a]===mark && b[c]===mark && b[d]===mark) || null;
+}
+function checkDraw(b){ return b.every(v => v !== null); }
+
+// ─────────────────────────────────────────────────
+//  CELL ELEMENTS
+// ─────────────────────────────────────────────────
+const cellEls = [];
+function buildCells(){
+  // Remove existing cells (not hLines)
+  document.querySelectorAll('.cell').forEach(c => c.remove());
+  for(let i = 0; i < 9; i++){
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.idx = i;
+    // Calculate grid order so cells fill correctly behind hLines
+    cell.style.gridRow    = Math.floor(i/3)+1;
+    cell.style.gridColumn = (i%3)+1;
+    const sym = document.createElement('div');
+    sym.className = 'cell-symbol';
+    cell.appendChild(sym);
+    const ring = document.createElement('div');
+    ring.className = 'chargeRing';
+    cell.appendChild(ring);
+    boardEl.appendChild(cell);
+    cellEls.push(cell);
+  }
+}
+buildCells();
+resize();
+
+// ─────────────────────────────────────────────────
+//  GAME LOGIC
+// ─────────────────────────────────────────────────
+function initGame(){
+  board = Array(9).fill(null);
+  humanTurn = true;
+  gameActive = true;
+  gameStarted = true;
+  palmHoldCount = 0;
+  cellEls.forEach(c => {
+    c.classList.remove('hovered');
+    c.querySelector('.cell-symbol').className = 'cell-symbol';
+    c.querySelector('.cell-symbol').textContent = '';
+  });
+  winLineEl.classList.remove('show');
+  winLineEl.style.opacity = '0';
+  resultBanner.classList.remove('show');
+  aiThink.classList.remove('show');
+  palmPrompt.classList.add('hidden');
+  setTurn('x');
+}
+
+function setTurn(who){
+  if(who === 'x'){
+    turnBar.className = 'x-turn';
+    turnSymbol.textContent = '✕';
+    turnText.textContent = 'YOUR TURN — TAP TO PLACE';
+  } else {
+    turnBar.className = 'o-turn';
+    turnSymbol.textContent = '○';
+    turnText.textContent = 'AI CALCULATING…';
+  }
+}
+
+function placeMove(idx, mark){
+  if(board[idx] !== null || !gameActive) return false;
+  board[idx] = mark;
+  renderCell(idx, mark);
+  spawnRipple(idx);
+  return true;
+}
+
+function renderCell(idx, mark){
+  const sym = cellEls[idx].querySelector('.cell-symbol');
+  sym.textContent = mark === 'X' ? '✕' : '○';
+  sym.className = 'cell-symbol visible ' + (mark === 'X' ? 'x-sym' : 'o-sym');
+}
+
+function spawnRipple(idx){
+  const cell = cellEls[idx];
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  cell.appendChild(r);
+  r.addEventListener('animationend', () => r.remove());
+}
+
+function afterMove(mark){
+  const combo = checkWin(board, mark);
+  if(combo){
+    gameActive = false;
+    drawWinLine(combo);
+    setTimeout(() => showResult(mark === 'X' ? 'win' : 'lose', mark), 500);
+    if(mark === 'X') { scoreX++; scoreXEl.textContent = scoreX; }
+    else             { scoreO++; scoreOEl.textContent = scoreO; }
+    return;
+  }
+  if(checkDraw(board)){
+    gameActive = false;
+    setTimeout(() => showResult('draw', null), 300);
+    scoreD++; scoreDEl.textContent = scoreD;
+    return;
+  }
+}
+
+function showResult(type, mark){
+  resultBanner.classList.add('show');
+  resultText.className = 'resultText ' + type;
+  if(type === 'win'){
+    resultText.className = 'win'; resultText.textContent = 'VICTORY';
+    resultSub.textContent = 'Human wins this round.';
+  } else if(type === 'lose'){
+    resultText.className = 'lose'; resultText.textContent = 'DEFEATED';
+    resultSub.textContent = 'ZombAI reigns supreme.';
+  } else {
+    resultText.className = 'draw'; resultText.textContent = 'STALEMATE';
+    resultSub.textContent = 'Neural deadlock. Try again.';
+  }
+  // Reset for next game on restart
+}
+
+function drawWinLine(combo){
+  const [a,,c] = combo;
+  const cellA = cellEls[a].getBoundingClientRect();
+  const cellC = cellEls[c].getBoundingClientRect();
+  const ax = cellA.left + cellA.width/2;
+  const ay = cellA.top  + cellA.height/2;
+  const bx = cellC.left + cellC.width/2;
+  const by = cellC.top  + cellC.height/2;
+  const dx = bx - ax, dy = by - ay;
+  const len = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  winLineEl.style.left   = ax + 'px';
+  winLineEl.style.top    = ay + 'px';
+  winLineEl.style.width  = len + 'px';
+  winLineEl.style.transform = `rotate(${angle}deg)`;
+  winLineEl.classList.add('show');
+}
+
+// ─────────────────────────────────────────────────
+//  AI LOGIC (minimax-lite)
+// ─────────────────────────────────────────────────
+function aiMove(){
+  aiThink.classList.add('show');
+  setTimeout(() => {
+    const idx = getBestMove();
+    aiThink.classList.remove('show');
+    if(idx !== -1){
+      placeMove(idx, 'O');
+      afterMove('O');
+      if(gameActive){
+        humanTurn = true;
+        setTurn('x');
+      }
+    }
+  }, 420 + Math.random()*280);
+}
+
+function getBestMove(){
+  // 1. Try to win
+  for(let i=0;i<9;i++) if(!board[i]){
+    board[i]='O'; const w=checkWin(board,'O'); board[i]=null;
+    if(w) return i;
+  }
+  // 2. Block human
+  for(let i=0;i<9;i++) if(!board[i]){
+    board[i]='X'; const w=checkWin(board,'X'); board[i]=null;
+    if(w) return i;
+  }
+  // 3. Prefer strategic positions: center, corners, edges
+  const order = [4,0,2,6,8,1,3,5,7];
+  for(const i of order) if(!board[i]) return i;
+  return -1;
+}
+
+// ─────────────────────────────────────────────────
+//  HAND STATE
+// ─────────────────────────────────────────────────
+let hand = {
+  visible:  false,
+  landmarks: null,
+  tipX: 0, tipY: 0,   // screen px (mirrored)
+  pinchDist: 1,
+  isOpen: false,       // palm gesture
+  gestureScore: 0,
+};
+
+// TAP via pinch: index-tip↔thumb-tip distance
+const TAP_THRESHOLD   = 0.045; // normalized
+const TAP_HOLD_FRAMES = 14;    // must hold for N frames
+const COOLDOWN_FRAMES = 22;
+
+let tapHoldCount   = 0;
+let tapCooldown    = 0;
+let hoveredCell    = -1;
+let prevHovered    = -1;
+let palmHoldCount  = 0;
+const PALM_HOLD_THRESHOLD = 24;
+
+// Gesture detection helpers
+function dist2d(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+// Robust: is tip further from wrist than MCP? Uses palmSpan as normalizer.
+function isFingerExtended(tip, mcp, wrist){
+  const palmSpan = dist2d(wrist, mcp) || 0.01;
+  const tipDist  = dist2d(tip, wrist);
+  // Extended if tip is at least 1.6x the wrist-to-MCP distance away from wrist
+  return tipDist / palmSpan > 1.6;
+}
+
+function analyzeHand(lm){
+  const wrist=lm[0], thumbTip=lm[4];
+  const iTip=lm[8],  iMcp=lm[5];
+  const mTip=lm[12], mMcp=lm[9];
+  const rTip=lm[16], rMcp=lm[13];
+  const pTip=lm[20], pMcp=lm[17];
+
+  // selfieMode:false — raw x, video is CSS scaleX(-1)
+  // Mirror x for cursor to match the flipped video display
+  hand.pinchDist = dist2d(thumbTip, iTip);
+
+  const iOpen = isFingerExtended(iTip, iMcp, wrist);
+  const mOpen = isFingerExtended(mTip, mMcp, wrist);
+  const rOpen = isFingerExtended(rTip, rMcp, wrist);
+  const pOpen = isFingerExtended(pTip, pMcp, wrist);
+  const openCount = [iOpen,mOpen,rOpen,pOpen].filter(Boolean).length;
+  hand.isOpen = openCount >= 3;
+
+  // Mirror x to match CSS scaleX(-1) on video
+  hand.tipX = (1 - iTip.x) * VW;
+  hand.tipY = iTip.y * VH;
+}
+
+// ─────────────────────────────────────────────────
+//  CELL HIT TEST
+// ─────────────────────────────────────────────────
+function getCellUnderPoint(px, py){
+  const rect = boardEl.getBoundingClientRect();
+  const lx = px - rect.left;
+  const ly = py - rect.top;
+  if(lx < 0 || ly < 0 || lx > rect.width || ly > rect.height) return -1;
+  const col = Math.floor(lx / cellSz);
+  const row = Math.floor(ly / cellSz);
+  if(col < 0 || col > 2 || row < 0 || row > 2) return -1;
+  return row * 3 + col;
+}
+
+// ─────────────────────────────────────────────────
+//  FRAME UPDATE
+// ─────────────────────────────────────────────────
+function update(){
+  if(tapCooldown > 0) tapCooldown--;
+
+  // In presentation mode, suppress all hand-driven interaction
+  if(presentationMode){
+    cursor.classList.remove('active','hovering','tapping');
+    return;
+  }
+
+  if(!hand.visible){
+    cursor.classList.remove('active','hovering','tapping');
+    hoveredCell = -1;
+    clearHover();
+    return;
+  }
+
+  // Move cursor
+  cursor.style.left = hand.tipX + 'px';
+  cursor.style.top  = hand.tipY + 'px';
+  cursor.classList.add('active');
+
+  // Palm gesture → new game (only when not currently in an active game)
+  if(!gameStarted || (!gameActive && !resultBanner.classList.contains('show'))){
+    if(hand.isOpen){
+      palmHoldCount++;
+      if(palmHoldCount >= PALM_HOLD_THRESHOLD){
+        palmHoldCount = 0;
+        tapHoldCount  = 0;
+        tapCooldown   = COOLDOWN_FRAMES * 3; // long cooldown after init
+        initGame();
+      }
+    } else {
+      palmHoldCount = Math.max(0, palmHoldCount - 1);
+    }
+    // show palm hold progress in tapBar
+    const pp = Math.min(1, palmHoldCount / PALM_HOLD_THRESHOLD);
+    tapFill.style.width = (pp * 100) + '%';
+    tapFill.style.background = '#00f5ff';
+    tapBar.classList.toggle('ready', pp > 0.4);
+    cursor.classList.remove('hovering','tapping');
+    return;
+  }
+
+  // Reset tap bar color
+  tapFill.style.background = 'var(--pink)';
+
+  // Cell hover
+  const cell = getCellUnderPoint(hand.tipX, hand.tipY);
+  if(cell !== hoveredCell){
+    clearHover();
+    hoveredCell = cell;
+    if(cell !== -1 && board[cell] === null && humanTurn && gameActive){
+      cellEls[cell].classList.add('hovered');
+      tapHoldCount = 0;
+    }
+  }
+
+  const canTap = humanTurn && gameActive && hoveredCell !== -1 && board[hoveredCell] === null && tapCooldown === 0;
+
+  // Pinch tap
+  const isPinching = hand.pinchDist < TAP_THRESHOLD;
+
+  if(canTap && isPinching){
+    tapHoldCount++;
+    const progress = Math.min(1, tapHoldCount / TAP_HOLD_FRAMES);
+    tapFill.style.width = (progress * 100) + '%';
+    tapBar.classList.add('ready');
+    cursor.classList.add('tapping');
+    cursor.classList.remove('hovering');
+
+    if(tapHoldCount >= TAP_HOLD_FRAMES){
+      // PLACE MOVE
+      const idx = hoveredCell;
+      tapHoldCount = 0;
+      tapCooldown  = COOLDOWN_FRAMES;
+      tapFill.style.width = '0%';
+      tapBar.classList.remove('ready');
+      cursor.classList.remove('tapping');
+
+      placeMove(idx, 'X');
+      afterMove('X');
+      clearHover();
+      hoveredCell = -1;
+
+      if(gameActive){
+        humanTurn = false;
+        setTurn('o');
+        aiMove();
+      }
+    }
+  } else {
+    if(tapHoldCount > 0){
+      tapHoldCount = Math.max(0, tapHoldCount - 2);
+      tapFill.style.width = (tapHoldCount / TAP_HOLD_FRAMES * 100) + '%';
+    }
+    if(tapHoldCount === 0) tapBar.classList.remove('ready');
+    cursor.classList.remove('tapping');
+    if(hoveredCell !== -1 && board[hoveredCell] === null && humanTurn){
+      cursor.classList.add('hovering');
+    } else {
+      cursor.classList.remove('hovering');
+    }
+  }
+}
+
+function clearHover(){
+  cellEls.forEach(c => c.classList.remove('hovered'));
+  prevHovered = -1;
+}
+
+// ─────────────────────────────────────────────────
+//  LANDMARK RENDERING
+// ─────────────────────────────────────────────────
+const HAND_CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+
+function drawLandmarks(lm){
+  lctx.clearRect(0,0,VW,VH);
+  if(!lm || !showSkeleton) return;
+
+  const isPinching = hand.pinchDist < TAP_THRESHOLD;
+  const baseAlpha  = 0.72;
+
+  // Helper: mirror x to match CSS-flipped video
+  const mx = x => (1 - x) * VW;
+  const my = y => y * VH;
+
+  // Connections
+  lctx.save();
+  lctx.lineCap = 'round';
+  lctx.lineJoin = 'round';
+  lctx.shadowBlur = isPinching ? 16 : 8;
+  lctx.shadowColor = isPinching ? 'rgba(255,45,120,0.7)' : 'rgba(0,245,255,0.5)';
+  lctx.strokeStyle = isPinching ? `rgba(255,45,120,${baseAlpha})` : `rgba(0,245,255,${baseAlpha})`;
+  lctx.lineWidth = isPinching ? 2.4 : 1.6;
+
+  for(const [a,b] of HAND_CONNECTIONS){
+    const p1=lm[a], p2=lm[b];
+    lctx.beginPath();
+    lctx.moveTo(mx(p1.x), my(p1.y));
+    lctx.lineTo(mx(p2.x), my(p2.y));
+    lctx.stroke();
+  }
+
+  // Dots
+  for(let i=0;i<lm.length;i++){
+    const p=lm[i];
+    const sx=mx(p.x), sy=my(p.y);
+    const isIndex=(i===8), isThumb=(i===4), isWrist=(i===0);
+    const r = isIndex||isThumb ? 7 : isWrist ? 5 : 3.5;
+    const col = isIndex ? 'rgba(255,45,120,0.95)'
+               : isThumb ? 'rgba(255,180,0,0.9)'
+               : 'rgba(0,245,255,0.75)';
+    lctx.shadowBlur = isIndex||isThumb ? 14 : 5;
+    lctx.shadowColor = col;
+    lctx.fillStyle = col;
+    lctx.beginPath(); lctx.arc(sx,sy,r,0,Math.PI*2); lctx.fill();
+  }
+
+  // Pinch line
+  if(hand.pinchDist < 0.1){
+    const t=lm[4], ii=lm[8];
+    const tx=mx(t.x), ty=my(t.y);
+    const ix=mx(ii.x), iy=my(ii.y);
+    const pinchAlpha = Math.max(0, 1 - hand.pinchDist/0.1);
+    lctx.strokeStyle=`rgba(57,255,20,${pinchAlpha*0.85})`;
+    lctx.shadowColor='rgba(57,255,20,0.7)';
+    lctx.shadowBlur=18;
+    lctx.lineWidth=2;
+    lctx.setLineDash([4,4]);
+    lctx.beginPath(); lctx.moveTo(tx,ty); lctx.lineTo(ix,iy); lctx.stroke();
+    lctx.setLineDash([]);
+  }
+
+  lctx.restore();
+}
+
+// ─────────────────────────────────────────────────
+//  MEDIAPIPE
+// ─────────────────────────────────────────────────
+function initMediaPipe(){
+  if(typeof Hands === 'undefined'){
+    console.error('MediaPipe Hands not loaded');
+    return;
+  }
+
+  const mpHands = new Hands({
+    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+  });
+
+  mpHands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.65,
+    minTrackingConfidence: 0.60,
+    selfieMode: false,
+  });
+
+  mpHands.onResults(results => {
+    const lm = results.multiHandLandmarks?.[0] || null;
+    if(lm){
+      hand.visible   = true;
+      hand.landmarks = lm;
+      analyzeHand(lm);
+      statusDot.className = hand.pinchDist < TAP_THRESHOLD ? 'fire' : 'gesture';
+      handLabel.textContent = hand.pinchDist < TAP_THRESHOLD ? 'PINCH DETECTED' : 'HAND TRACKED';
+    } else {
+      hand.visible   = false;
+      hand.landmarks = null;
+      statusDot.className = '';
+      handLabel.textContent = 'SEARCHING…';
+    }
+    drawLandmarks(hand.landmarks);
+    update();
+  });
+
+  if(typeof Camera === 'undefined'){
+    console.error('MediaPipe Camera utils not loaded');
+    return;
+  }
+
+  const cam = new Camera(video, {
+    onFrame: async () => { await mpHands.send({ image: video }); },
+    width: 640, height: 480, facingMode: 'user',
+  });
+
+  cam.start()
+    .then(() => {
+      statusDot.className = 'live';
+      handLabel.textContent = 'CAMERA LIVE';
+    })
+    .catch(err => {
+      console.error(err);
+      noCamEl.style.display = 'flex';
+    });
+}
+
+// ─────────────────────────────────────────────────
+//  RESTART BUTTON
+// ─────────────────────────────────────────────────
+restartBtn.addEventListener('click', () => {
+  if(presentationMode){
+    // In demo mode, restart triggers a new presentation game
+    clearTimeout(presentationTimer);
+    resultBanner.classList.remove('show');
+    startPresentationGame();
+    return;
+  }
+  resultBanner.classList.remove('show');
+  palmPrompt.classList.remove('hidden');
+  palmPrompt.querySelector('.palm-text').textContent = 'Show Your Palm';
+  palmPrompt.querySelector('.palm-sub').textContent = 'Hold open hand to start new game';
+  gameStarted = false;
+  gameActive  = false;
+  turnBar.className = '';
+  turnSymbol.textContent = '◈';
+  turnText.textContent = 'SHOW PALM TO BEGIN';
+  tapFill.style.width = '0%';
+  tapFill.style.background = 'var(--cyan)';
+  palmHoldCount = 0;
+});
+
+// ─────────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────────
+// Debounce resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(resize, 120);
+});
+
+resize();
+initMediaPipe();
+</script>
+</body>
+</html>
