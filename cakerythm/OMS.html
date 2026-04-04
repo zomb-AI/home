@@ -1,0 +1,984 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Cake Rhythm | Homemade Cakes & Brownies</title>
+  <meta name="description" content="The Cake Rhythm - Homemade Cakes and Brownies. Premium handcrafted cakes, brownies, and custom celebration desserts in Chennai." />
+  <style>
+    :root {
+      --cream: #FFF7F1;
+      --choco: #4A2C24;
+      --cocoa: #2E1A14;
+      --blush: #EFA8B8;
+      --rose: #D97B93;
+      --beige: #EAD8C9;
+      --gold: #C89B5B;
+      --white: #FFFFFF;
+      --muted: #8E6F66;
+      --shadow: 0 12px 32px rgba(46, 26, 20, 0.12);
+      --shadow-soft: 0 8px 22px rgba(46, 26, 20, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --max: 1180px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #fffaf6 0%, var(--cream) 100%);
+      color: var(--cocoa);
+    }
+    h1, h2, h3, .brand-title, .section-title { font-family: Georgia, "Times New Roman", serif; letter-spacing: -0.02em; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    button, input, select, textarea { font: inherit; }
+    .container { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
+
+    .topbar { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(16px); background: rgba(255, 247, 241, 0.78); border-bottom: 1px solid rgba(74,44,36,0.08); }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 78px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--blush), var(--rose));
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55), var(--shadow-soft);
+      position: relative; flex: 0 0 auto;
+    }
+    .brand-mark:before {
+      content: ""; position: absolute; inset: 10px 14px 16px 14px;
+      border: 2px solid rgba(255,255,255,0.95);
+      border-top-left-radius: 12px 18px; border-top-right-radius: 12px 18px;
+      border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; transform: rotate(-8deg);
+    }
+    .brand-mark:after {
+      content: ""; position: absolute; width: 15px; height: 15px; right: 8px; top: 8px;
+      border-radius: 50% 50% 50% 0; background: rgba(255,255,255,.92); transform: rotate(45deg);
+    }
+    .brand-title { font-size: 1.25rem; line-height: 1; }
+    .brand-sub { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+    .nav-links { display: flex; align-items: center; gap: 22px; color: var(--choco); font-size: 0.97rem; }
+    .nav-links a { position: relative; }
+    .nav-links a:after {
+      content: ""; position: absolute; left: 0; bottom: -6px; width: 0; height: 2px;
+      background: var(--rose); transition: width .25s ease;
+    }
+    .nav-links a:hover:after { width: 100%; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn, .btn { border: 0; cursor: pointer; transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
+    .icon-btn:hover, .btn:hover { transform: translateY(-1px); }
+    .cart-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--cocoa); color: var(--white);
+      padding: 12px 16px; border-radius: 999px; box-shadow: var(--shadow-soft);
+    }
+    .cart-badge {
+      min-width: 24px; height: 24px; padding: 0 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 999px; background: var(--blush); color: var(--cocoa); font-weight: 700; font-size: .82rem;
+    }
+    .hamburger {
+      display: none; width: 44px; height: 44px; border-radius: 50%; background: var(--white);
+      box-shadow: var(--shadow-soft); align-items: center; justify-content: center;
+    }
+    .mobile-menu { display: none; flex-direction: column; gap: 10px; padding: 0 0 16px; }
+    .mobile-menu a { padding: 12px 14px; background: rgba(255,255,255,.65); border-radius: 12px; border: 1px solid rgba(74,44,36,0.08); }
+    .mobile-menu.open { display: flex; }
+
+    .hero { padding: 54px 0 34px; }
+    .hero-card {
+      display: grid; grid-template-columns: 1.08fr .92fr; gap: 28px; align-items: center;
+      background: radial-gradient(circle at top right, rgba(239,168,184,0.35), transparent 30%), linear-gradient(135deg, rgba(255,255,255,0.85), rgba(234,216,201,0.75));
+      border: 1px solid rgba(74,44,36,0.08); box-shadow: var(--shadow); border-radius: var(--radius-xl); overflow: hidden; padding: 28px;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; background: rgba(239,168,184,.18); color: var(--rose);
+      padding: 10px 14px; border-radius: 999px; font-weight: 700; font-size: .9rem;
+      border: 1px solid rgba(217,123,147,.18); margin-bottom: 18px;
+    }
+    .hero h1 { font-size: clamp(2.4rem, 5vw, 4.4rem); margin: 0 0 12px; line-height: .95; }
+    .hero p { font-size: 1.07rem; line-height: 1.75; color: var(--muted); max-width: 55ch; margin: 0 0 24px; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }
+    .btn { padding: 14px 20px; border-radius: 999px; font-weight: 700; }
+    .btn-primary { background: linear-gradient(135deg, var(--rose), var(--blush)); color: var(--white); box-shadow: var(--shadow-soft); }
+    .btn-secondary { background: rgba(255,255,255,.68); color: var(--choco); border: 1px solid rgba(74,44,36,0.12); }
+    .trust-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    .trust-pill {
+      background: rgba(255,255,255,.7); border: 1px solid rgba(74,44,36,0.08);
+      border-radius: 16px; padding: 14px 12px; text-align: center; font-size: .9rem; color: var(--choco);
+    }
+    .hero-visual {
+      min-height: 420px; border-radius: 24px; position: relative; overflow: hidden;
+      background: linear-gradient(180deg, rgba(46,26,20,0.08), rgba(46,26,20,0.18)), url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+      box-shadow: var(--shadow-soft);
+    }
+    .hero-visual:before {
+      content: "Freshly baked joy"; position: absolute; top: 20px; right: 20px;
+      background: rgba(255,255,255,.86); color: var(--cocoa);
+      padding: 12px 16px; border-radius: 999px; font-weight: 700; box-shadow: var(--shadow-soft);
+    }
+    .floating-card {
+      position: absolute; left: 20px; bottom: 20px; right: 20px;
+      background: rgba(255,255,255,0.82); backdrop-filter: blur(10px);
+      border: 1px solid rgba(74,44,36,0.08); border-radius: 20px; padding: 16px;
+      display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+    }
+    .floating-card strong { font-size: 1.05rem; }
+    .floating-card small { display: block; color: var(--muted); margin-top: 4px; }
+
+    section { padding: 34px 0; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 18px; margin-bottom: 18px; }
+    .section-title { font-size: clamp(1.8rem, 3vw, 2.6rem); margin: 0; }
+    .section-sub { color: var(--muted); max-width: 58ch; line-height: 1.7; }
+
+    .story { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .story-card, .panel {
+      background: rgba(255,255,255,.75); border: 1px solid rgba(74,44,36,0.08);
+      border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); padding: 24px;
+    }
+    .story-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 16px; }
+    .stat { background: rgba(239,168,184,.12); border-radius: 16px; padding: 16px; }
+    .stat strong { display: block; font-size: 1.25rem; margin-bottom: 6px; }
+
+    .grid { display: grid; gap: 18px; }
+    .products-grid { grid-template-columns: repeat(3, 1fr); }
+    .product-card {
+      background: rgba(255,255,255,.86); border: 1px solid rgba(74,44,36,0.08);
+      border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-soft); display: flex; flex-direction: column;
+    }
+    .product-image { aspect-ratio: 4/3; overflow: hidden; position: relative; }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+    .product-card:hover .product-image img { transform: scale(1.06); }
+    .badge {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,.88); padding: 8px 12px; border-radius: 999px;
+      font-size: .82rem; font-weight: 700; color: var(--choco);
+    }
+    .product-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; height: 100%; }
+    .product-body h3 { margin: 0; font-size: 1.3rem; }
+    .product-body p { margin: 0; color: var(--muted); line-height: 1.6; }
+    .price-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; }
+    .price { font-size: 1.22rem; font-weight: 800; color: var(--cocoa); }
+    .mini-btn { padding: 12px 16px; border-radius: 999px; background: var(--cocoa); color: var(--white); }
+
+    .custom-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .custom-visual {
+      min-height: 420px; border-radius: 24px; overflow: hidden;
+      background: linear-gradient(180deg, rgba(46,26,20,0.08), rgba(46,26,20,0.14)), url('https://images.unsplash.com/photo-1464306076886-da185f6a9d05?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+      box-shadow: var(--shadow-soft);
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-weight: 700; font-size: .92rem; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 14px 14px; border-radius: 14px;
+      border: 1px solid rgba(74,44,36,0.14); background: rgba(255,255,255,.92); outline: none;
+    }
+    .field textarea { min-height: 110px; resize: vertical; }
+
+    .why-grid { grid-template-columns: repeat(3, 1fr); }
+    .why-card {
+      padding: 22px; background: rgba(255,255,255,.82); border-radius: 22px; border: 1px solid rgba(74,44,36,0.08); box-shadow: var(--shadow-soft);
+    }
+    .why-icon {
+      width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center;
+      background: linear-gradient(135deg, rgba(239,168,184,.6), rgba(200,155,91,.35)); font-size: 1.3rem; margin-bottom: 12px;
+    }
+
+    .gallery-grid { grid-template-columns: repeat(4, 1fr); }
+    .gallery-item { overflow: hidden; border-radius: 22px; box-shadow: var(--shadow-soft); min-height: 220px; background: #eee; }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+    .gallery-item:hover img { transform: scale(1.06); }
+
+    .reviews-grid { grid-template-columns: repeat(3,1fr); }
+    .review-card {
+      background: rgba(255,255,255,.86); border-radius: 22px; border: 1px solid rgba(74,44,36,0.08);
+      box-shadow: var(--shadow-soft); padding: 22px;
+    }
+    .stars { color: var(--gold); letter-spacing: 2px; margin-bottom: 10px; }
+
+    .submit-wrap { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; }
+    .summary-card {
+      background: linear-gradient(180deg, rgba(74,44,36,.98), rgba(46,26,20,.98));
+      color: var(--white); border-radius: 24px; padding: 24px; box-shadow: var(--shadow);
+    }
+    .summary-card .muted { color: rgba(255,255,255,.72); }
+    .summary-items { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+    .summary-item {
+      display: flex; justify-content: space-between; align-items: start; gap: 12px; padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .summary-total { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.15rem; margin-top: 18px; }
+
+    footer {
+      margin-top: 26px; background: linear-gradient(180deg, var(--cocoa), var(--choco)); color: var(--white); padding: 28px 0 100px;
+    }
+    .footer-grid { display: grid; grid-template-columns: 1.1fr .8fr .8fr; gap: 20px; }
+    .footer-card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); border-radius: 20px; padding: 20px; }
+    .footer-card p, .footer-card a { color: rgba(255,255,255,.84); line-height: 1.7; }
+    .footer-bottom { margin-top: 18px; color: rgba(255,255,255,.68); font-size: .92rem; }
+
+    .floating-whatsapp, .back-top {
+      position: fixed; right: 18px; width: 56px; height: 56px; border-radius: 50%; z-index: 60;
+      display: grid; place-items: center; box-shadow: var(--shadow); color: var(--white); font-size: 1.25rem;
+    }
+    .floating-whatsapp { bottom: 18px; background: #25D366; }
+    .back-top { bottom: 84px; background: var(--rose); opacity: 0; pointer-events: none; transition: .25s ease; }
+    .back-top.show { opacity: 1; pointer-events: auto; }
+
+    .cart-drawer {
+      position: fixed; top: 0; right: -420px; width: min(420px, 100%); height: 100vh; z-index: 80;
+      background: rgba(255,255,255,.96); backdrop-filter: blur(18px); box-shadow: -16px 0 40px rgba(0,0,0,.12);
+      border-left: 1px solid rgba(74,44,36,0.1); transition: right .3s ease; display: flex; flex-direction: column;
+    }
+    .cart-drawer.open { right: 0; }
+    .drawer-head, .drawer-foot { padding: 18px; border-bottom: 1px solid rgba(74,44,36,.08); }
+    .drawer-foot { border-top: 1px solid rgba(74,44,36,.08); border-bottom: 0; margin-top: auto; }
+    .drawer-body { padding: 18px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+    .drawer-item {
+      display: grid; grid-template-columns: 80px 1fr auto; gap: 12px; align-items: center;
+      background: rgba(255,255,255,.85); border-radius: 18px; border: 1px solid rgba(74,44,36,.08); padding: 10px;
+    }
+    .drawer-thumb { width: 80px; height: 80px; border-radius: 14px; object-fit: cover; }
+    .qty-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--beige); color: var(--cocoa); cursor: pointer; }
+    .empty-state {
+      padding: 30px 18px; text-align: center; color: var(--muted); background: rgba(239,168,184,.08); border-radius: 22px; border: 1px dashed rgba(74,44,36,.15);
+    }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(46,26,20,.28); backdrop-filter: blur(4px); z-index: 70;
+      opacity: 0; pointer-events: none; transition: .25s ease;
+    }
+    .overlay.show { opacity: 1; pointer-events: auto; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(20px);
+      background: var(--cocoa); color: var(--white); padding: 14px 18px; border-radius: 999px; z-index: 90;
+      opacity: 0; pointer-events: none; transition: .25s ease; box-shadow: var(--shadow); text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .55s ease, transform .55s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 980px) {
+      .nav-links { display: none; }
+      .hamburger { display: inline-flex; }
+      .hero-card, .story, .custom-wrap, .submit-wrap, .footer-grid, .products-grid, .why-grid, .reviews-grid, .gallery-grid { grid-template-columns: 1fr; }
+      .trust-row { grid-template-columns: repeat(2,1fr); }
+      .form-grid { grid-template-columns: 1fr; }
+      .story-stats { grid-template-columns: 1fr; }
+      .hero-visual, .custom-visual { min-height: 300px; }
+    }
+    @media (max-width: 720px) {
+      .container { width: min(var(--max), calc(100% - 20px)); }
+      .nav { min-height: 72px; }
+      .brand-title { font-size: 1.08rem; }
+      .brand-sub { font-size: .69rem; }
+      .cart-btn span.label { display: none; }
+      .hero { padding-top: 20px; }
+      .hero-card { padding: 18px; border-radius: 22px; }
+      .hero h1 { font-size: 2.4rem; }
+      .hero p { font-size: .98rem; }
+      .btn { width: 100%; justify-content: center; display: inline-flex; }
+      .trust-pill { font-size: .84rem; }
+      .story-card, .panel, .summary-card { padding: 18px; }
+      .section-title { font-size: 2rem; }
+      .gallery-item { min-height: 180px; }
+      .floating-whatsapp, .back-top { width: 50px; height: 50px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay"></div>
+
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="#home" aria-label="The Cake Rhythm home">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-title">The Cake Rhythm</div>
+          <div class="brand-sub">Homemade Cakes &amp; Brownies</div>
+        </div>
+      </a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#home">Home</a>
+        <a href="#bestsellers">Bestsellers</a>
+        <a href="#custom">Custom Cakes</a>
+        <a href="#brownies">Brownies</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="cart-btn icon-btn" id="openCartBtn" aria-label="Open cart">
+          <span>🛒</span>
+          <span class="label">Cart</span>
+          <span class="cart-badge" id="cartCount">0</span>
+        </button>
+        <button class="hamburger icon-btn" id="menuBtn" aria-label="Open mobile menu">☰</button>
+      </div>
+    </div>
+    <div class="container mobile-menu" id="mobileMenu">
+      <a href="#home">Home</a>
+      <a href="#bestsellers">Bestsellers</a>
+      <a href="#custom">Custom Cakes</a>
+      <a href="#brownies">Brownies</a>
+      <a href="#reviews">Reviews</a>
+      <a href="#submit">Submit Order</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero reveal" id="home">
+      <div class="container">
+        <div class="hero-card">
+          <div>
+            <div class="eyebrow">💕 Happiness is Homemade</div>
+            <h1>Handcrafted sweetness for every celebration.</h1>
+            <p>
+              Premium homemade cakes and fudgy brownies made with love, elegance, and rich flavor.
+              From birthdays and anniversaries to sweet cravings and gifting, The Cake Rhythm brings warm bakery joy to your special moments.
+            </p>
+            <div class="btn-row">
+              <a class="btn btn-primary" href="#bestsellers">Order Now</a>
+              <a class="btn btn-secondary" href="#custom">Customize Cake</a>
+            </div>
+            <div class="trust-row">
+              <div class="trust-pill">100% Homemade</div>
+              <div class="trust-pill">Fresh Ingredients</div>
+              <div class="trust-pill">Custom Designs</div>
+              <div class="trust-pill">Same Day Support</div>
+            </div>
+          </div>
+          <div class="hero-visual" aria-label="Premium chocolate cake hero image">
+            <div class="floating-card">
+              <div>
+                <strong>Chocolate Truffle Signature Cake</strong>
+                <small>Rich layers, silky frosting, and celebration-ready elegance.</small>
+              </div>
+              <button class="btn btn-primary" data-add="1">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div class="container story">
+        <div class="story-card">
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">A boutique homemade bakery with heart.</h2>
+              <p class="section-sub">Designed around handcrafted quality, premium presentation, and warm customer experiences for every order in Chennai.</p>
+            </div>
+          </div>
+          <p class="section-sub">
+            The Cake Rhythm blends elegant flavors, handcrafted finishes, and celebration-first creativity.
+            Every cake and brownie box is made to feel thoughtful, personal, and memorable.
+          </p>
+          <div class="story-stats">
+            <div class="stat"><strong>Custom</strong><span>Theme cakes for birthdays, anniversaries, and surprise moments.</span></div>
+            <div class="stat"><strong>Fresh</strong><span>Baked in small batches with a homemade premium touch.</span></div>
+            <div class="stat"><strong>Giftable</strong><span>Perfect for sweet boxes, return gifts, and festive orders.</span></div>
+          </div>
+        </div>
+        <div class="story-card">
+          <h3 style="margin-top:0">Brand feel</h3>
+          <p class="section-sub">
+            Warm cream, cocoa brown, blush pink, and gold accents create a visual identity that feels soft, premium, feminine, and Instagram-ready.
+          </p>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px">
+            <div style="height:92px;border-radius:18px;background:#FFF7F1"></div>
+            <div style="height:92px;border-radius:18px;background:#4A2C24"></div>
+            <div style="height:92px;border-radius:18px;background:#EFA8B8"></div>
+            <div style="height:92px;border-radius:18px;background:#C89B5B"></div>
+          </div>
+          <div style="margin-top:18px;padding:16px;border-radius:18px;background:rgba(239,168,184,.12)">
+            <strong>Signature line</strong>
+            <p style="margin:8px 0 0;color:var(--muted)">Made with love for your sweetest moments.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="bestsellers" class="reveal">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Bestsellers</h2>
+            <p class="section-sub">A curated range of cakes and brownies crafted for indulgence, gifting, and celebration.</p>
+          </div>
+        </div>
+        <div class="grid products-grid" id="productsGrid"></div>
+      </div>
+    </section>
+
+    <section id="custom" class="reveal">
+      <div class="container custom-wrap">
+        <div class="custom-visual" aria-label="Custom cake visual"></div>
+        <div class="panel">
+          <h2 class="section-title" style="margin-top:0">Custom cake request</h2>
+          <p class="section-sub">This form creates an Order ID, opens WhatsApp, and also sends the request to Google Sheets through a webhook.</p>
+          <form id="customForm" class="form-grid" novalidate>
+            <div class="field">
+              <label for="occasion">Occasion</label>
+              <select id="occasion" required>
+                <option value="">Select</option>
+                <option>Birthday</option>
+                <option>Anniversary</option>
+                <option>Baby Shower</option>
+                <option>Corporate Celebration</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="flavor">Flavor</label>
+              <select id="flavor" required>
+                <option value="">Select</option>
+                <option>Chocolate Truffle</option>
+                <option>Red Velvet</option>
+                <option>Butterscotch</option>
+                <option>Black Forest</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="weight">Weight</label>
+              <select id="weight" required>
+                <option value="">Select</option>
+                <option>0.5 Kg</option>
+                <option>1 Kg</option>
+                <option>1.5 Kg</option>
+                <option>2 Kg</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="type">Type</label>
+              <select id="type" required>
+                <option value="">Select</option>
+                <option>Egg</option>
+                <option>Eggless</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="message">Message on Cake</label>
+              <input id="message" placeholder="Eg: Happy Birthday Aadi" required />
+            </div>
+            <div class="field full">
+              <label for="deliveryDate">Preferred Delivery Date</label>
+              <input id="deliveryDate" type="date" required />
+            </div>
+            <div class="field full">
+              <label for="customCustomerName">Customer Name</label>
+              <input id="customCustomerName" placeholder="Enter customer name" required />
+            </div>
+            <div class="field full">
+              <label for="customCustomerPhone">Customer Mobile</label>
+              <input id="customCustomerPhone" placeholder="Enter mobile number" required />
+            </div>
+            <div class="field full">
+              <button class="btn btn-primary" type="submit">Send Custom Request</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="brownies" class="reveal">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Brownie collection</h2>
+            <p class="section-sub">Dense, rich, and deeply chocolatey brownies designed for personal indulgence, gifting, and party boxes.</p>
+          </div>
+        </div>
+        <div class="grid products-grid" id="brownieGrid"></div>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Why customers choose us</h2>
+            <p class="section-sub">Every touchpoint is built around freshness, aesthetics, reliability, and a homemade premium feel.</p>
+          </div>
+        </div>
+        <div class="grid why-grid">
+          <div class="why-card"><div class="why-icon">💗</div><h3>Homemade with Love</h3><p class="section-sub">Small-batch baking with warmth and care in every order.</p></div>
+          <div class="why-card"><div class="why-icon">🌿</div><h3>Premium Ingredients</h3><p class="section-sub">Balanced flavor, rich texture, and elegant finishes you can taste.</p></div>
+          <div class="why-card"><div class="why-icon">🎨</div><h3>Beautiful Customization</h3><p class="section-sub">Celebration cakes styled for your theme and occasion.</p></div>
+          <div class="why-card"><div class="why-icon">🔥</div><h3>Freshly Baked</h3><p class="section-sub">Prepared to order for freshness, softness, and indulgence.</p></div>
+          <div class="why-card"><div class="why-icon">🚚</div><h3>Timely Delivery Support</h3><p class="section-sub">Smooth coordination for birthdays, surprises, and festive gifting.</p></div>
+          <div class="why-card"><div class="why-icon">📍</div><h3>Chennai Local Orders</h3><p class="section-sub">A boutique neighborhood bakery experience with premium care.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Sweet moments gallery</h2>
+            <p class="section-sub">A warm, elegant mix of celebration cakes, brownie boxes, and dessert close-ups.</p>
+          </div>
+        </div>
+        <div class="grid gallery-grid">
+          <div class="gallery-item"><img src="https://images.unsplash.com/photo-1486427944299-d1955d23e34d?auto=format&fit=crop&w=900&q=80" alt="Birthday cake"></div>
+          <div class="gallery-item"><img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=80" alt="Brownies"></div>
+          <div class="gallery-item"><img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=900&q=80" alt="Pink frosted cake"></div>
+          <div class="gallery-item"><img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=900&q=80" alt="Chocolate dessert"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviews" class="reveal">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Customer love</h2>
+            <p class="section-sub">What a premium homemade dessert experience should feel like: fresh, beautiful, and dependable.</p>
+          </div>
+        </div>
+        <div class="grid reviews-grid">
+          <div class="review-card"><div class="stars">★★★★★</div><p>Absolutely loved the chocolate truffle cake. Soft sponge, rich frosting, and such a neat finish. It felt truly premium and homemade.</p><strong>— Priya R.</strong></div>
+          <div class="review-card"><div class="stars">★★★★★</div><p>The brownie box was dense, fudgy, and perfect for gifting. Packaging looked elegant and thoughtful too.</p><strong>— Nandhini S.</strong></div>
+          <div class="review-card"><div class="stars">★★★★★</div><p>The custom birthday cake looked stunning and tasted even better. Smooth coordination and timely support.</p><strong>— Karthik M.</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="submit" class="reveal">
+      <div class="container submit-wrap">
+        <div class="panel">
+          <h2 class="section-title" style="margin-top:0">Submit order</h2>
+          <p class="section-sub">This form generates a 6-character Order ID in the format CR-XXXXXX, opens WhatsApp, and posts the same details to Google Sheets through a webhook.</p>
+          <form id="orderForm" class="form-grid" novalidate>
+            <div class="field">
+              <label for="name">Full Name</label>
+              <input id="name" required placeholder="Your name" />
+            </div>
+            <div class="field">
+              <label for="phone">Phone Number</label>
+              <input id="phone" required placeholder="98765 43210" />
+            </div>
+            <div class="field full">
+              <label for="address">Address</label>
+              <textarea id="address" required placeholder="Delivery address"></textarea>
+            </div>
+            <div class="field">
+              <label for="orderOccasion">Occasion</label>
+              <input id="orderOccasion" placeholder="Birthday / Anniversary / Gift" />
+            </div>
+            <div class="field">
+              <label for="date">Delivery Date</label>
+              <input id="date" type="date" required />
+            </div>
+            <div class="field full">
+              <label for="notes">Notes</label>
+              <textarea id="notes" placeholder="Add flavor notes, message, or delivery preferences"></textarea>
+            </div>
+            <div class="field full">
+              <button class="btn btn-primary" type="submit">Send Order</button>
+            </div>
+          </form>
+        </div>
+        <aside class="summary-card">
+          <h3 style="margin-top:0">Order summary</h3>
+          <p class="muted">Cart-linked summary updates automatically as you add products.</p>
+          <div class="summary-items" id="summaryItems"></div>
+          <div class="summary-total"><span>Total</span><span id="summaryTotal">₹0</span></div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12)" class="muted">
+            The Cake Rhythm<br>
+            Casagrand Sereno, Karanai Main Rd, Thazhambur, Chennai
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contact">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-card">
+          <div class="brand" style="margin-bottom:12px">
+            <div class="brand-mark" aria-hidden="true"></div>
+            <div>
+              <div class="brand-title" style="color:#fff">The Cake Rhythm</div>
+              <div class="brand-sub" style="color:rgba(255,255,255,.7)">Homemade Cakes &amp; Brownies</div>
+            </div>
+          </div>
+          <p>Happiness is Homemade. Warm, handcrafted cakes and brownies styled for celebrations, gifts, and sweet memories.</p>
+        </div>
+        <div class="footer-card">
+          <h3 style="margin-top:0">Contact</h3>
+          <p>Casagrand Sereno, Karanai Main Rd,<br>Thazhambur, Chennai, Tamil Nadu 600130</p>
+          <p>Phone: +91 98846 20064</p>
+          <p>WhatsApp Orders: +91 98846 20064</p>
+        </div>
+        <div class="footer-card">
+          <h3 style="margin-top:0">Quick Links</h3>
+          <p><a href="#bestsellers">Bestsellers</a></p>
+          <p><a href="#custom">Custom Cakes</a></p>
+          <p><a href="#brownies">Brownies</a></p>
+          <p><a href="#submit">Submit Order</a></p>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 The Cake Rhythm. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <button class="back-top" id="backTop" aria-label="Back to top">↑</button>
+  <a class="floating-whatsapp" href="https://wa.me/919884620064" target="_blank" aria-label="WhatsApp contact">✆</a>
+
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Shopping cart">
+    <div class="drawer-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+      <div>
+        <strong style="font-size:1.15rem">Your Cart</strong>
+        <div style="color:var(--muted);font-size:.92rem">Demo cart with live updates</div>
+      </div>
+      <button class="btn btn-secondary" id="closeCartBtn">Close</button>
+    </div>
+    <div class="drawer-body" id="cartItems"></div>
+    <div class="drawer-foot">
+      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.08rem;margin-bottom:14px;">
+        <span>Subtotal</span>
+        <span id="cartSubtotal">₹0</span>
+      </div>
+      <a href="#submit" class="btn btn-primary" id="proceedBtn" style="display:flex;justify-content:center;">Proceed to Submit</a>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const WHATSAPP_NUMBER = '919884620064';
+    // Replace this with your deployed Google Apps Script Web App URL.
+    const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwYGHNLNAfAs_BIUSG60F_nAZ-T6YaTIukTW3mz-Lih4B8Sr8B1Su24VgfMUNxYkShM/exec';
+
+    const products = [
+      { id: 1, name: 'Chocolate Truffle Cake', price: 850, badge: '1 Kg', category: 'cake', desc: 'Rich chocolate sponge layered with silky truffle frosting.', img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80' },
+      { id: 2, name: 'Red Velvet Cake', price: 900, badge: '1 Kg', category: 'cake', desc: 'Elegant red velvet layers with smooth cream cheese style frosting.', img: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=900&q=80' },
+      { id: 3, name: 'Butterscotch Celebration Cake', price: 820, badge: '1 Kg', category: 'cake', desc: 'Soft vanilla sponge with caramel crunch and butterscotch richness.', img: 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=900&q=80' },
+      { id: 4, name: 'Classic Fudgy Brownies', price: 450, badge: 'Box of 6', category: 'brownie', desc: 'Deep cocoa brownies with a dense, indulgent center.', img: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=80' },
+      { id: 5, name: 'Walnut Brownie Box', price: 520, badge: 'Box of 6', category: 'brownie', desc: 'Fudgy brownies loaded with toasted walnut crunch.', img: 'https://images.unsplash.com/photo-1607920591413-4ec007e70023?auto=format&fit=crop&w=900&q=80' },
+      { id: 6, name: 'Custom Theme Cake', price: 1200, badge: 'Starts at', category: 'cake', desc: 'Personalized celebration cake styled to match your special moment.', img: 'https://images.unsplash.com/photo-1486427944299-d1955d23e34d?auto=format&fit=crop&w=900&q=80' },
+      { id: 7, name: 'Double Chocolate Brownie', price: 560, badge: 'Box of 6', category: 'brownie', desc: 'Intense chocolate flavor with chunks folded into every bite.', img: 'https://images.unsplash.com/photo-1515037893149-de7f840978e2?auto=format&fit=crop&w=900&q=80' },
+      { id: 8, name: 'Brownie Gift Hamper', price: 980, badge: 'Gift Box', category: 'brownie', desc: 'Curated premium brownie assortment for gifting and festive orders.', img: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=900&q=80' }
+    ];
+
+    const cart = [];
+
+    const productsGrid = document.getElementById('productsGrid');
+    const brownieGrid = document.getElementById('brownieGrid');
+    const cartItems = document.getElementById('cartItems');
+    const cartCount = document.getElementById('cartCount');
+    const cartSubtotal = document.getElementById('cartSubtotal');
+    const summaryItems = document.getElementById('summaryItems');
+    const summaryTotal = document.getElementById('summaryTotal');
+    const cartDrawer = document.getElementById('cartDrawer');
+    const overlay = document.getElementById('overlay');
+    const toast = document.getElementById('toast');
+
+    function formatPrice(value) {
+      return `₹${value.toLocaleString('en-IN')}`;
+    }
+
+    function sanitizeAlphaNum(str) {
+      return (str || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+
+    function generateOrderId(customerName, mobile, dateValue) {
+      const namePart = sanitizeAlphaNum(customerName).slice(0, 2).padEnd(2, 'X');
+      const mobileDigits = String(mobile || '').replace(/\D/g, '');
+      const mobilePart = mobileDigits.slice(-2).padStart(2, '0');
+      const dateDigits = String(dateValue || '').replace(/\D/g, '');
+      const datePart = dateDigits.slice(-2).padStart(2, '0');
+      return `CR-${namePart}${mobilePart}${datePart}`;
+    }
+
+    function openWhatsApp(message) {
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    }
+
+    async function sendToGoogleSheet(payload) {
+      if (!SHEET_WEBHOOK_URL || SHEET_WEBHOOK_URL.includes('PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEBAPP_URL_HERE')) {
+        return { ok: false, skipped: true, message: 'Webhook URL not configured' };
+      }
+      try {
+        const response = await fetch(SHEET_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const text = await response.text();
+        return { ok: response.ok, text };
+      } catch (error) {
+        return { ok: false, error: String(error) };
+      }
+    }
+
+    function renderProductCard(item) {
+      return `
+        <article class="product-card">
+          <div class="product-image">
+            <img src="${item.img}" alt="${item.name}" />
+            <span class="badge">${item.badge}</span>
+          </div>
+          <div class="product-body">
+            <h3>${item.name}</h3>
+            <p>${item.desc}</p>
+            <div class="price-row">
+              <div class="price">${formatPrice(item.price)}</div>
+              <button class="mini-btn icon-btn" data-add="${item.id}">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderProducts() {
+      productsGrid.innerHTML = products.filter(p => p.category === 'cake').map(renderProductCard).join('');
+      brownieGrid.innerHTML = products.filter(p => p.category === 'brownie').map(renderProductCard).join('');
+    }
+
+    function addToCart(id) {
+      const existing = cart.find(item => item.id === id);
+      if (existing) existing.qty += 1;
+      else {
+        const product = products.find(p => p.id === id);
+        if (!product) return;
+        cart.push({ ...product, qty: 1 });
+      }
+      updateCart();
+      showToast('Added to cart');
+    }
+
+    function updateQty(id, delta) {
+      const item = cart.find(p => p.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) {
+        const index = cart.findIndex(p => p.id === id);
+        cart.splice(index, 1);
+      }
+      updateCart();
+    }
+
+    function removeItem(id) {
+      const index = cart.findIndex(p => p.id === id);
+      if (index > -1) cart.splice(index, 1);
+      updateCart();
+    }
+
+    function updateCart() {
+      const count = cart.reduce((sum, item) => sum + item.qty, 0);
+      const subtotal = cart.reduce((sum, item) => sum + item.qty * item.price, 0);
+      cartCount.textContent = count;
+      cartSubtotal.textContent = formatPrice(subtotal);
+      summaryTotal.textContent = formatPrice(subtotal);
+
+      if (!cart.length) {
+        cartItems.innerHTML = `<div class="empty-state">Your cart is empty. Add a cake or brownie to see the live summary here.</div>`;
+        summaryItems.innerHTML = `<div class="muted">No items added yet.</div>`;
+        return;
+      }
+
+      cartItems.innerHTML = cart.map(item => `
+        <div class="drawer-item">
+          <img class="drawer-thumb" src="${item.img}" alt="${item.name}" />
+          <div>
+            <strong>${item.name}</strong>
+            <div style="color:var(--muted);margin-top:4px">${formatPrice(item.price)}</div>
+            <div class="qty-row">
+              <button class="qty-btn" data-dec="${item.id}">−</button>
+              <strong>${item.qty}</strong>
+              <button class="qty-btn" data-inc="${item.id}">+</button>
+            </div>
+          </div>
+          <button class="btn btn-secondary" data-remove="${item.id}" style="padding:10px 12px">✕</button>
+        </div>
+      `).join('');
+
+      summaryItems.innerHTML = cart.map(item => `
+        <div class="summary-item">
+          <div>
+            <strong>${item.name}</strong>
+            <div class="muted">Qty ${item.qty}</div>
+          </div>
+          <div>${formatPrice(item.qty * item.price)}</div>
+        </div>
+      `).join('');
+    }
+
+    function openCart() { cartDrawer.classList.add('open'); overlay.classList.add('show'); }
+    function closeCart() { cartDrawer.classList.remove('open'); overlay.classList.remove('show'); }
+
+    function showToast(message, ms = 2600) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove('show'), ms);
+    }
+
+    document.addEventListener('click', (e) => {
+      const addBtn = e.target.closest('[data-add]');
+      const incBtn = e.target.closest('[data-inc]');
+      const decBtn = e.target.closest('[data-dec]');
+      const removeBtn = e.target.closest('[data-remove]');
+
+      if (addBtn) addToCart(Number(addBtn.dataset.add));
+      if (incBtn) updateQty(Number(incBtn.dataset.inc), 1);
+      if (decBtn) updateQty(Number(decBtn.dataset.dec), -1);
+      if (removeBtn) removeItem(Number(removeBtn.dataset.remove));
+    });
+
+    document.getElementById('openCartBtn').addEventListener('click', openCart);
+    document.getElementById('closeCartBtn').addEventListener('click', closeCart);
+    overlay.addEventListener('click', closeCart);
+    document.getElementById('proceedBtn').addEventListener('click', closeCart);
+
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('open'));
+    mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.remove('open')));
+
+    function validateBasic(ids) {
+      let valid = true;
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!String(el.value).trim()) {
+          el.style.borderColor = '#d25d75';
+          valid = false;
+        } else {
+          el.style.borderColor = 'rgba(74,44,36,0.14)';
+        }
+      });
+      return valid;
+    }
+
+    document.getElementById('customForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fields = ['occasion', 'flavor', 'weight', 'type', 'message', 'deliveryDate', 'customCustomerName', 'customCustomerPhone'];
+      const ok = validateBasic(fields);
+      if (!ok) return showToast('Please complete all custom cake details');
+
+      const payload = {
+        orderType: 'Custom Cake Request',
+        orderId: generateOrderId(
+          document.getElementById('customCustomerName').value.trim(),
+          document.getElementById('customCustomerPhone').value.trim(),
+          document.getElementById('deliveryDate').value.trim()
+        ),
+        customerName: document.getElementById('customCustomerName').value.trim(),
+        customerPhone: document.getElementById('customCustomerPhone').value.trim(),
+        occasion: document.getElementById('occasion').value.trim(),
+        flavor: document.getElementById('flavor').value.trim(),
+        weight: document.getElementById('weight').value.trim(),
+        cakeType: document.getElementById('type').value.trim(),
+        cakeMessage: document.getElementById('message').value.trim(),
+        deliveryDate: document.getElementById('deliveryDate').value.trim(),
+        address: '',
+        notes: '',
+        items: [],
+        total: 0,
+        createdAt: new Date().toISOString()
+      };
+
+      const whatsappMessage =
+`Hello The Cake Rhythm,
+
+New Custom Cake Request
+
+Order ID: ${payload.orderId}
+Customer Name: ${payload.customerName}
+Customer Mobile: ${payload.customerPhone}
+Occasion: ${payload.occasion}
+Flavor: ${payload.flavor}
+Weight: ${payload.weight}
+Type: ${payload.cakeType}
+Message on Cake: ${payload.cakeMessage}
+Preferred Delivery Date: ${payload.deliveryDate}`;
+
+      openWhatsApp(whatsappMessage);
+      const sheetResult = await sendToGoogleSheet(payload);
+      if (sheetResult.ok) showToast(`WhatsApp opened. ${payload.orderId} also saved to Google Sheet.`, 3600);
+      else showToast(`WhatsApp opened. ${payload.orderId} generated. Configure webhook to save in Google Sheet.`, 3800);
+    });
+
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const ok = validateBasic(['name', 'phone', 'address', 'date']);
+      if (!ok) return showToast('Please complete the required order fields');
+      if (!cart.length) return showToast('Add at least one item to submit order');
+
+      const total = cart.reduce((sum, item) => sum + item.qty * item.price, 0);
+      const payload = {
+        orderType: 'Product Order',
+        orderId: generateOrderId(
+          document.getElementById('name').value.trim(),
+          document.getElementById('phone').value.trim(),
+          document.getElementById('date').value.trim()
+        ),
+        customerName: document.getElementById('name').value.trim(),
+        customerPhone: document.getElementById('phone').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        occasion: document.getElementById('orderOccasion').value.trim() || 'N/A',
+        deliveryDate: document.getElementById('date').value.trim(),
+        notes: document.getElementById('notes').value.trim() || 'N/A',
+        items: cart.map(item => ({
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+          amount: item.qty * item.price
+        })),
+        total,
+        createdAt: new Date().toISOString()
+      };
+
+      const itemLines = payload.items.map((item, index) =>
+        `${index + 1}. ${item.name} x ${item.qty} - ${formatPrice(item.amount)}`
+      ).join('\n');
+
+      const whatsappMessage =
+`Hello The Cake Rhythm,
+
+New Order Received
+
+Order ID: ${payload.orderId}
+Customer Name: ${payload.customerName}
+Customer Mobile: ${payload.customerPhone}
+Address: ${payload.address}
+Occasion: ${payload.occasion}
+Delivery Date: ${payload.deliveryDate}
+Notes: ${payload.notes}
+
+Order Items:
+${itemLines}
+
+Total: ${formatPrice(payload.total)}`;
+
+      openWhatsApp(whatsappMessage);
+      const sheetResult = await sendToGoogleSheet(payload);
+      if (sheetResult.ok) showToast(`WhatsApp opened. ${payload.orderId} also saved to Google Sheet.`, 3600);
+      else showToast(`WhatsApp opened. ${payload.orderId} generated. Configure webhook to save in Google Sheet.`, 3800);
+    });
+
+    const backTop = document.getElementById('backTop');
+    backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    window.addEventListener('scroll', () => backTop.classList.toggle('show', window.scrollY > 600));
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    renderProducts();
+    updateCart();
+  </script>
+</body>
+</html>
