@@ -1,4 +1,4 @@
-<img width="1536" height="1024" alt="8c23842a-a2bc-4cd5-93e6-0a5065951860" src="https://github.com/user-attachments/assets/927bac83-d8c0-48fe-a350-07855768bf18" /># The Cake Rhythm — Project README
+# The Cake Rhythm — Project README
 
 This document captures the full build flow for **The Cake Rhythm** digital ordering and admin management system.
 
@@ -36,7 +36,7 @@ The final setup includes:
 ---
 # Architecture Diagram
 <img width="1536" height="1024" alt="8c23842a-a2bc-4cd5-93e6-0a5065951860" src="https://github.com/user-attachments/assets/dec61cc2-1374-47fb-b287-56b15802a401" />
----
+
 
 # 2. Prompt History and Results
 
