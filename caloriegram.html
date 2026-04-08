@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Caloriegram Voice Tracker</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Manrope:wght@200..800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              background: "#dbffe8",
+              "error-container": "#fb5151",
+              "surface-dim": "#98e4bb",
+              secondary: "#006946",
+              "tertiary-container": "#00dcfe",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-container": "#005e3e",
+              "inverse-on-surface": "#77a78c",
+              tertiary: "#006575",
+              "on-tertiary-fixed-variant": "#005361",
+              "on-tertiary-container": "#004956",
+              "inverse-surface": "#001208",
+              "surface-tint": "#006a34",
+              "on-surface": "#013622",
+              "surface-container-high": "#aef1cc",
+              "surface-container-low": "#c4fedc",
+              "on-error-container": "#570008",
+              "secondary-container": "#73fbbc",
+              "tertiary-fixed": "#00dcfe",
+              "on-primary": "#cdffd4",
+              "secondary-fixed-dim": "#64ecaf",
+              "primary-fixed": "#6dfe9c",
+              "primary-container": "#6dfe9c",
+              "on-background": "#013622",
+              surface: "#dbffe8",
+              "on-secondary-fixed": "#00492f",
+              "on-secondary": "#c9ffdf",
+              "on-error": "#ffefee",
+              "primary-dim": "#005c2c",
+              "outline-variant": "#87b89c",
+              "surface-bright": "#dbffe8",
+              "surface-variant": "#a5ecc5",
+              "tertiary-dim": "#005867",
+              error: "#b31b25",
+              "surface-container-highest": "#a5ecc5",
+              primary: "#006a34",
+              "on-secondary-fixed-variant": "#006946",
+              "on-surface-variant": "#36654d",
+              "secondary-fixed": "#73fbbc",
+              "tertiary-fixed-dim": "#00cded",
+              "inverse-primary": "#6dfe9c",
+              "on-primary-container": "#005f2e",
+              "on-primary-fixed": "#004a22",
+              "surface-container": "#b8f6d2",
+              outline: "#518167",
+              "primary-fixed-dim": "#5def8f",
+              "on-primary-fixed-variant": "#006a34",
+              "secondary-dim": "#005c3c",
+              "error-dim": "#9f0519",
+              "on-tertiary-fixed": "#00333d",
+              "on-tertiary": "#ddf7ff"
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px"
+            },
+            fontFamily: {
+              headline: ["Space Grotesk"],
+              body: ["Manrope"],
+              label: ["Manrope"]
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+
+      .orb-glow {
+        box-shadow: 0 0 50px rgba(0, 220, 254, 0.4);
+      }
+
+      .tap-pulse:active {
+        transform: scale(0.92);
+      }
+
+      .is-recording {
+        animation: breathe 1.25s ease-in-out infinite;
+        box-shadow: 0 0 0 14px rgba(0, 220, 254, 0.16), 0 0 70px rgba(0, 220, 254, 0.6);
+      }
+
+      .is-processing {
+        box-shadow: 0 0 0 10px rgba(0, 106, 52, 0.12), 0 0 60px rgba(0, 106, 52, 0.3);
+      }
+
+      .mic-core {
+        position: relative;
+        z-index: 2;
+        transition: transform 220ms ease, opacity 220ms ease;
+      }
+
+      .processing-ring {
+        position: absolute;
+        inset: 14px;
+        border-radius: 9999px;
+        border: 1.5px solid rgba(255, 255, 255, 0.16);
+        opacity: 0;
+        transform: scale(0.92);
+        transition: opacity 220ms ease, transform 220ms ease;
+      }
+
+      .processing-ring::before,
+      .processing-ring::after {
+        content: "";
+        position: absolute;
+        inset: -1.5px;
+        border-radius: inherit;
+      }
+
+      .processing-ring::before {
+        background: conic-gradient(
+          from 0deg,
+          rgba(255, 255, 255, 0) 0deg,
+          rgba(255, 255, 255, 0.16) 110deg,
+          rgba(255, 255, 255, 0) 200deg,
+          rgba(255, 255, 255, 0) 360deg
+        );
+        -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+        mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+      }
+
+      .processing-ring::after {
+        background: conic-gradient(
+          from 180deg,
+          rgba(255, 255, 255, 0) 0deg,
+          rgba(109, 254, 156, 0.75) 42deg,
+          rgba(0, 220, 254, 0.95) 88deg,
+          rgba(255, 255, 255, 0) 150deg,
+          rgba(255, 255, 255, 0) 360deg
+        );
+        -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+        mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+      }
+
+      .processing-bars {
+        position: absolute;
+        left: 50%;
+        bottom: 2.55rem;
+        z-index: 2;
+        display: flex;
+        align-items: flex-end;
+        gap: 0.35rem;
+        opacity: 0;
+        transform: translateX(-50%) translateY(6px);
+        transition: opacity 220ms ease, transform 220ms ease;
+        pointer-events: none;
+      }
+
+      .processing-bar {
+        width: 0.38rem;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+        transform-origin: center bottom;
+      }
+
+      .processing-bar:nth-child(1) {
+        height: 0.9rem;
+        animation-delay: 0ms;
+      }
+
+      .processing-bar:nth-child(2) {
+        height: 1.35rem;
+        animation-delay: 120ms;
+      }
+
+      .processing-bar:nth-child(3) {
+        height: 1.7rem;
+        animation-delay: 240ms;
+      }
+
+      .processing-bar:nth-child(4) {
+        height: 1.2rem;
+        animation-delay: 360ms;
+      }
+
+      .is-processing .mic-core {
+        transform: translateY(-0.45rem);
+      }
+
+      .is-processing .processing-ring {
+        opacity: 1;
+        transform: scale(1);
+        animation: orbitSweep 2.2s linear infinite;
+      }
+
+      .is-processing .processing-bars {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .is-processing .processing-bar {
+        animation: equalizerPulse 1s ease-in-out infinite;
+      }
+
+      .status-dot {
+        animation: blink 1.1s ease-in-out infinite;
+      }
+
+      .accordion-panel {
+        overflow: hidden;
+        opacity: 1;
+        max-height: 1200px;
+        transition: max-height 280ms ease, opacity 220ms ease, margin-top 220ms ease;
+        will-change: max-height, opacity;
+      }
+
+      .accordion-panel.is-collapsed {
+        opacity: 0;
+        max-height: 0;
+        margin-top: 0 !important;
+        pointer-events: none;
+      }
+
+      .spoken-highlight {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .spoken-highlight::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        border: 1.5px solid rgba(0, 220, 254, 0);
+        box-shadow: 0 0 0 rgba(0, 220, 254, 0);
+        transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+        pointer-events: none;
+      }
+
+      .spoken-highlight::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -45%;
+        width: 42%;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.12) 35%,
+          rgba(255, 255, 255, 0.45) 50%,
+          rgba(255, 255, 255, 0.12) 65%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: skewX(-18deg);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .spoken-highlight.is-speaking::after {
+        border-color: rgba(0, 220, 254, 0.95);
+        box-shadow: 0 0 0 2px rgba(0, 220, 254, 0.16), 0 0 28px rgba(0, 220, 254, 0.45);
+      }
+
+      .spoken-highlight.is-speaking {
+        background: rgba(0, 220, 254, 0.08) !important;
+      }
+
+      .spoken-highlight.is-spoken::after {
+        border-color: rgba(0, 220, 254, 0.38);
+        box-shadow: 0 0 0 1px rgba(0, 220, 254, 0.08), 0 0 14px rgba(0, 220, 254, 0.16);
+      }
+
+      .spoken-highlight.is-speaking::before {
+        opacity: 1;
+        animation: shimmerPass 1.2s ease-in-out infinite;
+      }
+
+      .summary-line {
+        opacity: 0.35;
+        transition: opacity 180ms ease, color 180ms ease;
+      }
+
+      .summary-line.is-speaking {
+        opacity: 1;
+        color: #013622;
+      }
+
+      .summary-line.is-spoken {
+        opacity: 0.82;
+      }
+
+      @keyframes breathe {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.04);
+        }
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.2;
+        }
+      }
+
+      @keyframes orbitSweep {
+        0% {
+          transform: scale(1) rotate(0deg);
+        }
+        100% {
+          transform: scale(1) rotate(360deg);
+        }
+      }
+
+      @keyframes shimmerPass {
+        0% {
+          left: -45%;
+        }
+        100% {
+          left: 120%;
+        }
+      }
+
+      @keyframes equalizerPulse {
+        0%,
+        100% {
+          transform: scaleY(0.5);
+          opacity: 0.42;
+        }
+        50% {
+          transform: scaleY(1.22);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-background font-body text-on-surface min-h-screen flex flex-col">
+    <header class="w-full top-0 sticky bg-[#dbffe8] backdrop-blur-xl z-50">
+      <div class="flex justify-between items-center px-6 py-4 w-full">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-700 to-tertiary flex items-center justify-center shadow-sm">
+            <span class="font-headline text-lg font-extrabold text-white tracking-tight">Z</span>
+          </div>
+          <div>
+            <h1 class="font-headline font-bold text-xl text-emerald-900 tracking-tighter">ZombAI-Caloriegram</h1>
+            <p class="text-xs text-on-surface-variant">Voice meal capture</p>
+          </div>
+        </div>
+        <button class="text-emerald-900 hover:opacity-80 transition-opacity p-2" id="openSettingsButton" title="Open settings">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="flex-1 flex flex-col px-6 pb-32 min-h-0">
+      <section class="mt-4 md:mt-6 bg-surface-container-lowest/80 rounded-2xl p-3 md:p-4 shadow-sm border border-white/50">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.16em] md:tracking-[0.25em] text-primary">Voice Nutrition Flow</p>
+            <p class="text-xs md:text-sm leading-5 md:leading-6 text-on-surface-variant mt-1">
+              Hold the orb, describe your meal, and Caloriegram will transcribe, estimate, and speak back the results.
+            </p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <span id="keyStatusBadge" class="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.14em] md:tracking-widest bg-surface-container px-2.5 md:px-3 py-1 rounded-full text-primary">
+              Key required
+            </span>
+            <button id="inlineSettingsButton" class="text-[10px] md:text-xs font-bold uppercase tracking-[0.14em] md:tracking-[0.2em] text-on-surface-variant hover:text-primary">
+              Settings
+            </button>
+          </div>
+        </div>
+        <p id="statusText" class="mt-2 md:mt-4 text-xs md:text-sm leading-5 md:leading-6 text-on-surface-variant">Ready when you are. Add your OpenAI key in Settings, then press and hold the orb to record.</p>
+      </section>
+
+      <section class="mt-5 md:mt-8 flex flex-col items-center justify-center min-h-[72px] md:min-h-[96px] text-center">
+        <div class="max-w-xs">
+          <p id="transcriptPreview" class="text-on-surface-variant/60 font-headline text-lg italic min-h-[3.5rem]">
+            "Tell me what you ate and I will estimate the calories and macros."
+          </p>
+          <div class="h-[2px] w-12 bg-tertiary-fixed-dim/30 mx-auto mt-4 rounded-full"></div>
+        </div>
+      </section>
+
+      <section id="voiceSection" class="flex-1 flex flex-col items-center justify-center py-4 md:py-8 min-h-[48svh] md:min-h-[28rem]">
+        <div class="relative group flex flex-col items-center">
+          <div class="absolute inset-0 rounded-full bg-tertiary-container/20 scale-150 blur-2xl"></div>
+          <button
+            id="recordButton"
+            class="relative w-48 h-48 rounded-full bg-gradient-to-tr from-tertiary to-tertiary-container orb-glow flex items-center justify-center tap-pulse transition-all duration-300 select-none touch-none"
+            aria-label="Hold to record your meal"
+          >
+            <div class="processing-ring" aria-hidden="true"></div>
+            <span id="recordIcon" class="mic-core material-symbols-outlined text-white text-6xl" style="font-variation-settings: 'FILL' 1">mic</span>
+            <div class="processing-bars" aria-hidden="true">
+              <span class="processing-bar"></span>
+              <span class="processing-bar"></span>
+              <span class="processing-bar"></span>
+              <span class="processing-bar"></span>
+            </div>
+          </button>
+          <div class="mt-8 text-center">
+            <span id="recordLabel" class="font-headline font-bold text-sm tracking-[0.2em] text-tertiary uppercase">Hold to Speak</span>
+            <div class="mt-3 flex items-center justify-center gap-2 text-xs text-on-surface-variant">
+              <span id="recordingDot" class="status-dot hidden h-2.5 w-2.5 rounded-full bg-error"></span>
+              <span id="recordingHint">Press and hold, then release to analyze</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="insightSection" class="mt-4">
+        <button
+          id="insightToggleButton"
+          class="w-full rounded-2xl bg-surface-container-lowest/90 border border-white/60 px-4 py-4 shadow-sm text-left"
+          aria-expanded="false"
+          aria-controls="insightContent"
+        >
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[0.25em] text-primary">Voice Nutrition</p>
+              <h2 class="mt-1 font-headline text-2xl font-bold text-on-surface">Last Insight</h2>
+              <p id="mealTitle" class="mt-1 text-on-surface-variant text-sm font-medium">No meal analyzed yet</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="px-3 py-1 bg-surface-container-highest rounded-full text-[10px] font-bold uppercase tracking-widest text-primary">Live Data</span>
+              <span id="insightChevron" class="material-symbols-outlined text-on-surface-variant transition-transform duration-200">expand_more</span>
+            </div>
+          </div>
+        </button>
+
+        <div id="insightContent" class="accordion-panel hidden md:grid mt-4 grid-cols-2 gap-4">
+          <div class="col-span-2 bg-surface-container-low rounded-xl p-6 flex items-center justify-between overflow-hidden relative">
+            <div class="z-10">
+              <p class="font-headline text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Total Energy</p>
+              <h3 class="font-headline text-5xl font-extrabold text-on-surface mt-1">
+                <span id="totalCalories">0</span>
+                <span class="text-lg font-medium text-on-surface-variant/60">kcal</span>
+              </h3>
+            </div>
+            <div class="absolute -right-4 -bottom-4 opacity-10">
+              <span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1">bolt</span>
+            </div>
+          </div>
+
+          <div class="bg-surface-container-lowest rounded-xl p-4 flex flex-col gap-3 shadow-sm">
+            <div class="flex items-center gap-2 text-tertiary">
+              <span class="material-symbols-outlined text-xl">egg</span>
+              <span class="text-[10px] font-bold uppercase tracking-tighter">Protein</span>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span id="proteinValue" class="font-headline text-2xl font-bold">0.0</span>
+              <span class="text-xs font-medium text-on-surface-variant">g</span>
+            </div>
+            <div class="w-full bg-surface-container h-1 rounded-full overflow-hidden">
+              <div id="proteinBar" class="bg-tertiary h-full w-[0%]"></div>
+            </div>
+          </div>
+
+          <div class="bg-surface-container-lowest rounded-xl p-4 flex flex-col gap-3 shadow-sm">
+            <div class="flex items-center gap-2 text-primary">
+              <span class="material-symbols-outlined text-xl">grass</span>
+              <span class="text-[10px] font-bold uppercase tracking-tighter">Carbs</span>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span id="carbsValue" class="font-headline text-2xl font-bold">0.0</span>
+              <span class="text-xs font-medium text-on-surface-variant">g</span>
+            </div>
+            <div class="w-full bg-surface-container h-1 rounded-full overflow-hidden">
+              <div id="carbsBar" class="bg-primary h-full w-[0%]"></div>
+            </div>
+          </div>
+
+          <div class="col-span-2 bg-surface-container-highest/40 backdrop-blur-md rounded-xl p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+                <span class="material-symbols-outlined">opacity</span>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest leading-none">Healthy Fats</p>
+                <p class="font-headline text-xl font-bold text-on-surface mt-0.5"><span id="fatValue">0.0</span>g</p>
+              </div>
+            </div>
+            <span class="material-symbols-outlined text-secondary opacity-40">trending_up</span>
+          </div>
+        </div>
+
+        <div class="mt-4 bg-surface-container-lowest rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="font-headline text-lg font-bold text-on-surface">Spoken Summary</h3>
+            <button id="clearButton" class="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant">Clear</button>
+          </div>
+          <p id="summaryText" class="mt-3 text-sm leading-6 text-on-surface-variant">
+            Your summary will appear here after each recording.
+          </p>
+        </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 w-full flex justify-center items-end gap-12 pb-6 px-4 bg-[#dbffe8]/80 backdrop-blur-2xl z-50 rounded-t-[2rem] shadow-[0_-10px_40px_rgba(1,54,34,0.06)]">
+      <button id="homeTabButton" class="flex flex-col items-center justify-center text-emerald-900/50 p-2 hover:text-emerald-600 transition-all">
+        <span class="material-symbols-outlined">home</span>
+        <span class="font-body text-[10px] font-semibold uppercase tracking-widest mt-1">Home</span>
+      </button>
+      <button id="historyTabButton" class="flex flex-col items-center justify-center text-emerald-900/50 p-2 hover:text-emerald-600 transition-all">
+        <span class="material-symbols-outlined">history</span>
+        <span class="font-body text-[10px] font-semibold uppercase tracking-widest mt-1">History</span>
+      </button>
+    </nav>
+
+    <div id="settingsPopover" class="fixed inset-0 z-[60] hidden">
+      <div id="settingsBackdrop" class="absolute inset-0 bg-[#013622]/20 backdrop-blur-sm"></div>
+      <div class="absolute inset-x-0 top-20 mx-auto w-[calc(100%-2rem)] max-w-md rounded-[1.5rem] bg-surface-container-lowest border border-white/60 shadow-[0_20px_60px_rgba(1,54,34,0.18)]">
+        <div class="flex items-start justify-between gap-4 px-5 pt-5">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.25em] text-primary">Settings</p>
+            <h2 class="mt-1 font-headline text-2xl font-bold text-on-surface">OpenAI Connection</h2>
+            <p class="mt-2 text-sm leading-6 text-on-surface-variant">
+              Paste your OpenAI API key here. It will stay only in this browser using local storage.
+            </p>
+          </div>
+          <button id="closeSettingsButton" class="rounded-full p-2 text-on-surface-variant hover:bg-surface-container">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="px-5 pb-5 pt-4">
+          <label class="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant" for="apiKeyInput">OpenAI API key</label>
+          <input
+            id="apiKeyInput"
+            type="password"
+            placeholder="sk-..."
+            class="mt-3 w-full rounded-xl border-0 bg-surface-container-low px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary"
+            autocomplete="off"
+          />
+
+          <div class="mt-4 flex gap-2">
+            <button id="saveKeyButton" class="flex-1 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-on-primary shadow-sm">
+              Save key
+            </button>
+            <button id="clearKeyButton" class="rounded-xl bg-surface-container px-4 py-3 text-sm font-bold text-on-surface">
+              Clear
+            </button>
+          </div>
+
+          <div class="mt-4">
+            <label class="text-xs font-semibold uppercase tracking-[0.2em] text-on-surface-variant" for="voiceSelect">Playback voice</label>
+            <select
+              id="voiceSelect"
+              class="mt-3 w-full rounded-xl border-0 bg-surface-container-low px-4 py-3 text-sm text-on-surface focus:ring-2 focus:ring-primary"
+            >
+              <option value="marin">Marin</option>
+              <option value="cedar">Cedar</option>
+              <option value="coral">Coral</option>
+              <option value="alloy">Alloy</option>
+            </select>
+            <p class="mt-2 text-xs leading-5 text-on-surface-variant">
+              Spoken summaries use an AI-generated OpenAI voice for more natural playback.
+            </p>
+          </div>
+
+          <div class="mt-4 flex items-center justify-between rounded-xl bg-surface-container-low px-4 py-3">
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Connection status</p>
+              <p id="settingsHelpText" class="mt-1 text-sm text-on-surface">No key saved yet.</p>
+            </div>
+            <button class="text-emerald-900 hover:opacity-80 transition-opacity p-2" id="speakResultButton" title="Replay summary">
+              <span class="material-symbols-outlined">volume_up</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="playbackInsightPopover" class="fixed inset-0 z-[65] hidden">
+      <div id="playbackInsightBackdrop" class="absolute inset-0 bg-[#013622]/22 backdrop-blur-md"></div>
+      <div class="absolute inset-x-0 top-24 mx-auto w-[calc(100%-2rem)] max-w-md rounded-[1.75rem] bg-surface-container-lowest border border-white/60 shadow-[0_20px_60px_rgba(1,54,34,0.2)]">
+        <div class="flex items-start justify-between gap-4 px-5 pt-5">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.25em] text-primary">Voice Nutrition</p>
+            <h2 class="mt-1 font-headline text-2xl font-bold text-on-surface">Last Insight</h2>
+            <p id="playbackMealTitle" class="mt-1 text-sm text-on-surface-variant">No meal selected</p>
+          </div>
+          <button id="closePlaybackInsightButton" class="rounded-full p-2 text-on-surface-variant hover:bg-surface-container">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="px-5 pb-5 pt-4">
+          <div id="playbackCaloriesCard" class="spoken-highlight rounded-2xl bg-surface-container-low p-5 relative overflow-hidden">
+            <div>
+              <p class="font-headline text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Total Energy</p>
+              <h3 class="mt-1 font-headline text-5xl font-extrabold text-on-surface">
+                <span id="playbackCalories">0</span>
+                <span class="text-lg font-medium text-on-surface-variant/60">kcal</span>
+              </h3>
+            </div>
+            <div class="absolute -right-4 -bottom-4 opacity-10">
+              <span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1">bolt</span>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div id="playbackProteinCard" class="spoken-highlight rounded-xl bg-surface-container-low px-4 py-3">
+              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">Protein</p>
+              <p id="playbackProtein" class="mt-1 font-headline text-lg font-bold text-on-surface">0.0g</p>
+            </div>
+            <div id="playbackCarbsCard" class="spoken-highlight rounded-xl bg-surface-container-low px-4 py-3">
+              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">Carbs</p>
+              <p id="playbackCarbs" class="mt-1 font-headline text-lg font-bold text-on-surface">0.0g</p>
+            </div>
+            <div id="playbackFiberCard" class="spoken-highlight rounded-xl bg-surface-container-low px-4 py-3">
+              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">Fibre</p>
+              <p id="playbackFiber" class="mt-1 font-headline text-lg font-bold text-on-surface">0.0g</p>
+            </div>
+            <div id="playbackFatCard" class="spoken-highlight rounded-xl bg-surface-container-low px-4 py-3">
+              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">Fat</p>
+              <p id="playbackFat" class="mt-1 font-headline text-lg font-bold text-on-surface">0.0g</p>
+            </div>
+          </div>
+
+          <div id="playbackSummaryCard" class="spoken-highlight mt-4 rounded-2xl bg-surface-container-low px-4 py-4">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant">Speaking now</p>
+              <span class="rounded-full bg-secondary-container px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-on-secondary-container">Live audio</span>
+            </div>
+            <p id="playbackSummary" class="mt-3 text-sm leading-6 text-on-surface-variant">
+              Spoken summary will appear here.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const OPENAI_KEY_STORAGE = "caloriegram_openai_api_key";
+      const VOICE_STORAGE = "caloriegram_openai_voice";
+      const HISTORY_STORAGE = "caloriegram_meal_history";
+      const TRANSCRIBE_URL = "https://api.openai.com/v1/audio/transcriptions";
+      const RESPONSES_URL = "https://api.openai.com/v1/responses";
+      const SPEECH_URL = "https://api.openai.com/v1/audio/speech";
+
+      const elements = {
+        apiKeyInput: document.getElementById("apiKeyInput"),
+        voiceSelect: document.getElementById("voiceSelect"),
+        saveKeyButton: document.getElementById("saveKeyButton"),
+        clearKeyButton: document.getElementById("clearKeyButton"),
+        statusText: document.getElementById("statusText"),
+        keyStatusBadge: document.getElementById("keyStatusBadge"),
+        settingsHelpText: document.getElementById("settingsHelpText"),
+        transcriptPreview: document.getElementById("transcriptPreview"),
+        recordButton: document.getElementById("recordButton"),
+        recordIcon: document.getElementById("recordIcon"),
+        recordLabel: document.getElementById("recordLabel"),
+        recordingDot: document.getElementById("recordingDot"),
+        recordingHint: document.getElementById("recordingHint"),
+        mealTitle: document.getElementById("mealTitle"),
+        totalCalories: document.getElementById("totalCalories"),
+        proteinValue: document.getElementById("proteinValue"),
+        carbsValue: document.getElementById("carbsValue"),
+        fatValue: document.getElementById("fatValue"),
+        proteinBar: document.getElementById("proteinBar"),
+        carbsBar: document.getElementById("carbsBar"),
+        summaryText: document.getElementById("summaryText"),
+        clearButton: document.getElementById("clearButton"),
+        speakResultButton: document.getElementById("speakResultButton"),
+        historyList: null,
+        historyContent: null,
+        historyToggleButton: null,
+        historyChevron: null,
+        homeTabButton: document.getElementById("homeTabButton"),
+        historyTabButton: document.getElementById("historyTabButton"),
+        openSettingsButton: document.getElementById("openSettingsButton"),
+        inlineSettingsButton: document.getElementById("inlineSettingsButton"),
+        closeSettingsButton: document.getElementById("closeSettingsButton"),
+        settingsPopover: document.getElementById("settingsPopover"),
+        settingsBackdrop: document.getElementById("settingsBackdrop"),
+        playbackInsightPopover: document.getElementById("playbackInsightPopover"),
+        playbackInsightBackdrop: document.getElementById("playbackInsightBackdrop"),
+        closePlaybackInsightButton: document.getElementById("closePlaybackInsightButton"),
+        playbackMealTitle: document.getElementById("playbackMealTitle"),
+        playbackCalories: document.getElementById("playbackCalories"),
+        playbackProtein: document.getElementById("playbackProtein"),
+        playbackCarbs: document.getElementById("playbackCarbs"),
+        playbackFiber: document.getElementById("playbackFiber"),
+        playbackFat: document.getElementById("playbackFat"),
+        playbackSummary: document.getElementById("playbackSummary"),
+        playbackCaloriesCard: document.getElementById("playbackCaloriesCard"),
+        playbackProteinCard: document.getElementById("playbackProteinCard"),
+        playbackCarbsCard: document.getElementById("playbackCarbsCard"),
+        playbackFiberCard: document.getElementById("playbackFiberCard"),
+        playbackFatCard: document.getElementById("playbackFatCard"),
+        playbackSummaryCard: document.getElementById("playbackSummaryCard"),
+        insightContent: document.getElementById("insightContent"),
+        insightToggleButton: document.getElementById("insightToggleButton"),
+        insightChevron: document.getElementById("insightChevron")
+      };
+
+      const defaultMeal = {
+        meal_name: "No meal analyzed yet",
+        transcript: "",
+        total_calories: 0,
+        protein_g: 0,
+        carbs_g: 0,
+        fiber_g: 0,
+        fat_g: 0,
+        summary: "Your summary will appear here after each recording."
+      };
+
+      let mediaRecorder = null;
+      let mediaStream = null;
+      let audioChunks = [];
+      let isRecording = false;
+      let analysisState = { ...defaultMeal };
+      let mealHistory = [];
+      let activePointerId = null;
+      let currentAudio = null;
+      let isProcessing = false;
+      let speechHighlightTimers = [];
+      let speechSequenceDuration = 0;
+      let panelState = {
+        insightOpen: true,
+        historyOpen: false
+      };
+
+      injectHistorySection();
+      hydrateSavedKey();
+      hydrateHistory();
+      analysisState = mealHistory[0] ? { ...mealHistory[0] } : { ...defaultMeal };
+      renderAnalysis(analysisState);
+      initializePanels();
+      renderHistory();
+
+      elements.saveKeyButton.addEventListener("click", saveApiKey);
+      elements.clearKeyButton.addEventListener("click", clearApiKey);
+      elements.clearButton.addEventListener("click", clearMeal);
+      elements.speakResultButton.addEventListener("click", () => speakMealAnalysis(analysisState));
+      elements.openSettingsButton.addEventListener("click", openSettings);
+      elements.inlineSettingsButton.addEventListener("click", openSettings);
+      elements.closeSettingsButton.addEventListener("click", closeSettings);
+      elements.settingsBackdrop.addEventListener("click", closeSettings);
+      elements.closePlaybackInsightButton.addEventListener("click", closePlaybackInsight);
+      elements.playbackInsightBackdrop.addEventListener("click", closePlaybackInsight);
+      elements.insightToggleButton.addEventListener("click", () => togglePanel("insight"));
+      elements.homeTabButton.addEventListener("click", scrollToVoiceSection);
+      elements.historyTabButton.addEventListener("click", scrollToHistorySection);
+      elements.recordButton.addEventListener("pointerdown", handlePointerDown);
+      elements.recordButton.addEventListener("pointerup", handlePointerUp);
+      elements.recordButton.addEventListener("pointerleave", handlePointerLeave);
+      elements.recordButton.addEventListener("pointercancel", handlePointerCancel);
+      elements.recordButton.addEventListener("contextmenu", (event) => event.preventDefault());
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeSettings();
+      });
+      window.addEventListener("resize", syncPanelsForViewport);
+
+      function hydrateSavedKey() {
+        const saved = localStorage.getItem(OPENAI_KEY_STORAGE) || "";
+        const savedVoice = localStorage.getItem(VOICE_STORAGE) || "marin";
+        elements.apiKeyInput.value = saved;
+        elements.voiceSelect.value = savedVoice;
+        updateKeyUi(saved);
+      }
+
+      function saveApiKey() {
+        const key = elements.apiKeyInput.value.trim();
+        const voice = elements.voiceSelect.value;
+        if (!key) {
+          clearApiKey();
+          return;
+        }
+        localStorage.setItem(OPENAI_KEY_STORAGE, key);
+        localStorage.setItem(VOICE_STORAGE, voice);
+        updateKeyUi(key);
+        setStatus("API key saved in this browser.");
+        closeSettings();
+      }
+
+      function clearApiKey() {
+        localStorage.removeItem(OPENAI_KEY_STORAGE);
+        elements.apiKeyInput.value = "";
+        updateKeyUi("");
+        setStatus("API key cleared.");
+      }
+
+      function updateKeyUi(key) {
+        const hasKey = Boolean((key || "").trim());
+        elements.keyStatusBadge.textContent = hasKey ? "Key saved" : "Key required";
+        elements.keyStatusBadge.className = hasKey
+          ? "text-[10px] font-bold uppercase tracking-widest bg-secondary-container px-3 py-1 rounded-full text-on-secondary-container"
+          : "text-[10px] font-bold uppercase tracking-widest bg-surface-container px-3 py-1 rounded-full text-primary";
+        elements.settingsHelpText.textContent = hasKey
+          ? "API key saved locally in this browser."
+          : "No key saved yet.";
+      }
+
+      function openSettings() {
+        elements.settingsPopover.classList.remove("hidden");
+        requestAnimationFrame(() => elements.apiKeyInput.focus());
+      }
+
+      function closeSettings() {
+        elements.settingsPopover.classList.add("hidden");
+      }
+
+      function openPlaybackInsight(analysis) {
+        if (!analysis) return;
+        elements.playbackMealTitle.textContent = analysis.meal_name || "Meal insight";
+        elements.playbackCalories.textContent = Math.round(analysis.total_calories || 0).toString();
+        elements.playbackProtein.textContent = `${formatNumber(analysis.protein_g)}g`;
+        elements.playbackCarbs.textContent = `${formatNumber(analysis.carbs_g)}g`;
+        elements.playbackFiber.textContent = `${formatNumber(analysis.fiber_g)}g`;
+        elements.playbackFat.textContent = `${formatNumber(analysis.fat_g)}g`;
+        renderPlaybackSummaryLines(analysis);
+        elements.playbackInsightPopover.classList.remove("hidden");
+      }
+
+      function closePlaybackInsight() {
+        elements.playbackInsightPopover.classList.add("hidden");
+        clearSpeechHighlights();
+      }
+
+      function getApiKey() {
+        return (elements.apiKeyInput.value || localStorage.getItem(OPENAI_KEY_STORAGE) || "").trim();
+      }
+
+      function handlePointerDown(event) {
+        if (isRecording) return;
+        stopAudioPlayback();
+        setProcessingUi(false);
+        activePointerId = event.pointerId;
+        elements.recordButton.setPointerCapture?.(event.pointerId);
+        startRecording().catch((error) => {
+          console.error(error);
+          setStatus(error.message || "Could not start recording.", true);
+          setRecordingUi(false);
+        });
+      }
+
+      function handlePointerUp(event) {
+        if (event.pointerId !== activePointerId) return;
+        stopRecordingAndAnalyze();
+      }
+
+      function handlePointerLeave(event) {
+        if (!isRecording || event.pointerId !== activePointerId) return;
+        if (event.buttons === 0) stopRecordingAndAnalyze();
+      }
+
+      function handlePointerCancel(event) {
+        if (event.pointerId !== activePointerId) return;
+        stopRecordingAndAnalyze();
+      }
+
+      async function startRecording() {
+        const apiKey = getApiKey();
+        if (!apiKey) {
+          throw new Error("Add your OpenAI API key first.");
+        }
+
+        if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+          throw new Error("This browser does not support audio recording.");
+        }
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(mediaStream, pickRecorderOptions());
+        mediaRecorder.addEventListener("dataavailable", (event) => {
+          if (event.data && event.data.size > 0) audioChunks.push(event.data);
+        });
+        mediaRecorder.start();
+        isRecording = true;
+        setRecordingUi(true);
+        setStatus("Listening... release when you finish describing the meal.");
+      }
+
+      function pickRecorderOptions() {
+        const preferredTypes = [
+          "audio/webm;codecs=opus",
+          "audio/webm",
+          "audio/mp4",
+          "audio/ogg;codecs=opus"
+        ];
+
+        for (const mimeType of preferredTypes) {
+          if (MediaRecorder.isTypeSupported(mimeType)) {
+            return { mimeType };
+          }
+        }
+        return {};
+      }
+
+      async function stopRecordingAndAnalyze() {
+        if (!mediaRecorder || !isRecording) return;
+
+        isRecording = false;
+        setRecordingUi(false);
+        setProcessingUi(true);
+        setStatus("Uploading audio and analyzing nutrition...");
+
+        const stoppedBlob = await new Promise((resolve) => {
+          mediaRecorder.addEventListener(
+            "stop",
+            () => {
+              const mimeType = mediaRecorder.mimeType || "audio/webm";
+              resolve(new Blob(audioChunks, { type: mimeType }));
+            },
+            { once: true }
+          );
+          mediaRecorder.stop();
+        });
+
+        mediaStream?.getTracks().forEach((track) => track.stop());
+        mediaStream = null;
+        mediaRecorder = null;
+        activePointerId = null;
+
+        try {
+          const transcript = await transcribeAudio(stoppedBlob);
+          elements.transcriptPreview.textContent = `"${transcript}"`;
+          setStatus("Estimating calories and macros...");
+
+          const analysis = await analyzeMeal(transcript);
+          analysisState = analysis;
+          saveMealToHistory(analysis);
+          renderAnalysis(analysis);
+          renderHistory();
+          setStatus("Analysis complete. Summary spoken aloud.");
+          speakMealAnalysis(analysis);
+        } catch (error) {
+          console.error(error);
+          setProcessingUi(false);
+          setStatus(error.message || "Something went wrong during analysis.", true);
+        }
+      }
+
+      async function transcribeAudio(blob) {
+        const apiKey = getApiKey();
+        const formData = new FormData();
+        const extension = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
+        formData.append("file", new File([blob], `meal-note.${extension}`, { type: blob.type || "audio/webm" }));
+        formData.append("model", "gpt-4o-mini-transcribe");
+        formData.append("language", "en");
+        formData.append("response_format", "json");
+
+        const response = await fetch(TRANSCRIBE_URL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw await buildApiError(response, "Speech transcription failed.");
+        }
+
+        const data = await response.json();
+        if (!data.text) {
+          throw new Error("No transcript was returned by OpenAI.");
+        }
+
+        return data.text.trim();
+      }
+
+      async function analyzeMeal(transcript) {
+        const apiKey = getApiKey();
+        const response = await fetch(RESPONSES_URL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            input: [
+              {
+                role: "system",
+                content: [
+                  {
+                    type: "input_text",
+                    text:
+                      "You are a nutrition assistant. Estimate calories and macros from a spoken meal description. Use common portion assumptions when quantities are vague. Return only the requested JSON schema. Keep the summary short, practical, and mention uncertainty when needed."
+                  }
+                ]
+              },
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "input_text",
+                    text: `Meal transcript: ${transcript}`
+                  }
+                ]
+              }
+            ],
+            text: {
+              format: {
+                type: "json_schema",
+                name: "meal_analysis",
+                strict: true,
+                schema: {
+                  type: "object",
+                  additionalProperties: false,
+                  properties: {
+                    meal_name: { type: "string" },
+                    transcript: { type: "string" },
+                    total_calories: { type: "number" },
+                    protein_g: { type: "number" },
+                    carbs_g: { type: "number" },
+                    fiber_g: { type: "number" },
+                    fat_g: { type: "number" },
+                    summary: { type: "string" }
+                  },
+                  required: [
+                    "meal_name",
+                    "transcript",
+                    "total_calories",
+                    "protein_g",
+                    "carbs_g",
+                    "fiber_g",
+                    "fat_g",
+                    "summary"
+                  ]
+                }
+              }
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw await buildApiError(response, "Meal analysis failed.");
+        }
+
+        const data = await response.json();
+        const raw = extractOutputText(data);
+        const parsed = JSON.parse(raw);
+
+        return {
+          meal_name: parsed.meal_name || "Meal",
+          transcript: parsed.transcript || transcript,
+          total_calories: Number(parsed.total_calories || 0),
+          protein_g: Number(parsed.protein_g || 0),
+          carbs_g: Number(parsed.carbs_g || 0),
+          fiber_g: Number(parsed.fiber_g || 0),
+          fat_g: Number(parsed.fat_g || 0),
+          summary: parsed.summary || "No summary returned."
+        };
+      }
+
+      function extractOutputText(responseJson) {
+        if (responseJson.output_text) return responseJson.output_text;
+
+        const output = responseJson.output || [];
+        for (const item of output) {
+          if (!item.content) continue;
+          for (const part of item.content) {
+            if (part.type === "output_text" && part.text) {
+              return part.text;
+            }
+          }
+        }
+
+        throw new Error("Could not read structured output from OpenAI.");
+      }
+
+      async function buildApiError(response, fallbackMessage) {
+        let detail = fallbackMessage;
+        try {
+          const data = await response.json();
+          detail = data.error?.message || fallbackMessage;
+        } catch {
+          detail = fallbackMessage;
+        }
+        return new Error(detail);
+      }
+
+      function renderAnalysis(analysis) {
+        elements.mealTitle.textContent = analysis.meal_name;
+        elements.totalCalories.textContent = Math.round(analysis.total_calories).toString();
+        elements.proteinValue.textContent = formatNumber(analysis.protein_g);
+        elements.carbsValue.textContent = formatNumber(analysis.carbs_g);
+        elements.fatValue.textContent = formatNumber(analysis.fat_g);
+        elements.summaryText.textContent = analysis.summary;
+        elements.transcriptPreview.textContent = analysis.transcript
+          ? `"${analysis.transcript}"`
+          : '"Tell me what you ate and I will estimate the calories and macros."';
+
+        const macroTotal = Math.max(analysis.protein_g + analysis.carbs_g + analysis.fat_g, 1);
+        elements.proteinBar.style.width = `${Math.min((analysis.protein_g / macroTotal) * 100, 100)}%`;
+        elements.carbsBar.style.width = `${Math.min((analysis.carbs_g / macroTotal) * 100, 100)}%`;
+      }
+
+      function clearMeal() {
+        stopAudioPlayback();
+        analysisState = { ...defaultMeal };
+        renderAnalysis(defaultMeal);
+        setStatus("Cleared. Press and hold the orb to record a new meal.");
+      }
+
+      function injectHistorySection() {
+        const insightSection = document.getElementById("insightSection");
+        if (!insightSection) return;
+
+        const historySection = document.createElement("section");
+        historySection.className = "mt-6";
+        historySection.innerHTML = `
+          <button
+            id="historyToggleButton"
+            class="w-full rounded-2xl bg-surface-container-lowest/90 border border-white/60 px-4 py-4 shadow-sm text-left"
+            aria-expanded="false"
+            aria-controls="historyContent"
+          >
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[0.25em] text-primary">Meal Cards</p>
+                <h2 class="mt-1 font-headline text-2xl font-bold text-on-surface">History</h2>
+                <p class="mt-1 text-on-surface-variant text-sm font-medium">Recent meal cards stored on this device</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 bg-surface-container-highest rounded-full text-[10px] font-bold uppercase tracking-widest text-primary">Local</span>
+                <span id="historyChevron" class="material-symbols-outlined text-on-surface-variant transition-transform duration-200">expand_more</span>
+              </div>
+            </div>
+          </button>
+          <div id="historyContent" class="accordion-panel hidden md:block mt-4">
+            <div id="historyList" class="grid gap-3 pb-4"></div>
+          </div>
+        `;
+
+        insightSection.insertAdjacentElement("afterend", historySection);
+        elements.historyList = document.getElementById("historyList");
+        elements.historyContent = document.getElementById("historyContent");
+        elements.historyToggleButton = document.getElementById("historyToggleButton");
+        elements.historyChevron = document.getElementById("historyChevron");
+        elements.historyToggleButton.addEventListener("click", () => togglePanel("history"));
+      }
+
+      function initializePanels() {
+        syncPanelsForViewport(true);
+      }
+
+      function syncPanelsForViewport(force = false) {
+        const mobile = window.matchMedia("(max-width: 767px)").matches;
+        if (mobile) {
+          panelState.insightOpen = false;
+          panelState.historyOpen = false;
+        } else {
+          panelState.insightOpen = true;
+          panelState.historyOpen = true;
+        }
+        renderPanels();
+      }
+
+      function togglePanel(panel) {
+        if (panel === "insight") {
+          panelState.insightOpen = !panelState.insightOpen;
+          if (window.matchMedia("(max-width: 767px)").matches && panelState.insightOpen) {
+            panelState.historyOpen = false;
+          }
+        } else if (panel === "history") {
+          panelState.historyOpen = !panelState.historyOpen;
+          if (window.matchMedia("(max-width: 767px)").matches && panelState.historyOpen) {
+            panelState.insightOpen = false;
+          }
+        }
+        renderPanels();
+      }
+
+      function renderPanels() {
+        if (elements.insightContent) {
+          setAccordionState(elements.insightContent, panelState.insightOpen, "grid");
+        }
+        if (elements.insightToggleButton) {
+          elements.insightToggleButton.setAttribute("aria-expanded", String(panelState.insightOpen));
+        }
+        if (elements.insightChevron) {
+          elements.insightChevron.style.transform = panelState.insightOpen ? "rotate(180deg)" : "rotate(0deg)";
+        }
+        if (elements.historyContent) {
+          setAccordionState(elements.historyContent, panelState.historyOpen, "block");
+        }
+        if (elements.historyToggleButton) {
+          elements.historyToggleButton.setAttribute("aria-expanded", String(panelState.historyOpen));
+        }
+        if (elements.historyChevron) {
+          elements.historyChevron.style.transform = panelState.historyOpen ? "rotate(180deg)" : "rotate(0deg)";
+        }
+      }
+
+      function setAccordionState(element, isOpen, displayMode) {
+        if (!element) return;
+
+        if (isOpen) {
+          element.classList.remove("hidden", "is-collapsed");
+          element.style.display = displayMode;
+          const targetHeight = element.scrollHeight;
+          element.style.maxHeight = `${targetHeight}px`;
+          element.style.opacity = "1";
+        } else {
+          element.style.maxHeight = `${element.scrollHeight}px`;
+          element.style.opacity = "1";
+          requestAnimationFrame(() => {
+            element.classList.add("is-collapsed");
+            element.style.maxHeight = "0px";
+            element.style.opacity = "0";
+          });
+        }
+      }
+
+      function hydrateHistory() {
+        try {
+          mealHistory = JSON.parse(localStorage.getItem(HISTORY_STORAGE) || "[]");
+          if (!Array.isArray(mealHistory)) mealHistory = [];
+        } catch {
+          mealHistory = [];
+        }
+      }
+
+      function saveMealToHistory(analysis) {
+        const entry = {
+          id: `${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          meal_name: analysis.meal_name,
+          transcript: analysis.transcript,
+          total_calories: analysis.total_calories,
+          protein_g: analysis.protein_g,
+          carbs_g: analysis.carbs_g,
+          fiber_g: analysis.fiber_g,
+          fat_g: analysis.fat_g,
+          summary: analysis.summary
+        };
+
+        mealHistory = [entry, ...mealHistory.filter((item) => item.transcript !== entry.transcript)].slice(0, 12);
+        localStorage.setItem(HISTORY_STORAGE, JSON.stringify(mealHistory));
+      }
+
+      function renderHistory() {
+        if (!elements.historyList) return;
+
+        if (!mealHistory.length) {
+          elements.historyList.innerHTML = `
+            <div class="rounded-2xl bg-surface-container-lowest p-4 shadow-sm text-sm text-on-surface-variant">
+              No meals in history yet. Analyze your first meal to create a card here.
+            </div>
+          `;
+          return;
+        }
+
+        elements.historyList.innerHTML = mealHistory
+          .map((entry) => {
+            const timestamp = formatHistoryTime(entry.createdAt);
+            return `
+              <button
+                class="w-full rounded-2xl bg-surface-container-lowest p-4 shadow-sm text-left transition-transform active:scale-[0.99]"
+                data-history-id="${entry.id}"
+              >
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <p class="font-headline text-xl font-bold text-on-surface">${escapeHtml(entry.meal_name)}</p>
+                    <p class="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant">${timestamp}</p>
+                  </div>
+                  <span class="rounded-full bg-surface-container px-3 py-1 text-[11px] font-bold text-primary">${Math.round(entry.total_calories || 0)} kcal</span>
+                </div>
+                <p class="mt-3 line-clamp-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(entry.summary)}</p>
+                <div class="mt-4 grid grid-cols-4 gap-2">
+                  ${renderHistoryPill("Protein", `${formatNumber(entry.protein_g)}g`)}
+                  ${renderHistoryPill("Carbs", `${formatNumber(entry.carbs_g)}g`)}
+                  ${renderHistoryPill("Fibre", `${formatNumber(entry.fiber_g)}g`)}
+                  ${renderHistoryPill("Fat", `${formatNumber(entry.fat_g)}g`)}
+                </div>
+              </button>
+            `;
+          })
+          .join("");
+
+        elements.historyList.querySelectorAll("[data-history-id]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const selected = mealHistory.find((item) => item.id === button.dataset.historyId);
+            if (!selected) return;
+            stopAudioPlayback();
+            setProcessingUi(true);
+            analysisState = { ...selected };
+            renderAnalysis(analysisState);
+            setStatus(`Loaded ${selected.meal_name} from history.`);
+            speakMealAnalysis(analysisState);
+          });
+        });
+      }
+
+      function renderHistoryPill(label, value) {
+        return `
+          <div class="rounded-xl bg-surface-container-low px-3 py-2">
+            <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">${label}</p>
+            <p class="mt-1 text-sm font-bold text-on-surface">${value}</p>
+          </div>
+        `;
+      }
+
+      function shouldSpeakAnalysis(analysis) {
+        if (!analysis) return false;
+
+        const mealName = String(analysis.meal_name || "").trim().toLowerCase();
+        const summary = String(analysis.summary || "").trim().toLowerCase();
+        const transcript = String(analysis.transcript || "").trim().toLowerCase();
+
+        if (!mealName || mealName === "no meal analyzed yet") {
+          return false;
+        }
+
+        return ![mealName, summary, transcript].some((value) => value.includes("unspecified meal"));
+      }
+
+      function speakMealAnalysis(analysis) {
+        if (!shouldSpeakAnalysis(analysis)) {
+          setProcessingUi(false);
+          setStatus("No spoken playback for unspecified meals.");
+          return;
+        }
+
+        speakSummary(buildSpokenNutritionSummary(analysis));
+      }
+
+      async function speakSummary(text) {
+        if (!text) {
+          setProcessingUi(false);
+          return;
+        }
+
+        const apiKey = getApiKey();
+        const selectedVoice = localStorage.getItem(VOICE_STORAGE) || elements.voiceSelect.value || "marin";
+
+        if (!apiKey) {
+          setProcessingUi(false);
+          fallbackSpeak(text);
+          return;
+        }
+
+        stopAudioPlayback();
+
+        try {
+          const response = await fetch(SPEECH_URL, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: "gpt-4o-mini-tts",
+              voice: selectedVoice,
+              input: text,
+              instructions: "Speak in a warm, supportive, natural tone with clear pacing.",
+              response_format: "mp3"
+            })
+          });
+
+          if (!response.ok) {
+            throw await buildApiError(response, "Speech playback failed.");
+          }
+
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          currentAudio = new Audio(audioUrl);
+          scrollToInsightSection();
+          openPlaybackInsight(analysisState);
+          currentAudio.addEventListener("ended", () => {
+            URL.revokeObjectURL(audioUrl);
+            currentAudio = null;
+            clearSpeechHighlights();
+          }, { once: true });
+          currentAudio.addEventListener("error", () => {
+            URL.revokeObjectURL(audioUrl);
+            currentAudio = null;
+            clearSpeechHighlights();
+            setProcessingUi(false);
+            fallbackSpeak(text);
+          }, { once: true });
+          currentAudio.addEventListener("playing", () => {
+            setProcessingUi(false);
+            startSpeechHighlights();
+          }, { once: true });
+          await currentAudio.play();
+        } catch (error) {
+          console.error(error);
+          setStatus("Falling back to browser voice for playback.", true);
+          scrollToInsightSection();
+          openPlaybackInsight(analysisState);
+          setProcessingUi(false);
+          startSpeechHighlights();
+          fallbackSpeak(text);
+        }
+      }
+
+      function stopAudioPlayback() {
+        clearSpeechHighlights();
+        if (currentAudio) {
+          currentAudio.pause();
+          URL.revokeObjectURL(currentAudio.src);
+          currentAudio = null;
+        }
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+      }
+
+      function fallbackSpeak(text) {
+        if (!text || !window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        setProcessingUi(false);
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
+        utterance.lang = "en-US";
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function scrollToInsightSection() {
+        const insightSection = document.getElementById("insightSection");
+        if (!insightSection) return;
+
+        if (!panelState.insightOpen) {
+          panelState.insightOpen = true;
+          if (window.matchMedia("(max-width: 767px)").matches) {
+            panelState.historyOpen = false;
+          }
+          renderPanels();
+        }
+
+        requestAnimationFrame(() => {
+          insightSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        });
+      }
+
+      function scrollToVoiceSection() {
+        if (window.matchMedia("(max-width: 767px)").matches) {
+          panelState.insightOpen = false;
+          panelState.historyOpen = false;
+          renderPanels();
+        }
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      }
+
+      function scrollToHistorySection() {
+        const historyToggle = elements.historyToggleButton;
+        const historySection = historyToggle?.parentElement;
+        if (!historySection) return;
+
+        const header = document.querySelector("header");
+        const headerHeight = header ? header.getBoundingClientRect().height : 0;
+        const sectionTop = window.scrollY + historySection.getBoundingClientRect().top - headerHeight - 8;
+
+        window.scrollTo({
+          top: Math.max(sectionTop, 0),
+          behavior: "smooth"
+        });
+
+        setTimeout(() => {
+          panelState.historyOpen = true;
+          if (window.matchMedia("(max-width: 767px)").matches) {
+            panelState.insightOpen = false;
+          }
+          renderPanels();
+        }, 180);
+
+        if (!window.matchMedia("(max-width: 767px)").matches) {
+          panelState.historyOpen = true;
+        }
+        if (window.matchMedia("(max-width: 767px)").matches) {
+          panelState.insightOpen = false;
+        }
+        renderPanels();
+      }
+
+      function startSpeechHighlights() {
+        clearSpeechHighlights();
+
+        const sequence = [
+          { element: elements.playbackCaloriesCard, duration: 1500 },
+          { element: elements.playbackProteinCard, duration: 1350 },
+          { element: elements.playbackCarbsCard, duration: 1350 },
+          { element: elements.playbackFiberCard, duration: 1350 },
+          { element: elements.playbackFatCard, duration: 1350 },
+          { element: elements.playbackSummaryCard, duration: 2600 }
+        ].filter((item) => item.element);
+
+        const initialSequenceDelay = sequence.length ? Math.round(sequence[0].duration * 0.8) : 0;
+        let elapsed = 0;
+
+        sequence.forEach((item, index) => {
+          const startAt = initialSequenceDelay + elapsed;
+          const endAt = initialSequenceDelay + elapsed + item.duration;
+
+          const startTimer = setTimeout(() => {
+            highlightSpeechCard(item.element);
+            if (item.element === elements.playbackSummaryCard) {
+              startSummaryLineHighlights(item.duration);
+            }
+          }, startAt);
+
+          const stopTimer = setTimeout(() => {
+            item.element.classList.remove("is-speaking");
+            item.element.classList.add("is-spoken");
+          }, endAt - 140);
+
+          speechHighlightTimers.push(startTimer, stopTimer);
+          elapsed = endAt;
+        });
+
+        speechSequenceDuration = elapsed;
+      }
+
+      function highlightSpeechCard(activeElement) {
+        [
+          elements.playbackCaloriesCard,
+          elements.playbackProteinCard,
+          elements.playbackCarbsCard,
+          elements.playbackFiberCard,
+          elements.playbackFatCard,
+          elements.playbackSummaryCard
+        ].forEach((element) => {
+          if (!element) return;
+          element.classList.remove("is-spoken");
+          element.classList.toggle("is-speaking", element === activeElement);
+        });
+      }
+
+      function clearSpeechHighlights() {
+        speechHighlightTimers.forEach((timer) => clearTimeout(timer));
+        speechHighlightTimers = [];
+        speechSequenceDuration = 0;
+        clearSummaryLineHighlights();
+        [
+          elements.playbackCaloriesCard,
+          elements.playbackProteinCard,
+          elements.playbackCarbsCard,
+          elements.playbackFiberCard,
+          elements.playbackFatCard,
+          elements.playbackSummaryCard
+        ].forEach((element) => {
+          if (!element) return;
+          element.classList.remove("is-speaking", "is-spoken");
+        });
+        highlightSpeechCard(null);
+      }
+
+      function renderPlaybackSummaryLines(analysis) {
+        const lines = [
+          `Estimated intake: ${Math.round(analysis.total_calories || 0)} calories.`,
+          `Protein ${formatNumber(analysis.protein_g)} grams. Carbs ${formatNumber(analysis.carbs_g)} grams.`,
+          `Fibre ${formatNumber(analysis.fiber_g)} grams. Fat ${formatNumber(analysis.fat_g)} grams.`,
+          analysis.summary || "Spoken summary in progress."
+        ].filter(Boolean);
+
+        elements.playbackSummary.innerHTML = lines
+          .map((line) => `<p class="summary-line mt-2 first:mt-0" data-summary-line>${escapeHtml(line)}</p>`)
+          .join("");
+      }
+
+      function startSummaryLineHighlights(totalDuration) {
+        const lines = [...elements.playbackSummary.querySelectorAll("[data-summary-line]")];
+        if (!lines.length) return;
+
+        const perLineDuration = Math.max(580, Math.floor(totalDuration / lines.length));
+
+        lines.forEach((line, index) => {
+          const startAt = index * perLineDuration;
+          const endAt = startAt + perLineDuration;
+
+          const startTimer = setTimeout(() => {
+            lines.forEach((node, nodeIndex) => {
+              node.classList.toggle("is-speaking", nodeIndex === index);
+              if (nodeIndex < index) {
+                node.classList.add("is-spoken");
+              }
+            });
+          }, startAt);
+
+          const stopTimer = setTimeout(() => {
+            line.classList.remove("is-speaking");
+            line.classList.add("is-spoken");
+          }, endAt - 90);
+
+          speechHighlightTimers.push(startTimer, stopTimer);
+        });
+      }
+
+      function clearSummaryLineHighlights() {
+        [...elements.playbackSummary.querySelectorAll("[data-summary-line]")].forEach((line) => {
+          line.classList.remove("is-speaking", "is-spoken");
+        });
+      }
+
+      function buildSpokenNutritionSummary(analysis) {
+        if (!analysis || !analysis.meal_name) {
+          return "No meal analysis is available yet.";
+        }
+
+        const calories = Math.round(analysis.total_calories || 0);
+        const protein = formatNumber(analysis.protein_g);
+        const carbs = formatNumber(analysis.carbs_g);
+        const fiber = formatNumber(analysis.fiber_g);
+        const fat = formatNumber(analysis.fat_g);
+
+        return `${analysis.meal_name}. Estimated intake: ${calories} calories. Protein ${protein} grams. Carbs ${carbs} grams. Fibre ${fiber} grams. Fat ${fat} grams. ${analysis.summary}`;
+      }
+
+      function formatHistoryTime(isoString) {
+        if (!isoString) return "Saved meal";
+        const date = new Date(isoString);
+        return new Intl.DateTimeFormat(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        }).format(date);
+      }
+
+      function setRecordingUi(recording) {
+        elements.recordButton.classList.toggle("is-recording", recording);
+        elements.recordIcon.textContent = recording ? "radio_button_checked" : "mic";
+        elements.recordLabel.textContent = recording ? "Listening" : "Hold to Speak";
+        elements.recordingHint.textContent = recording ? "Release to stop and analyze" : "Press and hold, then release to analyze";
+        elements.recordingDot.classList.toggle("hidden", !recording);
+      }
+
+      function setProcessingUi(processing) {
+        isProcessing = processing;
+        elements.recordButton.classList.toggle("is-processing", processing);
+        if (processing) {
+          elements.recordIcon.textContent = "mic";
+          elements.recordLabel.textContent = "Processing";
+          elements.recordingHint.textContent = "OpenAI is analyzing your meal";
+          elements.recordingDot.classList.remove("hidden");
+        } else if (!isRecording) {
+          elements.recordIcon.textContent = "mic";
+          elements.recordLabel.textContent = "Hold to Speak";
+          elements.recordingHint.textContent = "Press and hold, then release to analyze";
+          elements.recordingDot.classList.add("hidden");
+        }
+      }
+
+      function setStatus(message, isError = false) {
+        elements.statusText.textContent = message;
+        elements.statusText.classList.toggle("text-error", isError);
+        elements.statusText.classList.toggle("text-on-surface-variant", !isError);
+      }
+
+      function formatNumber(value) {
+        return Number(value || 0).toFixed(1);
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+    </script>
+  </body>
+</html>
