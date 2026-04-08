@@ -745,6 +745,8 @@
       let mealHistory = [];
       let activePointerId = null;
       let currentAudio = null;
+      let audioContext = null;
+      let audioOutputPrimed = false;
       let isProcessing = false;
       let speechHighlightTimers = [];
       let speechSequenceDuration = 0;
@@ -764,7 +766,10 @@
       elements.saveKeyButton.addEventListener("click", saveApiKey);
       elements.clearKeyButton.addEventListener("click", clearApiKey);
       elements.clearButton.addEventListener("click", clearMeal);
-      elements.speakResultButton.addEventListener("click", () => speakMealAnalysis(analysisState));
+      elements.speakResultButton.addEventListener("click", async () => {
+        await primeAudioPlayback();
+        speakMealAnalysis(analysisState);
+      });
       elements.openSettingsButton.addEventListener("click", openSettings);
       elements.inlineSettingsButton.addEventListener("click", openSettings);
       elements.closeSettingsButton.addEventListener("click", closeSettings);
@@ -860,11 +865,51 @@
         setProcessingUi(false);
         activePointerId = event.pointerId;
         elements.recordButton.setPointerCapture?.(event.pointerId);
-        startRecording().catch((error) => {
-          console.error(error);
-          setStatus(error.message || "Could not start recording.", true);
-          setRecordingUi(false);
-        });
+        primeAudioPlayback()
+          .catch(() => null)
+          .finally(() =>
+            startRecording().catch((error) => {
+              console.error(error);
+              setStatus(error.message || "Could not start recording.", true);
+              setRecordingUi(false);
+            })
+          );
+      }
+
+      async function primeAudioPlayback() {
+        if (audioOutputPrimed) return true;
+
+        try {
+          const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextCtor) {
+            if (!audioContext) {
+              audioContext = new AudioContextCtor();
+            }
+
+            if (audioContext.state === "suspended") {
+              await audioContext.resume();
+            }
+
+            const buffer = audioContext.createBuffer(1, 1, 22050);
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start(0);
+          }
+
+          const primingAudio = new Audio(
+            "data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA"
+          );
+          primingAudio.muted = true;
+          primingAudio.playsInline = true;
+          primingAudio.preload = "auto";
+          await primingAudio.play().catch(() => null);
+          primingAudio.pause();
+          audioOutputPrimed = true;
+          return true;
+        } catch {
+          return false;
+        }
       }
 
       function handlePointerUp(event) {
@@ -1305,7 +1350,7 @@
           .join("");
 
         elements.historyList.querySelectorAll("[data-history-id]").forEach((button) => {
-          button.addEventListener("click", () => {
+          button.addEventListener("click", async () => {
             const selected = mealHistory.find((item) => item.id === button.dataset.historyId);
             if (!selected) return;
             stopAudioPlayback();
@@ -1313,6 +1358,7 @@
             analysisState = { ...selected };
             renderAnalysis(analysisState);
             setStatus(`Loaded ${selected.meal_name} from history.`);
+            await primeAudioPlayback();
             speakMealAnalysis(analysisState);
           });
         });
@@ -1391,6 +1437,8 @@
           const audioBlob = await response.blob();
           const audioUrl = URL.createObjectURL(audioBlob);
           currentAudio = new Audio(audioUrl);
+          currentAudio.playsInline = true;
+          currentAudio.preload = "auto";
           scrollToInsightSection();
           openPlaybackInsight(analysisState);
           currentAudio.addEventListener("ended", () => {
@@ -1412,7 +1460,15 @@
           await currentAudio.play();
         } catch (error) {
           console.error(error);
-          setStatus("Falling back to browser voice for playback.", true);
+          const isPlaybackGestureIssue =
+            error?.name === "NotAllowedError" ||
+            /user gesture|notallowed/i.test(error?.message || "");
+          setStatus(
+            isPlaybackGestureIssue
+              ? "iPhone blocked audio playback. Tap replay after interacting once more."
+              : "Falling back to browser voice for playback.",
+            true
+          );
           scrollToInsightSection();
           openPlaybackInsight(analysisState);
           setProcessingUi(false);
