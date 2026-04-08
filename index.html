@@ -8,21 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* ── Neural Network Canvas ──────────────────────────── */
-  #neuralCanvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.27;
-  }
-
-  /* Kill old pseudo-element bg so canvas owns the background */
-  body::before { display: none; }
-  body::after  { display: none; }
-
   /* ── Reset & Base ─────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -475,14 +460,370 @@
     .repo-grid { grid-template-columns: 1fr; }
     .card-actions { grid-template-columns: 1fr; }
   }
+
+  /* ══════════════════════════════════════════════════════
+     EXPLORER OVERLAY
+  ══════════════════════════════════════════════════════ */
+  #explorer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(6px);
+    align-items: center;
+    justify-content: center;
+    animation: overlayIn 0.22s ease both;
+  }
+  #explorer-overlay.open { display: flex; }
+  @keyframes overlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Explorer Window */
+  #explorer-window {
+    position: relative;
+    width: min(96vw, 1200px);
+    height: min(88vh, 780px);
+    background: #0d1410;
+    border: 1px solid rgba(0,200,83,0.28);
+    border-radius: 12px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,200,83,0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: winIn 0.28s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  @keyframes winIn {
+    from { opacity: 0; transform: scale(0.95) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* Title Bar */
+  .explorer-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0 1rem;
+    height: 44px;
+    background: #0a0f0a;
+    border-bottom: 1px solid rgba(0,200,83,0.15);
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .titlebar-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .titlebar-title {
+    flex: 1;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--z-muted);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .titlebar-controls {
+    display: flex;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+  .win-ctrl {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .win-ctrl:hover { filter: brightness(1.3); }
+  .win-ctrl.close  { background: #EA4335; }
+  .win-ctrl.min    { background: #FBBC05; }
+  .win-ctrl.max    { background: #34A853; }
+
+  /* Address Bar */
+  .explorer-addressbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 6px 1rem;
+    background: #0a0f0a;
+    border-bottom: 1px solid rgba(0,200,83,0.12);
+    flex-shrink: 0;
+  }
+  .addressbar-path {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(0,200,83,0.15);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    color: var(--z-muted);
+    font-family: 'Nunito', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .addressbar-path span { color: var(--z-green); }
+
+  /* Explorer Body */
+  .explorer-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Sidebar */
+  #explorer-sidebar {
+    width: 20%;
+    min-width: 140px;
+    max-width: 45%;
+    background: #080d08;
+    border-right: 1px solid rgba(0,200,83,0.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .sidebar-header {
+    padding: 10px 12px 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--z-green);
+    opacity: 0.7;
+    border-bottom: 1px solid rgba(0,200,83,0.1);
+    flex-shrink: 0;
+  }
+  .sidebar-files {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .sidebar-files::-webkit-scrollbar { width: 4px; }
+  .sidebar-files::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-files::-webkit-scrollbar-thumb { background: rgba(0,200,83,0.2); border-radius: 2px; }
+
+  /* File Item */
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
+    border-radius: 7px;
+    border: 1px solid rgba(0,200,83,0.12);
+    background: rgba(0,200,83,0.04);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.12s;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .file-item:hover {
+    background: rgba(0,200,83,0.1);
+    border-color: rgba(0,200,83,0.3);
+    transform: translateX(2px);
+  }
+  .file-item.active {
+    background: rgba(0,200,83,0.15);
+    border-color: var(--z-green);
+    box-shadow: 0 0 0 1px rgba(0,200,83,0.15) inset;
+  }
+  .file-item-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .file-item-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--z-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+  .file-item.active .file-item-name { color: var(--z-green); }
+
+  /* Loading state for sidebar */
+  .sidebar-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 2rem 1rem;
+    color: var(--z-muted);
+    font-size: 0.78rem;
+  }
+  .sidebar-loading .mini-spinner {
+    width: 22px; height: 22px;
+    border: 2.5px solid rgba(0,200,83,0.15);
+    border-top-color: var(--z-green);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* Resize Handle */
+  #explorer-resizer {
+    width: 5px;
+    background: transparent;
+    cursor: col-resize;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.15s;
+    z-index: 2;
+  }
+  #explorer-resizer:hover,
+  #explorer-resizer.dragging {
+    background: rgba(0,200,83,0.25);
+  }
+  #explorer-resizer::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 32px;
+    background: rgba(0,200,83,0.35);
+    border-radius: 1px;
+  }
+
+  /* Content Pane */
+  #explorer-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #0a0f0a;
+  }
+  .content-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    background: #080d08;
+    border-bottom: 1px solid rgba(0,200,83,0.1);
+    font-size: 0.72rem;
+    color: var(--z-muted);
+    flex-shrink: 0;
+  }
+  .content-toolbar .toolbar-label {
+    flex: 1;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .toolbar-open-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,200,83,0.1);
+    border: 1px solid rgba(0,200,83,0.25);
+    color: var(--z-green);
+    padding: 4px 12px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .toolbar-open-btn:hover { background: rgba(0,200,83,0.2); }
+
+  /* iFrame */
+  #explorer-iframe-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  #explorer-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff;
+  }
+
+  /* Placeholder */
+  #explorer-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--z-muted);
+    text-align: center;
+    padding: 2rem;
+  }
+  .placeholder-icon {
+    font-size: 3rem;
+    opacity: 0.4;
+  }
+  .placeholder-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(232,245,233,0.5);
+  }
+  .placeholder-sub {
+    font-size: 0.78rem;
+    opacity: 0.5;
+    max-width: 260px;
+    line-height: 1.5;
+  }
+
+  /* iFrame loading overlay */
+  #iframe-loader {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: #0a0f0a;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--z-muted);
+    font-size: 0.82rem;
+    z-index: 5;
+  }
+  #iframe-loader.show { display: flex; }
+  .iframe-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(0,200,83,0.15);
+    border-top-color: var(--z-green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  /* Status bar */
+  .explorer-statusbar {
+    height: 26px;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #080d08;
+    border-top: 1px solid rgba(0,200,83,0.1);
+    font-size: 0.67rem;
+    color: var(--z-muted);
+    flex-shrink: 0;
+  }
+  .statusbar-count { color: var(--z-green); font-weight: 700; }
+  .statusbar-selected { flex: 1; }
 </style>
 </head>
 <body>
-
-<!-- ═══════════════════════════════════════════════════
-     NEURAL NETWORK CANVAS — fixed, behind everything
-═══════════════════════════════════════════════════ -->
-<canvas id="neuralCanvas"></canvas>
 
 <!-- Nav -->
 <nav>
@@ -506,7 +847,7 @@
   <p class="tagline">Intelligent Projects. Built to learn. Designed to inspire.</p>
 
   <!-- Explore Button -->
-  <button class="explore-btn" id="exploreBtn" onclick="fetchProjects()">
+  <button class="explore-btn" id="exploreBtn" onclick="openExplorer()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
     </svg>
@@ -515,15 +856,6 @@
   </button>
 
 </main>
-
-<!-- Projects -->
-<section id="projects-section">
-  <div class="section-header">
-    <div class="section-title">Zomb<span>AI</span> Repositories</div>
-    <div class="repo-count" id="repoCount">Loading…</div>
-  </div>
-  <div class="repo-grid" id="repoGrid"></div>
-</section>
 
 <!-- Footer -->
 <footer>
@@ -534,473 +866,302 @@
   </p>
 </footer>
 
-<script>
-const GITHUB_USER = 'balram3429';
-const ZOMB_PATTERN = /zomb/i;
+<!-- ══════════════════════════════════════════════
+     EXPLORER OVERLAY
+══════════════════════════════════════════════ -->
+<div id="explorer-overlay" role="dialog" aria-modal="true" aria-label="Project Explorer">
+  <div id="explorer-window">
 
-function getLangClass(lang) {
-  if (!lang) return '';
-  const l = lang.toLowerCase();
-  if (l === 'typescript') return 'lang-ts';
-  if (l === 'javascript') return 'lang-js';
-  if (l === 'python') return 'lang-py';
-  if (l === 'html') return 'lang-html';
-  return '';
-}
+    <!-- Title Bar -->
+    <div class="explorer-titlebar">
+      <span class="titlebar-icon">🗂️</span>
+      <span class="titlebar-title">ZombAI Explorer — zomb-ai / home</span>
+      <div class="titlebar-controls">
+        <button class="win-ctrl min" title="Minimize" onclick="closeExplorer()"></button>
+        <button class="win-ctrl max" title="Maximize" onclick="toggleMaximize()"></button>
+        <button class="win-ctrl close" title="Close" onclick="closeExplorer()"></button>
+      </div>
+    </div>
 
-function getLangEmoji(lang) {
-  if (!lang) return '📁';
-  const l = lang.toLowerCase();
-  if (l === 'typescript') return '🔷';
-  if (l === 'javascript') return '🟨';
-  if (l === 'python') return '🐍';
-  if (l === 'html') return '🌐';
-  if (l === 'css') return '🎨';
-  if (l === 'java') return '☕';
-  return '📦';
-}
+    <!-- Address Bar -->
+    <div class="explorer-addressbar">
+      <span style="font-size:0.8rem;color:var(--z-muted);">📍</span>
+      <div class="addressbar-path" id="addressBarPath">
+        https://<span>zomb-ai</span>.github.io/home/
+      </div>
+    </div>
 
-function highlightZomb(name) {
-  return name.replace(/(zomb)/gi, '<span class="zomb-highlight">$1</span>');
-}
+    <!-- Body: sidebar + resizer + content -->
+    <div class="explorer-body">
 
-function timeAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr);
-  const days = Math.floor(diff / 86400000);
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Yesterday';
-  if (days < 30) return `${days} days ago`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
-  return `${Math.floor(months / 12)} year${Math.floor(months/12)>1?'s':''} ago`;
-}
-
-function renderCard(repo, index) {
-  const pagesUrl = `https://${GITHUB_USER}.github.io/${repo.name}/`;
-  const hasPages = repo.has_pages;
-  const lang = repo.language || '';
-  const desc = repo.description || '';
-
-  return `
-    <div class="repo-card" style="animation-delay:${index * 0.06}s">
-      <div class="card-top">
-        <div class="repo-icon">${getLangEmoji(lang)}</div>
-        <div class="repo-meta">
-          <div class="repo-name">${highlightZomb(repo.name)}</div>
-          <div class="repo-updated">Updated ${timeAgo(repo.updated_at)}</div>
+      <!-- Sidebar -->
+      <div id="explorer-sidebar">
+        <div class="sidebar-header">📁 &nbsp;HTML Files</div>
+        <div class="sidebar-files" id="sidebarFiles">
+          <div class="sidebar-loading">
+            <div class="mini-spinner"></div>
+            <span>Loading files…</span>
+          </div>
         </div>
       </div>
 
-      <div class="repo-desc ${desc ? '' : 'empty'}">${desc || 'No description provided'}</div>
+      <!-- Resize Handle -->
+      <div id="explorer-resizer"></div>
 
-      <div class="repo-tags">
-        ${lang ? `<span class="tag ${getLangClass(lang)}">${lang}</span>` : ''}
-        ${repo.stargazers_count > 0 ? `<span class="tag">★ ${repo.stargazers_count}</span>` : ''}
-        ${repo.fork ? '<span class="tag">Fork</span>' : ''}
-        ${repo.topics && repo.topics.length ? repo.topics.slice(0,2).map(t=>`<span class="tag">${t}</span>`).join('') : ''}
+      <!-- Content Pane -->
+      <div id="explorer-content">
+        <div class="content-toolbar">
+          <span class="toolbar-label" id="toolbarLabel">Select a file to preview</span>
+          <a class="toolbar-open-btn" id="openExternalBtn" href="#" target="_blank" rel="noopener" style="display:none;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open in Tab
+          </a>
+        </div>
+
+        <div id="explorer-iframe-wrap">
+          <!-- Placeholder -->
+          <div id="explorer-placeholder">
+            <div class="placeholder-icon">🌐</div>
+            <div class="placeholder-title">No file selected</div>
+            <div class="placeholder-sub">Click any HTML file in the sidebar to preview it here.</div>
+          </div>
+
+          <!-- iFrame loader -->
+          <div id="iframe-loader">
+            <div class="iframe-spinner"></div>
+            <span id="iframeLoaderLabel">Loading…</span>
+          </div>
+
+          <iframe id="explorer-iframe" title="File Preview" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="display:none;"></iframe>
+        </div>
       </div>
 
-      <div class="repo-stats">
-        <span class="stat">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-          ${repo.forks_count} forks
-        </span>
-        <span class="stat">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          ${repo.open_issues_count} issues
-        </span>
-        <span class="stat">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          ${repo.watchers_count} watching
-        </span>
-      </div>
-
-      <div class="card-actions">
-        <a class="action-btn btn-repo"
-           href="${repo.html_url}"
-           target="_blank" rel="noopener">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-          Explore Repo
-        </a>
-        <a class="action-btn btn-live ${hasPages ? '' : 'no-pages'}"
-           href="${hasPages ? pagesUrl : '#'}"
-           target="${hasPages ? '_blank' : '_self'}"
-           rel="noopener"
-           title="${hasPages ? 'View live hosted page' : 'No hosted page available'}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          ${hasPages ? 'View Result' : 'No Live Page'}
-        </a>
-      </div>
     </div>
-  `;
+
+    <!-- Status Bar -->
+    <div class="explorer-statusbar">
+      <span><span class="statusbar-count" id="statusCount">0</span> items</span>
+      <span class="statusbar-selected" id="statusSelected">No file selected</span>
+      <span>zomb-ai.github.io/home</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const GITHUB_USER = 'zomb-ai';
+const REPO_NAME   = 'home';
+const BASE_URL    = `https://${GITHUB_USER}.github.io/${REPO_NAME}/`;
+const API_URL     = `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/`;
+
+let htmlFiles = [];
+let activeFile = null;
+let explorerLoaded = false;
+let isMaximized = false;
+
+/* ── Open / Close Explorer ──────────────────────────── */
+function openExplorer() {
+  const overlay = document.getElementById('explorer-overlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (!explorerLoaded) {
+    explorerLoaded = true;
+    loadHtmlFiles();
+  }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   NEURAL NETWORK BACKGROUND — Activation-funnel style
-   Architecture: INPUT → HIDDEN-1 → HIDDEN-2 → HIDDEN-3 → OUTPUT
-   Features:
-   • Structured layer columns like a real FF network
-   • Colour-coded layer roles (input=blue, hidden=green, output=lime)
-   • Weighted edges — thickness encodes strength
-   • Signal pulses travel along edges (forward pass)
-   • Activation "fire" — nodes flash when a pulse arrives
-   • Periodic full forward-pass wave sweeps left→right
-   • Occasional back-prop ripple sweeps right→left (red tint)
-   • Idle micro-flicker on dormant nodes
-   • Depth fog — far nodes are dimmer
-═══════════════════════════════════════════════════════════ */
-(function () {
-  const canvas = document.getElementById('neuralCanvas');
-  const ctx    = canvas.getContext('2d');
-
-  /* ── palette ─────────────────────────────────────────── */
-  const C = {
-    bg:        '#0a0f0a',
-    input:     { base:'#4285F4', glow:'rgba(66,133,244,',   ring:'rgba(66,133,244,0.25)' },
-    h1:        { base:'#00c853', glow:'rgba(0,200,83,',     ring:'rgba(0,200,83,0.22)' },
-    h2:        { base:'#00e676', glow:'rgba(0,230,118,',    ring:'rgba(0,230,118,0.22)' },
-    h3:        { base:'#69f0ae', glow:'rgba(105,240,174,',  ring:'rgba(105,240,174,0.2)' },
-    output:    { base:'#76ff03', glow:'rgba(118,255,3,',    ring:'rgba(118,255,3,0.28)' },
-    edgeFwd:   'rgba(0,200,83,',
-    edgeBwd:   'rgba(255,82,82,',
-    pulseFwd:  { trail:'#00e676', head:'#ffffff' },
-    pulseBwd:  { trail:'#ff5252', head:'#ffcdd2' },
-    bias:      'rgba(255,193,7,0.6)',
-  };
-
-  /* ── network topology ───────────────────────────────── */
-  // Layers: node counts per layer
-  const LAYER_DEF = [5, 8, 9, 8, 4];   // input, h1, h2, h3, output
-  const LAYER_NAMES = ['INPUT','HIDDEN','HIDDEN','HIDDEN','OUTPUT'];
-  const LAYER_COLORS = [C.input, C.h1, C.h2, C.h3, C.output];
-
-  let W, H;
-  let layers = [];   // layers[l] = array of node objects
-  let edges  = [];   // all connections
-
-  /* ── node ───────────────────────────────────────────── */
-  function makeNode(l, i, x, y, color) {
-    return {
-      l, i, x, y, color,
-      r: 2.5 + Math.random() * 1.5,   // smaller nodes
-      activation: Math.random() * 0.5, // start dimmer
-      fireT: 0,
-      flickerPhase: Math.random() * Math.PI * 2,
-      bias: Math.random() > 0.85,
-    };
-  }
-
-  /* ── edge ───────────────────────────────────────────── */
-  function makeEdge(src, dst) {
-    return {
-      src, dst,
-      weight: 0.2 + Math.random() * 0.8,   // 0.2–1.0
-      pulses: [],
-    };
-  }
-
-  /* ── build graph ─────────────────────────────────────── */
-  function build() {
-    layers = [];
-    edges  = [];
-
-    const marginX = W * 0.08;
-    const usableW = W - marginX * 2;
-    const marginY = H * 0.12;
-    const usableH = H - marginY * 2;
-    const layerGap = usableW / (LAYER_DEF.length - 1);
-
-    LAYER_DEF.forEach((count, l) => {
-      const lx     = marginX + l * layerGap;
-      const nodeGap = usableH / (count + 1);
-      const color   = LAYER_COLORS[l];
-      const nodes   = [];
-
-      for (let i = 0; i < count; i++) {
-        const ly = marginY + (i + 1) * nodeGap;
-        // slight horizontal jitter for organic feel
-        const jx = (Math.random() - 0.5) * layerGap * 0.08;
-        const jy = (Math.random() - 0.5) * nodeGap  * 0.12;
-        nodes.push(makeNode(l, i, lx + jx, ly + jy, color));
-      }
-      layers.push(nodes);
-    });
-
-    // Connect adjacent layers (fully connected)
-    for (let l = 0; l < layers.length - 1; l++) {
-      layers[l].forEach(src => {
-        layers[l + 1].forEach(dst => {
-          // Sparse: skip ~25% of connections for visual clarity
-          if (Math.random() < 0.78) edges.push(makeEdge(src, dst));
-        });
-      });
-    }
-  }
-
-  /* ── pulse ───────────────────────────────────────────── */
-  function spawnPulse(edge, backward) {
-    edge.pulses.push({
-      t:        backward ? 1 : 0,
-      speed:    0.0008 + Math.random() * 0.001,  // 4-6x slower
-      backward: !!backward,
-      alpha:    0.4,                              // dimmer
-      size:     1.2 + Math.random() * 0.8,        // much smaller head
-    });
-  }
-
-  /* ── wave scheduler ─────────────────────────────────── */
-  let waveTimer    = 0;
-  let waveInterval = 500;   // slow: ~8s between forward waves at 60fps
-
-  function triggerForwardWave() {
-    LAYER_DEF.forEach((_, l) => {
-      const delay = l * 40;             // slower stagger
-      setTimeout(() => {
-        layers[l].forEach(n => { n.fireT = 8 + Math.random() * 4; }); // shorter fire
-        edges.forEach(e => {
-          if (e.src.l === l && Math.random() < 0.3)  // only 30% of edges get a pulse
-            spawnPulse(e, false);
-        });
-      }, delay * 16);
-    });
-  }
-
-  /* ── random idle pulses — disabled for subtlety ─────── */
-  function idlePulses() { /* no-op */ }
-
-  /* ── draw one edge ───────────────────────────────────── */
-  function drawEdge(e) {
-    const { src, dst } = e;
-    const alpha = 0.03 + e.weight * 0.06;   // very faint lines
-    ctx.beginPath();
-    ctx.moveTo(src.x, src.y);
-    ctx.lineTo(dst.x, dst.y);
-    ctx.strokeStyle = C.edgeFwd + alpha + ')';
-    ctx.lineWidth   = 0.4 + e.weight * 0.5;  // thinner
-    ctx.stroke();
-  }
-
-  /* ── draw one pulse ──────────────────────────────────── */
-  function drawPulse(p, e) {
-    const { src, dst } = e;
-    const t  = p.backward ? (1 - p.t) : p.t;
-    const px = src.x + (dst.x - src.x) * t;
-    const py = src.y + (dst.y - src.y) * t;
-
-    const pal = p.backward ? C.pulseBwd : C.pulseFwd;
-
-    // Faint trail
-    const grad = ctx.createLinearGradient(
-      src.x + (dst.x - src.x) * Math.max(0, t - 0.14),
-      src.y + (dst.y - src.y) * Math.max(0, t - 0.14),
-      px, py
-    );
-    grad.addColorStop(0, 'transparent');
-    grad.addColorStop(1, pal.trail + '66');   // was '44'
-    ctx.beginPath();
-    ctx.moveTo(src.x + (dst.x - src.x) * Math.max(0, t - 0.14),
-               src.y + (dst.y - src.y) * Math.max(0, t - 0.14));
-    ctx.lineTo(px, py);
-    ctx.strokeStyle = grad;
-    ctx.lineWidth   = p.size * 0.5;
-    ctx.stroke();
-
-    // Tiny dim head — no glow
-    ctx.beginPath();
-    ctx.arc(px, py, p.size * 0.7, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.52)';
-    ctx.fill();
-  }
-
-  /* ── draw one node ───────────────────────────────────── */
-  function drawNode(n, t) {
-    const flicker   = 0.7 + 0.3 * Math.sin(n.flickerPhase + t * 0.015); // very slow flicker
-    const isFiring  = n.fireT > 0;
-    const fireRatio = isFiring ? Math.min(n.fireT / 10, 1) : 0;
-
-    const baseAlpha = 0.18 + n.activation * 0.27;   // max ~0.45 at full activation
-    const alpha     = Math.min(0.52, baseAlpha * flicker + fireRatio * 0.18);
-    const r         = n.r + fireRatio * n.r * 0.5;
-
-    const col = n.bias ? C.bias : n.color.base;
-
-    // Subtle glow halo — only when firing
-    if (isFiring && fireRatio > 0.2) {
-      const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 2.5);
-      g.addColorStop(0, n.color.glow + (0.12 * fireRatio) + ')');
-      g.addColorStop(1, 'transparent');
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, r * 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = g;
-      ctx.fill();
-    }
-
-    // Core circle — no shadowBlur
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-    ctx.fillStyle = col + Math.floor(alpha * 255).toString(16).padStart(2, '0');
-    ctx.fill();
-
-    if (n.fireT > 0) n.fireT -= 0.4;  // slower fade
-  }
-
-  /* ── draw layer label — removed for subtlety ─────────── */
-  function drawLabels() { /* no-op */ }
-
-  /* ── main render loop ────────────────────────────────── */
-  let frame = 0;
-  function render() {
-    requestAnimationFrame(render);
-    frame++;
-
-    // Clear
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = C.bg;
-    ctx.fillRect(0, 0, W, H);
-
-    // Subtle grid
-    ctx.strokeStyle = 'rgba(0,200,83,0.03)';
-    ctx.lineWidth = 0.5;
-    const gs = 48;
-    for (let gx = 0; gx < W; gx += gs) {
-      ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
-    }
-    for (let gy = 0; gy < H; gy += gs) {
-      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
-    }
-
-    // Only forward wave — no backprop
-    waveTimer++;
-    if (waveTimer >= waveInterval) {
-      waveTimer    = 0;
-      waveInterval = 480 + Math.random() * 240;  // 8–12s at 60fps
-      triggerForwardWave();
-    }
-    idlePulses();
-
-    // Draw edges + advance pulses
-    edges.forEach(e => {
-      drawEdge(e);
-      e.pulses = e.pulses.filter(p => {
-        drawPulse(p, e);
-        p.t += p.backward ? -p.speed : p.speed;
-        if (!p.backward && p.t >= 0.92) {
-          e.dst.fireT = 8 + Math.random() * 4;
-          e.dst.activation = Math.min(0.6, e.dst.activation + e.weight * 0.06);
-        }
-        const done = p.backward ? p.t <= 0 : p.t >= 1;
-        return !done;
-      });
-    });
-
-    // Draw nodes — very slow drift
-    layers.forEach(layer => layer.forEach(n => {
-      n.flickerPhase += 0.003 + Math.random() * 0.002;  // 3x slower phase
-      n.activation   += (Math.random() - 0.5) * 0.003;  // gentler drift
-      n.activation    = Math.max(0.05, Math.min(0.6, n.activation));
-      drawNode(n, frame);
-    }));
-
-    drawLabels();
-  }
-
-  /* ── resize handler ──────────────────────────────────── */
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-    build();
-  }
-
-  window.addEventListener('resize', () => { clearTimeout(resize._t); resize._t = setTimeout(resize, 150); });
-  resize();
-  render();
-})();
-
-async function ghFetch(url) {
-  // No custom headers → simple CORS request, no preflight needed
-  const res = await fetch(url);
-  if (res.status === 403) {
-    const body = await res.json().catch(() => ({}));
-    const msg  = (body.message || '').toLowerCase();
-    if (msg.includes('rate limit')) throw new Error('RATE_LIMIT');
-    throw new Error('HTTP 403: ' + (body.message || 'Forbidden'));
-  }
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
+function closeExplorer() {
+  const overlay = document.getElementById('explorer-overlay');
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
 }
 
-async function fetchProjects() {
-  const btn       = document.getElementById('exploreBtn');
-  const btnText   = document.getElementById('btnText');
-  const btnSpinner= document.getElementById('btnSpinner');
-  const section   = document.getElementById('projects-section');
-  const grid      = document.getElementById('repoGrid');
-  const countEl   = document.getElementById('repoCount');
+function toggleMaximize() {
+  const win = document.getElementById('explorer-window');
+  isMaximized = !isMaximized;
+  if (isMaximized) {
+    win.style.cssText = 'width:100vw;height:100vh;border-radius:0;';
+  } else {
+    win.style.cssText = '';
+  }
+}
 
-  btn.classList.add('loading');
-  btnText.textContent = 'Fetching…';
-  btnSpinner.style.display = 'block';
-  grid.innerHTML = '';
+// Close on backdrop click
+document.getElementById('explorer-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeExplorer();
+});
 
-  let zombRepos = [];
-  let errMsg    = '';
+// ESC to close
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeExplorer();
+});
+
+/* ── Load HTML Files from GitHub API ────────────────── */
+async function loadHtmlFiles() {
+  const filesEl = document.getElementById('sidebarFiles');
+  const countEl = document.getElementById('statusCount');
 
   try {
-    // Primary: list all repos, filter client-side
-    let allRepos = [];
-    for (let page = 1; page <= 4; page++) {
-      const data = await ghFetch(
-        `https://api.github.com/users/${GITHUB_USER}/repos?sort=created&direction=desc&per_page=50&page=${page}`
-      );
-      if (!Array.isArray(data) || data.length === 0) break;
-      allRepos = allRepos.concat(data);
-      if (data.length < 50) break;
+    const res = await fetch(API_URL, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error(`GitHub API: ${res.status}`);
+    const contents = await res.json();
+
+    // Filter only .html files in root
+    htmlFiles = contents.filter(item =>
+      item.type === 'file' && item.name.toLowerCase().endsWith('.html')
+    );
+
+    countEl.textContent = htmlFiles.length;
+
+    if (htmlFiles.length === 0) {
+      filesEl.innerHTML = `
+        <div style="padding:1.5rem 0.5rem;text-align:center;color:var(--z-muted);font-size:0.78rem;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">📭</div>
+          No HTML files found in root.
+        </div>`;
+      return;
     }
-    zombRepos = allRepos.filter(r => ZOMB_PATTERN.test(r.name));
-  } catch (e1) {
-    // Fallback: search API
-    try {
-      const result = await ghFetch(
-        `https://api.github.com/search/repositories?q=zomb+user:${GITHUB_USER}&sort=stars&per_page=50`
-      );
-      zombRepos = Array.isArray(result.items) ? result.items : [];
-    } catch (e2) {
-      errMsg = e2.message === 'RATE_LIMIT'
-        ? 'GitHub API rate limit reached (60 req/hr). Please wait ~60 seconds and try again.'
-        : 'Could not load repositories. ' + e2.message;
-    }
+
+    filesEl.innerHTML = '';
+    htmlFiles.forEach((file, idx) => {
+      const name = file.name.replace(/\.html$/i, '');
+      const el = document.createElement('div');
+      el.className = 'file-item';
+      el.dataset.filename = file.name;
+      el.dataset.idx = idx;
+      el.innerHTML = `
+        <span class="file-item-icon">🌐</span>
+        <span class="file-item-name" title="${name}">${name}</span>
+      `;
+      el.addEventListener('click', () => openFile(file.name, name, el));
+      filesEl.appendChild(el);
+    });
+
+  } catch (err) {
+    filesEl.innerHTML = `
+      <div style="padding:1.5rem 0.5rem;text-align:center;color:var(--z-muted);font-size:0.75rem;">
+        <div style="font-size:1.5rem;margin-bottom:8px;">⚠️</div>
+        ${err.message}<br><br>
+        <span style="opacity:0.6;">Check rate limits or repo visibility.</span>
+      </div>`;
   }
-
-  section.classList.add('visible');
-
-  if (errMsg) {
-    grid.innerHTML = `<div class="state-msg" style="grid-column:1/-1">
-      <div class="icon">⚠️</div><p>${errMsg}</p></div>`;
-    countEl.textContent = 'Error';
-    btnText.textContent = 'Try Again';
-    btn.classList.remove('loading');
-    btnSpinner.style.display = 'none';
-    return;
-  }
-
-  zombRepos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-  if (zombRepos.length === 0) {
-    grid.innerHTML = `<div class="state-msg" style="grid-column:1/-1">
-      <div class="icon">🔍</div>
-      <p>No repositories matching <code>zomb</code> found yet.<br>Check back soon!</p>
-    </div>`;
-    countEl.textContent = '0 projects';
-  } else {
-    countEl.textContent = `${zombRepos.length} project${zombRepos.length !== 1 ? 's' : ''} found`;
-    grid.innerHTML = zombRepos.map((r, i) => renderCard(r, i)).join('');
-  }
-
-  btnText.textContent = 'Refresh';
-  btn.classList.remove('loading');
-  btnSpinner.style.display = 'none';
-  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
+
+/* ── Open File in Frame ─────────────────────────────── */
+function openFile(filename, displayName, itemEl) {
+  // Update active state in sidebar
+  document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+  itemEl.classList.add('active');
+  activeFile = filename;
+
+  const url = `${BASE_URL}${filename}`;
+
+  // Update address bar
+  document.getElementById('addressBarPath').innerHTML =
+    `https://<span>${GITHUB_USER}</span>.github.io/${REPO_NAME}/${filename}`;
+
+  // Update toolbar
+  document.getElementById('toolbarLabel').textContent = `${displayName}.html`;
+  const openBtn = document.getElementById('openExternalBtn');
+  openBtn.href = url;
+  openBtn.style.display = 'flex';
+
+  // Update status bar
+  document.getElementById('statusSelected').textContent = `${displayName}.html — ${url}`;
+
+  // Show loader
+  const placeholder = document.getElementById('explorer-placeholder');
+  const loader = document.getElementById('iframe-loader');
+  const iframe = document.getElementById('explorer-iframe');
+  document.getElementById('iframeLoaderLabel').textContent = `Loading ${displayName}…`;
+
+  placeholder.style.display = 'none';
+  loader.classList.add('show');
+  iframe.style.display = 'none';
+
+  // Load iframe
+  iframe.onload = function() {
+    loader.classList.remove('show');
+    iframe.style.display = 'block';
+  };
+  iframe.onerror = function() {
+    loader.classList.remove('show');
+    placeholder.style.display = 'flex';
+    placeholder.innerHTML = `
+      <div class="placeholder-icon">⚠️</div>
+      <div class="placeholder-title">Failed to load</div>
+      <div class="placeholder-sub">Could not load <strong>${filename}</strong>.<br>It may not be published on GitHub Pages yet.</div>
+    `;
+  };
+  iframe.src = url;
+}
+
+/* ── Draggable Resizer ───────────────────────────────── */
+(function() {
+  const resizer  = document.getElementById('explorer-resizer');
+  const sidebar  = document.getElementById('explorer-sidebar');
+  const body     = document.querySelector('.explorer-body');
+  let dragging   = false;
+  let startX, startW;
+
+  resizer.addEventListener('mousedown', function(e) {
+    dragging = true;
+    startX   = e.clientX;
+    startW   = sidebar.getBoundingClientRect().width;
+    resizer.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+
+    // Prevent iframe from stealing mouse events
+    document.getElementById('explorer-iframe').style.pointerEvents = 'none';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    const bodyW  = body.getBoundingClientRect().width;
+    const delta  = e.clientX - startX;
+    let newW     = startW + delta;
+    // Clamp: 20% is natural default; allow 140px min, 45% max
+    newW = Math.max(140, Math.min(newW, bodyW * 0.45));
+    sidebar.style.width = newW + 'px';
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!dragging) return;
+    dragging = false;
+    resizer.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    document.getElementById('explorer-iframe').style.pointerEvents = '';
+  });
+
+  // Touch support
+  resizer.addEventListener('touchstart', function(e) {
+    dragging = true;
+    startX   = e.touches[0].clientX;
+    startW   = sidebar.getBoundingClientRect().width;
+    resizer.classList.add('dragging');
+    document.getElementById('explorer-iframe').style.pointerEvents = 'none';
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!dragging) return;
+    const bodyW = body.getBoundingClientRect().width;
+    const delta = e.touches[0].clientX - startX;
+    let newW    = startW + delta;
+    newW = Math.max(140, Math.min(newW, bodyW * 0.45));
+    sidebar.style.width = newW + 'px';
+  }, { passive: true });
+
+  document.addEventListener('touchend', function() {
+    if (!dragging) return;
+    dragging = false;
+    resizer.classList.remove('dragging');
+    document.getElementById('explorer-iframe').style.pointerEvents = '';
+  });
+})();
 </script>
 </body>
 </html>
