@@ -1,0 +1,1423 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Trip Planner — Passenger Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Variables ───────────────────────────────────────────────────────── */
+    :root {
+      --saffron:   #c2440f;
+      --saffron-d: #9a3409;
+      --saffron-l: #fff0e8;
+      --gold:      #d4930a;
+      --gold-l:    #fef3c7;
+      --navy:      #1a1a2e;
+      --navy-m:    #2d2d44;
+      --teal:      #0d7377;
+      --teal-l:    #e0f5f5;
+      --green:     #166534;
+      --green-l:   #dcfce7;
+      --cream:     #fef7ed;
+      --paper:     #fffdf9;
+      --border:    rgba(26,26,46,.10);
+      --muted:     #6b7280;
+      --text:      #1a1a2e;
+      --white:     #ffffff;
+      --shadow-sm: 0 2px 8px rgba(26,26,46,.07);
+      --shadow:    0 4px 20px rgba(26,26,46,.10);
+      --shadow-lg: 0 8px 40px rgba(26,26,46,.16);
+      --radius:    18px;
+      --radius-sm: 12px;
+      --radius-xs: 8px;
+      --font-head: 'Playfair Display', Georgia, serif;
+      --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: var(--font-body);
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+    button, input, select, textarea { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       LOCK SCREEN
+    ═══════════════════════════════════════════════════════════════════════ */
+    #lockScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: linear-gradient(160deg, var(--navy) 0%, #2d1b4e 45%, #1a3a4e 100%);
+      /* Subtle star-like dots */
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(212,147,10,.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(194,68,15,.14) 0%, transparent 40%),
+        linear-gradient(160deg, var(--navy) 0%, #2d1b4e 45%, #1a3a4e 100%);
+    }
+    #lockScreen.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.02);
+      transition: opacity .4s ease, transform .4s ease;
+    }
+
+    .lock-card {
+      width: 100%;
+      max-width: 380px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      padding: 32px 28px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+      animation: lockSlideUp .5s cubic-bezier(.25,.8,.25,1) both;
+    }
+    @keyframes lockSlideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .lock-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--saffron), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 20px;
+      box-shadow: 0 0 0 8px rgba(212,147,10,.15), 0 8px 24px rgba(194,68,15,.4);
+      animation: lockPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes lockPulse {
+      0%,100% { box-shadow: 0 0 0 8px rgba(212,147,10,.15), 0 8px 24px rgba(194,68,15,.4); }
+      50%      { box-shadow: 0 0 0 14px rgba(212,147,10,.08), 0 8px 24px rgba(194,68,15,.4); }
+    }
+
+    .lock-title {
+      font-family: var(--font-head);
+      font-size: 1.65rem;
+      color: var(--white);
+      text-align: center;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .lock-sub {
+      text-align: center;
+      font-size: .83rem;
+      color: rgba(255,255,255,.55);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .lock-field {
+      margin-bottom: 14px;
+    }
+    .lock-field label {
+      display: block;
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: rgba(255,255,255,.5);
+      margin-bottom: 7px;
+    }
+    .lock-input-wrap {
+      position: relative;
+    }
+    .lock-input {
+      width: 100%;
+      padding: 13px 44px 13px 15px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08);
+      color: var(--white);
+      font-size: .95rem;
+      font-weight: 500;
+      outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    .lock-input::placeholder { color: rgba(255,255,255,.28); }
+    .lock-input:focus {
+      border-color: var(--gold);
+      background: rgba(255,255,255,.12);
+    }
+    .lock-input.error { border-color: #f87171; animation: shake .35s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60%  { transform: translateX(-6px); }
+      40%,80%  { transform: translateX(6px); }
+    }
+    .toggle-vis {
+      position: absolute;
+      right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255,255,255,.4);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px;
+      transition: color .18s;
+    }
+    .toggle-vis:hover { color: rgba(255,255,255,.8); }
+
+    .lock-hint {
+      font-size: .74rem;
+      color: rgba(255,255,255,.35);
+      text-align: center;
+      margin-top: 8px;
+    }
+    .lock-error {
+      font-size: .8rem;
+      color: #fca5a5;
+      text-align: center;
+      min-height: 20px;
+      margin-bottom: 6px;
+      animation: fadeIn .2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .btn-unlock {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--saffron), #e05c1a);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: .03em;
+      box-shadow: 0 4px 16px rgba(194,68,15,.4);
+      transition: opacity .18s, transform .15s;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-unlock:active { opacity: .85; transform: scale(.98); }
+    .btn-unlock:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Config section inside lock card */
+    .lock-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,.08);
+      margin: 22px 0;
+    }
+    .lock-config-label {
+      font-size: .72rem;
+      color: rgba(255,255,255,.35);
+      text-align: center;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       MAIN APP (hidden until unlocked)
+    ═══════════════════════════════════════════════════════════════════════ */
+    #appShell { display: none; }
+    #appShell.visible { display: block; }
+
+    /* ── Header ──────────────────────────────────────────────────────────── */
+    .app-header {
+      background: linear-gradient(150deg, var(--navy) 0%, #2d1b4e 50%, var(--saffron-d) 100%);
+      color: var(--white);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-lg);
+    }
+    .header-inner { padding: 14px 16px 0; }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--saffron), var(--gold));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.15);
+      flex-shrink: 0;
+    }
+    .brand-name {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+    .brand-sub { font-size: .68rem; opacity: .65; margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; }
+    .header-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      color: var(--white);
+      border-radius: 999px;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: .95rem;
+      transition: background .18s;
+      position: relative;
+    }
+    .icon-btn:active { background: rgba(255,255,255,.22); }
+    .icon-btn.lock-btn {
+      background: rgba(212,147,10,.25);
+      border-color: rgba(212,147,10,.4);
+    }
+    /* Tooltip */
+    .icon-btn[data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: var(--navy);
+      color: var(--white);
+      font-size: .72rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* Stats Strip */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 12px 0 14px;
+    }
+    .stat-cell {
+      text-align: center;
+      padding: 0 6px;
+      border-right: 1px solid rgba(255,255,255,.12);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-val { font-size: 1.55rem; font-weight: 800; color: var(--gold); line-height: 1; }
+    .stat-lbl { font-size: .62rem; opacity: .7; margin-top: 3px; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ── Filter Bar ──────────────────────────────────────────────────────── */
+    .filter-bar {
+      background: var(--paper);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      position: sticky;
+      top: 130px;
+      z-index: 40;
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-row-1 { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+    .search-wrap { flex: 1; position: relative; }
+    .search-wrap .si { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: .4; pointer-events: none; font-size: .9rem; }
+    .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 34px;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      background: var(--cream);
+      font-size: .88rem;
+      outline: none;
+      transition: border-color .18s;
+    }
+    .search-input:focus { border-color: var(--saffron); }
+    .btn-add {
+      background: linear-gradient(135deg, var(--saffron), #e05c1a);
+      color: var(--white);
+      border: none;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      box-shadow: 0 3px 12px rgba(194,68,15,.35);
+      transition: transform .15s;
+      flex-shrink: 0;
+    }
+    .btn-add:active { transform: scale(.97); }
+    .filter-row-2 { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+    .filter-row-2::-webkit-scrollbar { display: none; }
+    .filter-select {
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 28px 7px 12px;
+      background: var(--cream);
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: border-color .18s;
+    }
+    .filter-select:focus { border-color: var(--saffron); }
+    .btn-clear {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: border-color .18s, color .18s;
+    }
+    .btn-clear:active { border-color: var(--saffron); color: var(--saffron); }
+    .filter-count { font-size: .78rem; font-weight: 700; color: var(--muted); white-space: nowrap; flex-shrink: 0; align-self: center; padding: 7px 0; }
+
+    /* ── Content ─────────────────────────────────────────────────────────── */
+    .content { padding: 16px; max-width: 720px; margin: 0 auto; }
+
+    /* Session info banner */
+    .session-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gold-l);
+      border: 1px solid rgba(212,147,10,.25);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      font-size: .82rem;
+      color: #92400e;
+    }
+    .session-banner .sb-icon { font-size: 1rem; flex-shrink: 0; }
+    .session-banner .sb-text { flex: 1; font-weight: 600; }
+    .btn-lock-small {
+      background: none;
+      border: 1px solid rgba(212,147,10,.4);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: .75rem;
+      font-weight: 700;
+      color: #92400e;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Config Banner */
+    .config-banner {
+      background: linear-gradient(135deg, var(--navy), #2d1b4e);
+      color: var(--white);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .config-banner h3 { font-family: var(--font-head); font-size: 1.2rem; margin-bottom: 6px; }
+    .config-banner p { font-size: .85rem; opacity: .75; margin-bottom: 16px; }
+    .config-input-row { display: flex; gap: 8px; }
+    .config-input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: .82rem;
+      background: rgba(255,255,255,.12);
+      color: var(--white);
+      outline: none;
+    }
+    .config-input::placeholder { opacity: .5; }
+    .btn-config-save {
+      background: var(--saffron);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: .82rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Loading & Empty */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+      gap: 14px;
+      color: var(--muted);
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--saffron);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .empty-state .ei { font-size: 2.5rem; margin-bottom: 10px; }
+    .empty-state h3 { font-size: 1.05rem; color: var(--text); margin-bottom: 6px; }
+    .empty-state p { font-size: .85rem; }
+
+    /* ── Group Cards ─────────────────────────────────────────────────────── */
+    .groups-list { display: flex; flex-direction: column; gap: 14px; }
+    .group-card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .group-card.type-group { border-top: 3px solid var(--saffron); }
+    .group-card.type-solo  { border-top: 3px solid var(--teal); }
+    .card-head { padding: 16px 16px 14px; }
+    .card-head-row1 {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .traveller-name {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex: 1;
+    }
+    .traveller-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+      flex-shrink: 0;
+    }
+    .traveller-icon.gi { background: var(--saffron-l); }
+    .traveller-icon.si { background: var(--teal-l); }
+    .card-badges { display: flex; flex-wrap: wrap; gap: 5px; flex-shrink: 0; }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 4px 9px; border-radius: 999px;
+      font-size: .72rem; font-weight: 700;
+      letter-spacing: .02em; white-space: nowrap;
+    }
+    .b-confirm  { background: var(--green-l); color: var(--green); }
+    .b-pending  { background: var(--gold-l); color: #92400e; }
+    .b-cancel   { background: #fee2e2; color: #991b1b; }
+    .b-default  { background: #f3f4f6; color: #374151; }
+    .b-group    { background: var(--saffron-l); color: var(--saffron-d); }
+    .b-solo     { background: var(--teal-l); color: var(--teal); }
+    .card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .meta-item { display: flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--muted); }
+    .meta-item .mi { font-size: .9rem; flex-shrink: 0; }
+    .meta-item strong { color: var(--text); font-weight: 600; }
+    .family-section {
+      border-top: 1px solid var(--border);
+      padding: 12px 16px 14px;
+      background: rgba(194,68,15,.03);
+    }
+    .family-header {
+      font-size: .77rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--saffron); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .family-members-list { display: flex; flex-direction: column; gap: 7px; }
+    .fm-row {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-xs); padding: 9px 12px;
+    }
+    .fm-av {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--saffron-l);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; flex-shrink: 0;
+    }
+    .fm-name { flex: 1; font-size: .85rem; font-weight: 600; }
+    .fm-chips { display: flex; gap: 5px; }
+    .fm-chip {
+      font-size: .72rem; padding: 3px 8px;
+      border-radius: 999px; font-weight: 600;
+      background: #f3f4f6; color: #374151;
+    }
+    .fm-chip.male   { background: #dbeafe; color: #1d4ed8; }
+    .fm-chip.female { background: #fce7f3; color: #9d174d; }
+    .family-count-note { font-size: .8rem; color: var(--muted); font-style: italic; padding: 6px 0 0; }
+
+    /* ── Modal ───────────────────────────────────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(26,26,46,.5);
+      backdrop-filter: blur(4px);
+      z-index: 80;
+      opacity: 0; pointer-events: none;
+      transition: opacity .22s;
+    }
+    .overlay.show { opacity: 1; pointer-events: auto; }
+    .modal {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 90;
+      background: var(--paper);
+      border-radius: var(--radius) var(--radius) 0 0;
+      max-height: 92vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      transform: translateY(100%);
+      transition: transform .28s cubic-bezier(.25,.8,.25,1);
+      box-shadow: 0 -8px 40px rgba(26,26,46,.18);
+    }
+    .modal.show { transform: translateY(0); }
+    @media (min-width: 600px) {
+      .modal {
+        left: 50%; right: auto;
+        width: min(560px, calc(100% - 32px));
+        transform: translateX(-50%) translateY(100%);
+        bottom: 0; border-radius: var(--radius); max-height: 88vh;
+      }
+      .modal.show { transform: translateX(-50%) translateY(0); }
+    }
+    .modal-handle {
+      width: 36px; height: 4px; border-radius: 999px;
+      background: var(--border); margin: 10px auto 0;
+    }
+    .modal-head {
+      padding: 14px 18px 12px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-family: var(--font-head); font-size: 1.15rem; font-weight: 700; }
+    .btn-close {
+      background: var(--cream); border: 1px solid var(--border);
+      border-radius: 50%; width: 32px; height: 32px;
+      cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center; color: var(--muted);
+    }
+    .modal-body { padding: 18px; }
+
+    /* Form */
+    .form-section { margin-bottom: 20px; }
+    .form-section-title {
+      font-size: .72rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--saffron); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .form-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: .78rem; font-weight: 700; color: var(--muted); }
+    .field label span.req { color: var(--saffron); }
+    .field input, .field select, .field textarea {
+      padding: 11px 13px; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); background: var(--cream);
+      font-size: .88rem; color: var(--text); outline: none; width: 100%;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .field input:focus, .field select:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(194,68,15,.1); }
+    .field input.error { border-color: #dc2626; }
+    .field .hint { font-size: .72rem; color: var(--muted); margin-top: 1px; }
+    .field .hint.info { color: var(--teal); }
+    .pax-display {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 13px; border-radius: var(--radius-sm);
+      background: var(--gold-l); border: 1.5px solid var(--gold);
+    }
+    .pax-display .pi { font-size: 1.2rem; }
+    .pax-display .pt { font-size: .82rem; font-weight: 600; color: #92400e; }
+    .pax-display .pn { font-size: 1.3rem; font-weight: 800; color: #92400e; margin-left: auto; }
+    .family-member-block {
+      background: rgba(194,68,15,.04); border: 1px solid rgba(194,68,15,.15);
+      border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px;
+    }
+    .family-member-block .fml {
+      font-size: .74rem; font-weight: 800; color: var(--saffron);
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: .06em;
+    }
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--saffron), #e05c1a);
+      color: var(--white); border: none;
+      border-radius: var(--radius-sm); padding: 15px;
+      font-size: 1rem; font-weight: 800; cursor: pointer;
+      margin-top: 6px;
+      box-shadow: 0 4px 14px rgba(194,68,15,.35);
+      transition: opacity .18s, transform .15s; letter-spacing: .02em;
+    }
+    .btn-submit:active { opacity: .85; transform: scale(.99); }
+    .btn-submit:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+
+    /* Settings modal */
+    .settings-modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(.96);
+      width: min(420px, calc(100% - 32px));
+      background: var(--paper); border-radius: var(--radius);
+      z-index: 91; box-shadow: var(--shadow-lg); padding: 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .22s, transform .22s;
+    }
+    .settings-modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+    .settings-modal h3 { font-family: var(--font-head); font-size: 1.2rem; margin-bottom: 6px; }
+    .settings-modal p { font-size: .83rem; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+    .settings-modal .field { margin-bottom: 12px; }
+    .btn-save-cfg {
+      width: 100%; background: var(--navy); color: var(--white);
+      border: none; border-radius: var(--radius-sm); padding: 13px;
+      font-size: .9rem; font-weight: 700; cursor: pointer; margin-bottom: 10px;
+    }
+    .btn-lock-full {
+      width: 100%; background: none; border: 1.5px solid #dc2626;
+      color: #dc2626; border-radius: var(--radius-sm); padding: 12px;
+      font-size: .9rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    /* ── Toast ───────────────────────────────────────────────────────────── */
+    .toast {
+      position: fixed; left: 50%; bottom: 20px;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--navy); color: var(--white);
+      padding: 12px 20px; border-radius: 999px;
+      font-size: .86rem; font-weight: 600; box-shadow: var(--shadow-lg);
+      z-index: 300; opacity: 0; pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      max-width: calc(100vw - 32px); text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error   { background: #991b1b; }
+    .toast.success { background: var(--green); }
+
+    @media (min-width: 600px) {
+      .filter-bar { top: 138px; }
+      .card-meta { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    @media (min-width: 720px) {
+      .content { padding: 20px 24px; }
+      .group-card:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LOCK SCREEN
+  ════════════════════════════════════════════════════════════ -->
+  <div id="lockScreen">
+    <div class="lock-card">
+      <div class="lock-icon">✈️</div>
+      <h1 class="lock-title">Trip Planner</h1>
+      <p class="lock-sub">Enter your access passphrase to<br>view passenger data.</p>
+
+      <div class="lock-field">
+        <label>Access Passphrase</label>
+        <div class="lock-input-wrap">
+          <input id="lockInput" class="lock-input" type="password"
+            placeholder="Enter passphrase…" autocomplete="off"
+            autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <button class="toggle-vis" id="toggleVis" type="button" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <div class="lock-error" id="lockError"></div>
+      <button class="btn-unlock" id="btnUnlock">
+        <span id="unlockBtnText">Unlock App</span>
+      </button>
+      <p class="lock-hint">Contact your trip organiser for the passphrase.</p>
+
+      <hr class="lock-divider" />
+      <p class="lock-config-label">API Settings</p>
+      <div class="lock-field">
+        <label>Apps Script Web App URL</label>
+        <div class="lock-input-wrap">
+          <input id="lockApiUrl" class="lock-input" type="url"
+            placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" />
+        </div>
+      </div>
+      <p class="lock-hint" style="margin-top:4px">This is stored in your browser. Only set once.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN APP
+  ════════════════════════════════════════════════════════════ -->
+  <div id="appShell">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="header-top">
+          <div class="brand">
+            <div class="brand-icon">✈️</div>
+            <div>
+              <div class="brand-name">Trip Planner</div>
+              <div class="brand-sub">Passenger Manager</div>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="icon-btn" id="btnRefresh" data-tip="Refresh">↻</button>
+            <button class="icon-btn" id="btnSettings" data-tip="Settings">⚙</button>
+            <button class="icon-btn lock-btn" id="btnLock" data-tip="Lock app">🔒</button>
+          </div>
+        </div>
+        <div class="stats-strip">
+          <div class="stat-cell"><div class="stat-val" id="statPeople">0</div><div class="stat-lbl">People</div></div>
+          <div class="stat-cell"><div class="stat-val" id="statPax">0</div><div class="stat-lbl">Total PAX</div></div>
+          <div class="stat-cell"><div class="stat-val" id="statGroups">0</div><div class="stat-lbl">Families</div></div>
+          <div class="stat-cell"><div class="stat-val" id="statSolo">0</div><div class="stat-lbl">Solo</div></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-row-1">
+        <div class="search-wrap">
+          <span class="si">🔍</span>
+          <input id="searchInput" class="search-input" type="search" placeholder="Search name or mobile…" autocomplete="off" />
+        </div>
+        <button class="btn-add" id="btnOpenAdd">＋ Add</button>
+      </div>
+      <div class="filter-row-2">
+        <select class="filter-select" id="filterGender">
+          <option value="">Gender: All</option>
+          <option>Male</option><option>Female</option><option>Other</option>
+        </select>
+        <select class="filter-select" id="filterReference">
+          <option value="">Reference: All</option>
+        </select>
+        <select class="filter-select" id="filterComment">
+          <option value="">Status: All</option>
+        </select>
+        <button class="btn-clear" id="btnClear">✕ Clear</button>
+        <span class="filter-count" id="filterCount">0 records</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <main class="content" id="mainContent">
+      <!-- Session banner -->
+      <div class="session-banner" id="sessionBanner" style="display:none">
+        <span class="sb-icon">🔐</span>
+        <span class="sb-text">Secure session active</span>
+        <button class="btn-lock-small" id="btnLockSmall">Lock</button>
+      </div>
+
+      <!-- Config Banner (if no URL set) -->
+      <div id="configBanner" class="config-banner" style="display:none">
+        <h3>🗺 Connect to Google Sheets</h3>
+        <p>Paste your deployed Apps Script Web App URL below.</p>
+        <div class="config-input-row">
+          <input id="bannerApiUrl" class="config-input" type="url" placeholder="https://script.google.com/macros/s/…/exec" />
+          <button class="btn-config-save" id="bannerSaveBtn">Save</button>
+        </div>
+      </div>
+
+      <div id="loadingState" class="loading-state" style="display:none">
+        <div class="spinner"></div><span>Loading passengers…</span>
+      </div>
+      <div id="emptyState" class="empty-state" style="display:none">
+        <div class="ei">🧳</div>
+        <h3>No passengers found</h3>
+        <p>Try adjusting filters or add a new passenger.</p>
+      </div>
+      <div class="groups-list" id="groupsList"></div>
+    </main>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Add Passenger Modal -->
+    <div class="modal" id="addModal">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <div class="modal-title">Add Passenger</div>
+        <button class="btn-close" id="btnCloseModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="addForm" novalidate>
+          <div class="form-section">
+            <div class="form-section-title">Main Traveller</div>
+            <div class="form-grid">
+              <div class="field full">
+                <label>Full Name <span class="req">*</span></label>
+                <input id="fName" type="text" placeholder="e.g. Khetaram Mali" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>Mobile <span class="req">*</span></label>
+                <input id="fMobile" type="tel" placeholder="10-digit number" maxlength="15" />
+                <span class="hint info">📱 Phone only for main traveller</span>
+              </div>
+              <div class="field">
+                <label>Age</label>
+                <input id="fAge" type="number" placeholder="e.g. 35" min="0" max="120" />
+              </div>
+              <div class="field">
+                <label>Gender</label>
+                <select id="fGender">
+                  <option value="">Select</option>
+                  <option>Male</option><option>Female</option><option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>PAX Count <span class="req">*</span></label>
+                <input id="fPax" type="number" placeholder="1" min="1" max="50" value="1" />
+                <span class="hint">Total including self. PAX=1 → Individual</span>
+              </div>
+            </div>
+            <div id="paxSummary" class="pax-display" style="margin-top:12px;display:none">
+              <span class="pi">👨‍👩‍👧‍👦</span>
+              <span class="pt" id="paxSummaryText">Group of</span>
+              <span class="pn" id="paxSummaryNum">1</span>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">Booking Info</div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Reference</label>
+                <input id="fReference" type="text" placeholder="e.g. Gaurav" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>Comments / Status</label>
+                <input id="fComments" type="text" placeholder="e.g. Confirm" autocomplete="off" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section" id="familySection" style="display:none">
+            <div class="form-section-title">Family Members</div>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;line-height:1.5">
+              Add <strong id="familyCountLabel">0</strong> family member(s). Mobile is not required for family members.
+            </p>
+            <div id="familyFieldsContainer"></div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">Add to Trip List</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal">
+      <h3>⚙ Settings</h3>
+      <p>Update your Apps Script URL here. The passphrase is managed on the lock screen.</p>
+      <div class="field">
+        <label>Apps Script Web App URL</label>
+        <input id="settingsApiUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" />
+      </div>
+      <button class="btn-save-cfg" id="btnSaveCfg">Save URL</button>
+      <button class="btn-lock-full" id="btnLockFull">🔒 Lock & Sign Out</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div><!-- /appShell -->
+
+  <script>
+    /* ── Storage Keys ──────────────────────────────────────────────────── */
+    const LS_URL    = 'tp_api_url';
+    const LS_SECRET = 'tp_secret';     // session secret (cleared on lock)
+
+    /* ── State ─────────────────────────────────────────────────────────── */
+    let API_URL       = localStorage.getItem(LS_URL)    || '';
+    let SESSION_SECRET = sessionStorage.getItem(LS_SECRET) || ''; // uses sessionStorage so auto-clears when browser tab closes
+    let allPassengers = [];
+    let displayGroups = [];
+
+    /* ── Element refs ──────────────────────────────────────────────────── */
+    const $ = id => document.getElementById(id);
+
+    /* ── Toast ─────────────────────────────────────────────────────────── */
+    function showToast(msg, type = 'default', ms = 2800) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.className = 'toast show' + (type !== 'default' ? ' ' + type : '');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => t.classList.remove('show'), ms);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       LOCK SCREEN LOGIC
+    ═══════════════════════════════════════════════════════════════════ */
+    function showLockScreen() {
+      $('lockScreen').classList.remove('hidden');
+      $('appShell').classList.remove('visible');
+      $('lockInput').value = '';
+      $('lockError').textContent = '';
+      // Pre-fill URL if already saved
+      if (API_URL) $('lockApiUrl').value = API_URL;
+      setTimeout(() => $('lockInput').focus(), 400);
+    }
+
+    function unlockApp(secret) {
+      SESSION_SECRET = secret;
+      sessionStorage.setItem(LS_SECRET, secret);
+      $('lockScreen').classList.add('hidden');
+      $('appShell').classList.add('visible');
+      $('sessionBanner').style.display = 'flex';
+      fetchPassengers();
+    }
+
+    function lockApp() {
+      SESSION_SECRET = '';
+      sessionStorage.removeItem(LS_SECRET);
+      allPassengers  = [];
+      displayGroups  = [];
+      $('groupsList').innerHTML = '';
+      $('statPeople').textContent = $('statPax').textContent =
+        $('statGroups').textContent = $('statSolo').textContent = '0';
+      closeModal();
+      showLockScreen();
+    }
+
+    /* Attempt unlock — sends a ping to the API with the supplied secret */
+    async function attemptUnlock() {
+      const secret = $('lockInput').value.trim();
+      const apiUrl = $('lockApiUrl').value.trim();
+
+      $('lockError').textContent = '';
+
+      if (!secret) {
+        markLockError('Please enter your passphrase.');
+        return;
+      }
+      if (!apiUrl || !apiUrl.startsWith('http')) {
+        markLockError('Please enter the Apps Script Web App URL below.');
+        $('lockApiUrl').classList.add('error');
+        return;
+      }
+
+      // Save URL
+      API_URL = apiUrl;
+      localStorage.setItem(LS_URL, apiUrl);
+
+      // Disable button while checking
+      const btn = $('btnUnlock');
+      const txt = $('unlockBtnText');
+      btn.disabled  = true;
+      txt.textContent = 'Verifying…';
+
+      try {
+        const res  = await fetch(API_URL + '?action=ping&secret=' + encodeURIComponent(secret));
+        const data = await res.json();
+
+        if (data.success) {
+          unlockApp(secret);
+        } else if (data.code === 401 || data.error === 'Unauthorized') {
+          markLockError('Incorrect passphrase. Try again.');
+        } else {
+          markLockError('API error: ' + (data.error || 'Unknown'));
+        }
+      } catch (e) {
+        markLockError('Cannot reach the API. Check the URL.');
+      } finally {
+        btn.disabled   = false;
+        txt.textContent = 'Unlock App';
+      }
+    }
+
+    function markLockError(msg) {
+      const inp = $('lockInput');
+      $('lockError').textContent = msg;
+      inp.classList.add('error');
+      setTimeout(() => inp.classList.remove('error'), 600);
+    }
+
+    /* ── Passphrase visibility toggle ───────────────────────────────── */
+    $('toggleVis').addEventListener('click', () => {
+      const inp = $('lockInput');
+      const isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+      $('toggleVis').textContent = isPass ? '🙈' : '👁';
+    });
+
+    $('btnUnlock').addEventListener('click', attemptUnlock);
+    $('lockInput').addEventListener('keydown', e => { if (e.key === 'Enter') attemptUnlock(); });
+
+    /* ════════════════════════════════════════════════════════════════════
+       API — all calls include SESSION_SECRET
+    ═══════════════════════════════════════════════════════════════════ */
+    async function fetchPassengers() {
+      if (!API_URL)  { $('configBanner').style.display = 'block'; return; }
+      showLoading(true);
+      try {
+        const res  = await fetch(API_URL + '?action=list&secret=' + encodeURIComponent(SESSION_SECRET));
+        const data = await res.json();
+        if (data.code === 401 || data.error === 'Unauthorized') { handleUnauthorized(); return; }
+        if (!data.success) throw new Error(data.error || 'Fetch failed');
+        allPassengers = Array.isArray(data.passengers) ? data.passengers : [];
+        populateFilters();
+        processAndRender();
+        showToast('✅ Loaded ' + allPassengers.length + ' records', 'success');
+      } catch (e) {
+        showToast('❌ Failed: ' + e.message, 'error', 4000);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function addPassenger(payload) {
+      $('submitBtn').disabled    = true;
+      $('submitBtn').textContent = 'Saving…';
+      try {
+        const res  = await fetch(API_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body:    JSON.stringify({ action: 'add', secret: SESSION_SECRET, ...payload })
+        });
+        const data = await res.json();
+        if (data.code === 401 || data.error === 'Unauthorized') { handleUnauthorized(); return; }
+        if (!data.success) throw new Error(data.error || 'Save failed');
+        showToast('✅ Added ' + data.rowsAdded + ' row(s) for ' + data.mainName, 'success');
+        closeModal();
+        await fetchPassengers();
+      } catch (e) {
+        showToast('❌ Failed to save: ' + e.message, 'error', 4000);
+      } finally {
+        $('submitBtn').disabled    = false;
+        $('submitBtn').textContent = 'Add to Trip List';
+      }
+    }
+
+    function handleUnauthorized() {
+      showToast('🔒 Session expired or unauthorised. Please re-enter passphrase.', 'error', 4000);
+      lockApp();
+    }
+
+    /* ── Data Processing ────────────────────────────────────────────── */
+    function s(v) { return v == null ? '' : String(v).trim(); }
+    function norm(v) {
+      return s(v)
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+    }
+    function n(v) { return Number(String(v || 0).replace(/[^\d.]/g, '')) || 0; }
+
+    function groupPassengers(passengers) {
+      const familyMap = {};
+      const mains     = [];
+      passengers.forEach(p => {
+        const mm = norm(p['Main Member']);
+        if (mm) {
+          if (!familyMap[mm]) familyMap[mm] = [];
+          familyMap[mm].push(p);
+        } else {
+          mains.push(p);
+        }
+      });
+      return mains.map(m => ({
+        main:   m,
+        family: familyMap[norm(m['Name'])] || []
+      }));
+    }
+
+    function computeStats(groups) {
+      $('statPeople').textContent  = allPassengers.length;
+      $('statPax').textContent     = groups.reduce((sum, g) => sum + n(g.main['Pax']), 0) || allPassengers.length;
+      $('statGroups').textContent  = groups.filter(g => g.family.length > 0).length;
+      $('statSolo').textContent    = groups.filter(g => g.family.length === 0 && n(g.main['Pax']) <= 1).length;
+    }
+
+    function applyFilters() {
+      const q   = norm($('searchInput').value);
+      const gen = norm($('filterGender').value);
+      const ref = norm($('filterReference').value);
+      const com = norm($('filterComment').value);
+      const all = groupPassengers(allPassengers);
+
+      displayGroups = all.filter(g => {
+        const p = g.main;
+        if (gen && norm(p['Gender'])    !== gen) return false;
+        if (ref && norm(p['Reference']) !== ref) return false;
+        if (com && norm(p['Comments'])  !== com) return false;
+        if (q) {
+          const hay = [s(p['Name']), s(p['Mobile']), s(p['Reference']), s(p['Comments']),
+                       ...g.family.map(f => s(f['Name']))].join(' ');
+          const hayNorm = norm(hay);
+          if (!hayNorm.includes(q)) return false;
+        }
+        return true;
+      });
+
+      computeStats(all);
+      renderGroups();
+    }
+
+    function processAndRender() { applyFilters(); }
+
+    /* ── Render ─────────────────────────────────────────────────────── */
+    function genderEmoji(g) {
+      const v = s(g).toLowerCase();
+      return v === 'male' ? '👨' : v === 'female' ? '👩' : '🧑';
+    }
+    function commentBadgeClass(c) {
+      const v = s(c).toLowerCase();
+      if (v.includes('confirm')) return 'b-confirm';
+      if (v.includes('cancel'))  return 'b-cancel';
+      if (v.includes('pending')) return 'b-pending';
+      return 'b-default';
+    }
+    function esc(v) {
+      return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderGroups() {
+      $('filterCount').textContent = displayGroups.length + ' record' + (displayGroups.length !== 1 ? 's' : '');
+      $('emptyState').style.display = !displayGroups.length ? 'block' : 'none';
+      $('groupsList').innerHTML = displayGroups.map(g => {
+        const p       = g.main;
+        const isGroup = g.family.length > 0 || n(p['Pax']) > 1;
+        const pax     = n(p['Pax']) || 1;
+        const name    = s(p['Name']) || '—';
+        const mobile  = s(p['Mobile']);
+        const age     = s(p['Age']);
+        const gender  = s(p['Gender']);
+        const ref     = s(p['Reference']);
+        const comm    = s(p['Comments']);
+        const famCount = n(p['Family Members']);
+
+        const metaHTML = [
+          mobile  ? `<div class="meta-item"><span class="mi">📱</span><strong>${esc(mobile)}</strong></div>` : '',
+          age     ? `<div class="meta-item"><span class="mi">🎂</span>${esc(age)} yrs</div>` : '',
+          gender  ? `<div class="meta-item"><span class="mi">${genderEmoji(gender)}</span>${esc(gender)}</div>` : '',
+          ref     ? `<div class="meta-item"><span class="mi">📍</span>Ref: <strong>${esc(ref)}</strong></div>` : '',
+        ].filter(Boolean).join('');
+
+        let familyHTML = '';
+        if (g.family.length > 0) {
+          const fRows = g.family.map(f => {
+            const fg = s(f['Gender']);
+            const fgc = fg.toLowerCase() === 'male' ? 'male' : fg.toLowerCase() === 'female' ? 'female' : '';
+            return `<div class="fm-row">
+              <div class="fm-av">${genderEmoji(fg)}</div>
+              <div class="fm-name">${esc(s(f['Name']) || '(Name pending)')}</div>
+              <div class="fm-chips">
+                ${s(f['Age'])    ? `<span class="fm-chip">${esc(s(f['Age']))} yrs</span>` : ''}
+                ${fg             ? `<span class="fm-chip ${fgc}">${esc(fg)}</span>` : ''}
+              </div>
+            </div>`;
+          }).join('');
+          familyHTML = `<div class="family-section">
+            <div class="family-header">👨‍👩‍👧 Family Members (${g.family.length})</div>
+            <div class="family-members-list">${fRows}</div>
+          </div>`;
+        } else if (famCount > 0) {
+          familyHTML = `<div class="family-section">
+            <div class="family-header">👨‍👩‍👧 Family Members</div>
+            <p class="family-count-note">📌 ${famCount} noted. Add them via "Add Passenger" to link them here.</p>
+          </div>`;
+        }
+
+        return `<div class="group-card ${isGroup ? 'type-group' : 'type-solo'}">
+          <div class="card-head">
+            <div class="card-head-row1">
+              <div class="traveller-name">
+                <div class="traveller-icon ${isGroup ? 'gi' : 'si'}">${isGroup ? '👨‍👩‍👧‍👦' : genderEmoji(gender)}</div>
+                ${esc(name)}
+              </div>
+              <div class="card-badges">
+                <span class="badge ${isGroup ? 'b-group' : 'b-solo'}">${isGroup ? '👥 Group · PAX ' + pax : 'Solo · PAX ' + pax}</span>
+                ${comm ? `<span class="badge ${commentBadgeClass(comm)}">${esc(comm)}</span>` : ''}
+              </div>
+            </div>
+            <div class="card-meta">${metaHTML}</div>
+          </div>
+          ${familyHTML}
+        </div>`;
+      }).join('');
+    }
+
+    /* ── Filter Dropdowns ───────────────────────────────────────────── */
+    function populateFilters() {
+      const refs = Array.from(
+        new Map(
+          allPassengers
+            .map(p => s(p['Reference']))
+            .filter(Boolean)
+            .map(v => [norm(v), s(v)])
+        ).values()
+      ).sort((a, b) => a.localeCompare(b));
+      const comms = Array.from(
+        new Map(
+          allPassengers
+            .map(p => s(p['Comments']))
+            .filter(Boolean)
+            .map(v => [norm(v), s(v)])
+        ).values()
+      ).sort((a, b) => a.localeCompare(b));
+      const rSel  = $('filterReference');
+      const cSel  = $('filterComment');
+      const cr    = rSel.value;
+      const cc    = cSel.value;
+      rSel.innerHTML = '<option value="">Reference: All</option>' + refs.map(r  => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
+      cSel.innerHTML = '<option value="">Status: All</option>'    + comms.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      rSel.value = cr; cSel.value = cc;
+    }
+
+    /* ── PAX Dynamic Fields ─────────────────────────────────────────── */
+    $('fPax').addEventListener('input', () => updateFamilyFields(Math.max(1, parseInt($('fPax').value) || 1)));
+
+    function updateFamilyFields(pax) {
+      const famCount = pax - 1;
+      $('paxSummary').style.display    = pax > 1 ? 'flex' : 'none';
+      $('paxSummaryNum').textContent   = pax;
+      $('paxSummaryText').textContent  = pax === 1 ? 'Individual traveller' : 'Group of';
+      $('familySection').style.display = famCount > 0 ? 'block' : 'none';
+      if (famCount <= 0) return;
+      $('familyCountLabel').textContent = famCount;
+      const container = $('familyFieldsContainer');
+      let cur = container.querySelectorAll('.family-member-block').length;
+      if (cur > famCount) {
+        container.querySelectorAll('.family-member-block')[cur - 1]?.remove();
+      } else {
+        for (let i = cur; i < famCount; i++) {
+          const b = document.createElement('div');
+          b.className = 'family-member-block';
+          b.innerHTML = `<div class="fml">Member ${i + 1}</div>
+            <div class="form-grid">
+              <div class="field full"><label>Name <span class="req">*</span></label><input class="fm-name" type="text" placeholder="Full name" /></div>
+              <div class="field"><label>Age</label><input class="fm-age" type="number" placeholder="Age" min="0" max="120" /></div>
+              <div class="field"><label>Gender</label><select class="fm-gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+            </div>`;
+          container.appendChild(b);
+        }
+      }
+    }
+
+    function collectFamilyMembers() {
+      return Array.from($('familyFieldsContainer').querySelectorAll('.family-member-block')).map(b => ({
+        name:   b.querySelector('.fm-name')?.value.trim()  || '',
+        age:    b.querySelector('.fm-age')?.value.trim()   || '',
+        gender: b.querySelector('.fm-gender')?.value       || ''
+      }));
+    }
+
+    /* ── Form Submit ────────────────────────────────────────────────── */
+    $('addForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const name   = $('fName').value.trim();
+      const mobile = $('fMobile').value.trim();
+      const pax    = Math.max(1, parseInt($('fPax').value) || 1);
+      let valid    = true;
+      if (!name)   { $('fName').classList.add('error');   valid = false; }
+      else           $('fName').classList.remove('error');
+      if (!mobile) { $('fMobile').classList.add('error'); valid = false; }
+      else           $('fMobile').classList.remove('error');
+      if (!valid) { showToast('⚠ Please fill required fields', 'error'); return; }
+      const fm = pax > 1 ? collectFamilyMembers() : [];
+      for (let i = 0; i < fm.length; i++) {
+        if (!fm[i].name) { showToast('⚠ Enter name for Family Member ' + (i + 1), 'error'); return; }
+      }
+      await addPassenger({ name, mobile, age: $('fAge').value.trim(), gender: $('fGender').value,
+        pax, reference: $('fReference').value.trim(), comments: $('fComments').value.trim(), familyMembers: fm });
+    });
+
+    /* ── Modal ──────────────────────────────────────────────────────── */
+    function openModal() {
+      $('overlay').classList.add('show');
+      $('addModal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => $('fName').focus(), 300);
+    }
+    function closeModal() {
+      $('overlay').classList.remove('show');
+      $('addModal').classList.remove('show');
+      $('settingsModal').classList.remove('show');
+      document.body.style.overflow = '';
+      $('addForm').reset();
+      $('familySection').style.display   = 'none';
+      $('paxSummary').style.display      = 'none';
+      $('familyFieldsContainer').innerHTML = '';
+    }
+    function openSettings() {
+      $('overlay').classList.add('show');
+      $('settingsModal').classList.add('show');
+      $('settingsApiUrl').value = API_URL;
+    }
+
+    /* ── Settings ───────────────────────────────────────────────────── */
+    function saveApiUrl(url) {
+      url = url.trim();
+      if (!url || !url.startsWith('http')) { showToast('⚠ Enter a valid URL', 'error'); return; }
+      API_URL = url;
+      localStorage.setItem(LS_URL, url);
+      showToast('✅ URL saved', 'success');
+      closeModal();
+      fetchPassengers();
+    }
+
+    /* ── Loading / Empty ────────────────────────────────────────────── */
+    function showLoading(on) {
+      $('loadingState').style.display   = on ? 'flex' : 'none';
+      $('groupsList').style.visibility  = on ? 'hidden' : 'visible';
+    }
+
+    /* ── Event Listeners ────────────────────────────────────────────── */
+    $('btnOpenAdd').addEventListener('click', openModal);
+    $('btnCloseModal').addEventListener('click', closeModal);
+    $('btnRefresh').addEventListener('click', fetchPassengers);
+    $('btnSettings').addEventListener('click', openSettings);
+    $('overlay').addEventListener('click', closeModal);
+
+    // Lock buttons (all do the same thing)
+    [$('btnLock'), $('btnLockSmall'), $('btnLockFull')].forEach(b => b?.addEventListener('click', lockApp));
+
+    $('searchInput').addEventListener('input', applyFilters);
+    $('filterGender').addEventListener('change', applyFilters);
+    $('filterReference').addEventListener('change', applyFilters);
+    $('filterComment').addEventListener('change', applyFilters);
+    $('btnClear').addEventListener('click', () => {
+      $('searchInput').value = '';
+      $('filterGender').value = $('filterReference').value = $('filterComment').value = '';
+      applyFilters();
+    });
+
+    $('btnSaveCfg').addEventListener('click', () => saveApiUrl($('settingsApiUrl').value));
+    $('bannerSaveBtn').addEventListener('click', () => saveApiUrl($('bannerApiUrl').value));
+
+    $('fName').addEventListener('input',   () => $('fName').classList.remove('error'));
+    $('fMobile').addEventListener('input', () => $('fMobile').classList.remove('error'));
+    $('lockApiUrl').addEventListener('input', () => $('lockApiUrl').classList.remove('error'));
+
+    /* ── Init ───────────────────────────────────────────────────────── */
+    function init() {
+      // If there's already a valid session secret, skip the lock screen
+      if (SESSION_SECRET && API_URL) {
+        unlockApp(SESSION_SECRET);
+      } else {
+        showLockScreen();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
