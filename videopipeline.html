@@ -1254,6 +1254,7 @@
                 <button class="modal-tab active" type="button" id="toolsTab" data-panel="toolsPanel" role="tab" aria-selected="true">Available tools &amp; models</button>
                 <button class="modal-tab" type="button" id="flowTab" data-panel="flowPanel" role="tab" aria-selected="false">Pipeline flow diagram</button>
                 <button class="modal-tab" type="button" id="codeTab" data-panel="codePanel" role="tab" aria-selected="false">Python pipeline sample</button>
+                <button class="modal-tab" type="button" id="apiTab" data-panel="apiPanel" role="tab" aria-selected="false">API endpoint samples</button>
               </div>
             </div>
             <button class="modal-close" type="button" id="closeCompareButton" aria-label="Close model comparison">Close</button>
@@ -1520,6 +1521,83 @@ def main() -> int:
    - logs and reports</pre>
               </article>
             </div>
+          </section>
+          <section class="compare-section modal-panel" id="apiPanel" aria-label="API endpoint samples" role="tabpanel">
+            <div class="compare-head">
+              <div>
+                <div class="eyebrow">API endpoint samples</div>
+                <h2>Reference request and response shapes for image and video generation.</h2>
+                <p>
+                  These are presentation-friendly examples of the endpoint shapes used for OpenAI image generation and
+                  Runway image-to-video generation. They are intentionally simplified for product discussion and demo documentation.
+                </p>
+              </div>
+            </div>
+            <div class="script-list">
+              <article class="script-card">
+                <h3>OpenAI image generation with GPT Image</h3>
+                <p><strong>Endpoint:</strong> <code>POST /v1/images/generations</code><br /><strong>Use case:</strong> Generate an image from a prompt using <code>gpt-image-1</code>.</p>
+                <pre class="script-code">Request
+POST https://api.openai.com/v1/images/generations
+Authorization: Bearer $OPENAI_API_KEY
+Content-Type: application/json
+
+{
+  "model": "gpt-image-1",
+  "prompt": "A cinematic product shot of a futuristic electric bicycle in a clean studio, soft blue accent lighting, premium commercial style",
+  "size": "1536x1024",
+  "quality": "medium"
+}
+
+Sample response
+{
+  "created": 1740000000,
+  "data": [
+    {
+      "b64_json": "iVBORw0KGgoAAAANSUhEUgAA..."
+    }
+  ]
+}</pre>
+              </article>
+
+              <article class="script-card">
+                <h3>Runway image-to-video generation</h3>
+                <p><strong>Endpoint:</strong> <code>POST /v1/image_to_video</code><br /><strong>Use case:</strong> Animate a still image into a short video clip with prompt-guided motion.</p>
+                <pre class="script-code">Request
+POST https://api.dev.runwayml.com/v1/image_to_video
+Authorization: Bearer $RUNWAY_API_KEY
+X-Runway-Version: 2024-11-06
+Content-Type: application/json
+
+{
+  "model": "gen4.5",
+  "promptImage": "https://example.com/hero-frame.png",
+  "promptText": "A gentle cinematic push-in, subtle subject motion, soft atmospheric background movement",
+  "ratio": "1280:720",
+  "duration": 5
+}
+
+Sample create-task response
+{
+  "id": "17f20503-6c24-4c16-946b-35dbbce2af2f",
+  "status": "PENDING"
+}
+
+Sample completed task response
+GET /v1/tasks/17f20503-6c24-4c16-946b-35dbbce2af2f
+
+{
+  "id": "17f20503-6c24-4c16-946b-35dbbce2af2f",
+  "status": "SUCCEEDED",
+  "output": [
+    "https://dnznrvs05pmza.cloudfront.net/....mp4"
+  ]
+}</pre>
+              </article>
+            </div>
+            <p class="diagram-note">
+              OpenAI image generation commonly returns base64 image payloads, while Runway video generation returns a task id first and the final video URL after task completion.
+            </p>
           </section>
         </div>
       </div>
