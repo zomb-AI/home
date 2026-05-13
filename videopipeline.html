@@ -1,0 +1,1650 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Video Tutorial Wizard | Fake Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #16211d;
+        --muted: #5b6964;
+        --line: #d8e0dc;
+        --paper: #fbfcf8;
+        --panel: #ffffff;
+        --mint: #c8f2d7;
+        --mint-strong: #1f8a5b;
+        --teal: #0a6f73;
+        --sun: #f6c85f;
+        --coral: #ec6f5f;
+        --blue: #3267d6;
+        --shadow: 0 22px 70px rgba(26, 39, 34, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100dvh;
+        margin: 0;
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          linear-gradient(135deg, rgba(200, 242, 215, 0.92) 0%, rgba(251, 252, 248, 0.92) 46%, rgba(246, 200, 95, 0.38) 100%),
+          #f7faf4;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 26px 0 36px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .mark {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border: 1px solid rgba(22, 33, 29, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--teal), var(--mint-strong));
+        box-shadow: 0 12px 34px rgba(10, 111, 115, 0.2);
+      }
+
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .brand strong {
+        display: block;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.1rem;
+      }
+
+      .session-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        padding: 0 14px;
+        border: 1px solid rgba(22, 33, 29, 0.1);
+        border-radius: 8px;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.72);
+        font-weight: 700;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+        gap: 22px;
+        align-items: stretch;
+      }
+
+      .intro,
+      .wizard {
+        border: 1px solid rgba(22, 33, 29, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .intro {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 624px;
+        padding: 30px;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: clamp(2.35rem, 5vw, 5.2rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 680px;
+        margin: 20px 0 0;
+        color: var(--muted);
+        font-size: clamp(1rem, 1.6vw, 1.18rem);
+        line-height: 1.6;
+      }
+
+      .signal-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 28px;
+      }
+
+      .signal {
+        min-height: 120px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+      }
+
+      .signal b {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.86rem;
+      }
+
+      .signal span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+
+      .agenda {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 26px;
+      }
+
+      .agenda-item {
+        padding: 16px;
+        border-radius: 8px;
+        color: #10211b;
+        background: #eaf6ee;
+      }
+
+      .agenda-item:nth-child(2) {
+        background: #e8f0ff;
+      }
+
+      .agenda-item:nth-child(3) {
+        background: #fff1d0;
+      }
+
+      .agenda-item time {
+        display: block;
+        margin-bottom: 8px;
+        color: rgba(22, 33, 29, 0.72);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .agenda-item strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .agenda-item p {
+        margin: 0;
+        color: rgba(22, 33, 29, 0.72);
+        font-size: 0.86rem;
+        line-height: 1.45;
+      }
+
+      .wizard {
+        display: grid;
+        min-height: 624px;
+        grid-template-rows: auto 1fr auto;
+        overflow: hidden;
+      }
+
+      .wizard-head {
+        padding: 22px 22px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .progress {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .step-dot {
+        height: 8px;
+        border: 0;
+        border-radius: 8px;
+        background: #dfe7e3;
+      }
+
+      .step-dot.active,
+      .step-dot.done {
+        background: var(--mint-strong);
+      }
+
+      .step-kicker {
+        margin: 0 0 8px;
+        color: var(--mint-strong);
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .wizard h2 {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: clamp(1.35rem, 2.5vw, 2rem);
+        letter-spacing: 0;
+      }
+
+      .wizard-body {
+        padding: 22px;
+      }
+
+      .step {
+        display: none;
+      }
+
+      .step.active {
+        display: block;
+      }
+
+      .option-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .option,
+      .tool {
+        position: relative;
+        display: block;
+        width: 100%;
+        min-height: 118px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        text-align: left;
+        background: #fff;
+        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      .option:hover,
+      .tool:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(22, 33, 29, 0.09);
+      }
+
+      .option.selected,
+      .tool.selected {
+        border-color: var(--mint-strong);
+        box-shadow: 0 0 0 3px rgba(31, 138, 91, 0.16);
+      }
+
+      .option b,
+      .tool b {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .option span,
+      .tool span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.45;
+      }
+
+      .tools-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .tool {
+        min-height: 108px;
+      }
+
+      .tool small {
+        display: inline-block;
+        margin-bottom: 9px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        color: #123029;
+        background: #eaf6ee;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        background: #fff;
+        outline: none;
+      }
+
+      input,
+      select {
+        min-height: 46px;
+        padding: 0 12px;
+      }
+
+      textarea {
+        min-height: 118px;
+        padding: 12px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--mint-strong);
+        box-shadow: 0 0 0 3px rgba(31, 138, 91, 0.14);
+      }
+
+      .prompt-card,
+      .summary-card {
+        margin-top: 14px;
+        padding: 16px;
+        border: 1px solid #cfe5d6;
+        border-radius: 8px;
+        background: #f4fbf6;
+      }
+
+      .prompt-card pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin: 10px 0 0;
+        color: #10211b;
+        font-size: 0.92rem;
+        line-height: 1.55;
+      }
+
+      .checklist {
+        display: grid;
+        gap: 10px;
+        margin: 14px 0 0;
+      }
+
+      .check {
+        display: grid;
+        grid-template-columns: 26px 1fr;
+        gap: 10px;
+        align-items: start;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .box {
+        display: grid;
+        width: 22px;
+        height: 22px;
+        place-items: center;
+        border-radius: 6px;
+        color: #fff;
+        background: var(--mint-strong);
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .check strong {
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .check span {
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.45;
+      }
+
+      .wizard-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 22px;
+        border-top: 1px solid var(--line);
+        background: rgba(251, 252, 248, 0.8);
+      }
+
+      .nav-btn,
+      .copy-btn {
+        min-height: 44px;
+        padding: 0 16px;
+        border: 1px solid rgba(22, 33, 29, 0.12);
+        border-radius: 8px;
+        color: var(--ink);
+        background: #fff;
+        font-weight: 800;
+      }
+
+      .nav-btn.primary,
+      .copy-btn {
+        border-color: var(--mint-strong);
+        color: #fff;
+        background: var(--mint-strong);
+      }
+
+      .nav-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+      }
+
+      .mini-note {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+
+      .sources {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.45;
+      }
+
+      .sources a {
+        color: var(--teal);
+        font-weight: 700;
+      }
+
+      .compare-section {
+        padding: 26px;
+        border: 1px solid rgba(22, 33, 29, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .compare-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .compare-head h2 {
+        margin: 6px 0 0;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: clamp(1.4rem, 2.5vw, 2rem);
+      }
+
+      .compare-head p {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .eyebrow {
+        color: var(--mint-strong);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .compare-cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .compare-card {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+      }
+
+      .compare-card strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .compare-card span {
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.5;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 940px;
+      }
+
+      th,
+      td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #e7eeea;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: #f6faf7;
+      }
+
+      td {
+        font-size: 0.92rem;
+        line-height: 1.55;
+      }
+
+      td strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 9px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+      }
+
+      .tag.api {
+        color: #0f4d3b;
+        background: #dff6e8;
+      }
+
+      .tag.credit {
+        color: #17456f;
+        background: #e5efff;
+      }
+
+      .tag.note {
+        color: #6a4e10;
+        background: #fff3d2;
+      }
+
+      .ghost-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 0 14px;
+        border: 1px solid rgba(22, 33, 29, 0.1);
+        border-radius: 8px;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.72);
+        font-weight: 800;
+      }
+
+      .modal-shell {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: none;
+      }
+
+      .modal-shell.open {
+        display: block;
+      }
+
+      .modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(16, 33, 27, 0.34);
+        backdrop-filter: blur(10px);
+      }
+
+      .modal-card {
+        position: relative;
+        width: min(1160px, calc(100% - 28px));
+        max-height: calc(100dvh - 40px);
+        margin: 20px auto;
+        overflow: auto;
+        border: 1px solid rgba(22, 33, 29, 0.12);
+        border-radius: 12px;
+        background: #fcfdf9;
+        box-shadow: 0 28px 80px rgba(22, 39, 34, 0.22);
+      }
+
+      .modal-head {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 22px 24px 16px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(252, 253, 249, 0.94);
+        backdrop-filter: blur(12px);
+      }
+
+      .modal-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .modal-tab {
+        min-height: 38px;
+        padding: 0 14px;
+        border: 1px solid rgba(22, 33, 29, 0.12);
+        border-radius: 999px;
+        color: var(--ink);
+        background: #fff;
+        font-size: 0.84rem;
+        font-weight: 800;
+      }
+
+      .modal-tab.active {
+        border-color: var(--mint-strong);
+        color: #fff;
+        background: var(--mint-strong);
+      }
+
+      .modal-close {
+        min-width: 42px;
+        min-height: 42px;
+        border: 1px solid rgba(22, 33, 29, 0.12);
+        border-radius: 8px;
+        color: var(--ink);
+        background: #fff;
+        font-size: 1rem;
+        font-weight: 800;
+      }
+
+      .modal-panel {
+        display: none;
+      }
+
+      .modal-panel.active {
+        display: block;
+      }
+
+      .diagram-wrap {
+        overflow: auto;
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbf7 100%);
+      }
+
+      .flow-chart {
+        display: grid;
+        gap: 18px;
+        min-width: 980px;
+      }
+
+      .flow-sequence {
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .flow-support {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr 1fr;
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .flow-box {
+        min-width: 150px;
+        min-height: 112px;
+        padding: 16px 14px;
+        border: 1px solid;
+        border-radius: 10px;
+        font-size: 0.86rem;
+        line-height: 1.4;
+        text-align: center;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 10px 24px rgba(22, 39, 34, 0.06);
+      }
+
+      .flow-box strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.92rem;
+      }
+
+      .flow-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        flex: 0 0 28px;
+        align-self: center;
+        color: var(--muted);
+        font-size: 1.5rem;
+        font-weight: 800;
+      }
+
+      .flow-stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .flow-stack .flow-box {
+        min-width: 0;
+      }
+
+      .flow-caption {
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+
+      .flow-join {
+        display: grid;
+        place-items: center;
+        padding: 8px 0 2px;
+        color: var(--muted);
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .flow-warm {
+        border-color: #e0a96d;
+        color: #3e2a1f;
+        background: #fff3e0;
+      }
+
+      .flow-green {
+        border-color: #7cbf8e;
+        color: #1f3a2e;
+        background: #e8f5e9;
+      }
+
+      .flow-blue {
+        border-color: #7fafe0;
+        color: #1e3550;
+        background: #e3f2fd;
+      }
+
+      .flow-yellow {
+        border-color: #d9c36a;
+        color: #4a3f1a;
+        background: #fff8e1;
+      }
+
+      .flow-purple {
+        border-color: #b39ddb;
+        color: #3b2a4a;
+        background: #f3e5f5;
+      }
+
+      .flow-pink {
+        border-color: #e39ab1;
+        color: #4a2230;
+        background: #fce4ec;
+      }
+
+      .diagram-note {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.55;
+      }
+
+      .script-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .script-card {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .script-card h3 {
+        margin: 0 0 8px;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.02rem;
+      }
+
+      .script-card p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+
+      .script-code {
+        margin: 0;
+        overflow: auto;
+        padding: 14px;
+        border-radius: 8px;
+        color: #dfffe7;
+        background: #10211b;
+        font-size: 0.82rem;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      @media (max-width: 940px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .intro,
+        .wizard {
+          min-height: auto;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 22px, 1180px);
+          padding-top: 16px;
+        }
+
+        .topbar,
+        .wizard-foot {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .header-actions {
+          flex-direction: column;
+        }
+
+        .session-chip,
+        .ghost-btn,
+        .nav-btn,
+        .copy-btn {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .intro {
+          padding: 22px;
+        }
+
+        .signal-grid,
+        .agenda,
+        .compare-cards,
+        .option-grid,
+        .tools-grid,
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .signal {
+          min-height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar" aria-label="Session header">
+        <div class="brand">
+          <div class="mark">FI</div>
+          <div>
+            <small>Team</small>
+            <strong>Fake Intelligence</strong>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="session-chip">3 minute AI video tutorial</div>
+          <button class="ghost-btn" type="button" id="openCompareButton">Available tools & models</button>
+        </div>
+      </header>
+
+      <section class="hero">
+        <article class="intro">
+          <div>
+            <h1>Make an AI video from idea to clip.</h1>
+            <p class="subtitle">
+              A compact presentation wizard for explaining tools, choosing a creation route,
+              building a prompt, and ending with a practical video production checklist.
+            </p>
+
+            <div class="signal-grid" aria-label="AI video modes">
+              <div class="signal">
+                <b>Prompt to video</b>
+                <span>Start with a written scene and generate a short clip.</span>
+              </div>
+              <div class="signal">
+                <b>Image to video</b>
+                <span>Use a still image as the anchor for subject, style, and composition.</span>
+              </div>
+              <div class="signal">
+                <b>Frame to video</b>
+                <span>Plan key moments, then let AI connect motion between frames.</span>
+              </div>
+              <div class="signal">
+                <b>Edit with AI</b>
+                <span>Use captions, voiceover, music, cleanup, and template editing.</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="agenda" aria-label="Three minute agenda">
+              <div class="agenda-item">
+                <time>0:00-0:30</time>
+                <strong>Concept</strong>
+                <p>Explain what AI video can create and where it fits.</p>
+              </div>
+              <div class="agenda-item">
+                <time>0:30-1:20</time>
+                <strong>Tools</strong>
+                <p>Compare free or trial-friendly tools by use case.</p>
+              </div>
+              <div class="agenda-item">
+                <time>1:20-3:00</time>
+                <strong>Workflow</strong>
+                <p>Build the prompt, select a tool, and show the final checklist.</p>
+              </div>
+            </div>
+
+            <p class="sources">
+              Tool notes use public docs from Adobe Firefly, Google Vids, YouTube Create,
+              Runway, Pika, Luma, and Seedance. Limits change often, so verify before a live demo.
+            </p>
+          </div>
+        </article>
+
+        <article class="wizard" aria-label="AI video wizard">
+          <div class="wizard-head">
+            <p class="step-kicker" id="stepKicker">Step 1 of 5</p>
+            <h2 id="stepTitle">Choose the session goal</h2>
+            <div class="progress" aria-label="Wizard progress">
+              <button class="step-dot active" type="button" data-goto="0" aria-label="Go to step 1"></button>
+              <button class="step-dot" type="button" data-goto="1" aria-label="Go to step 2"></button>
+              <button class="step-dot" type="button" data-goto="2" aria-label="Go to step 3"></button>
+              <button class="step-dot" type="button" data-goto="3" aria-label="Go to step 4"></button>
+              <button class="step-dot" type="button" data-goto="4" aria-label="Go to step 5"></button>
+            </div>
+          </div>
+
+          <div class="wizard-body">
+            <section class="step active" data-title="Choose the session goal">
+              <div class="option-grid">
+                <button class="option selected" type="button" data-field="goal" data-value="Tutorial">
+                  <b>Tutorial</b>
+                  <span>Teach a concept with clear steps, narration, and captions.</span>
+                </button>
+                <button class="option" type="button" data-field="goal" data-value="Marketing reel">
+                  <b>Marketing reel</b>
+                  <span>Make a compact product or service teaser for social platforms.</span>
+                </button>
+                <button class="option" type="button" data-field="goal" data-value="Product demo">
+                  <b>Product demo</b>
+                  <span>Show a feature, user flow, or transformation with before and after scenes.</span>
+                </button>
+                <button class="option" type="button" data-field="goal" data-value="Training clip">
+                  <b>Training clip</b>
+                  <span>Create a short explain-and-show video for internal learning.</span>
+                </button>
+              </div>
+              <p class="mini-note">For a 3 minute presentation, use the wizard itself as the demo object.</p>
+            </section>
+
+            <section class="step" data-title="Select a creation route">
+              <div class="option-grid">
+                <button class="option selected" type="button" data-field="route" data-value="Prompt to video">
+                  <b>Prompt to video</b>
+                  <span>Best when you do not have visuals and want quick concept exploration.</span>
+                </button>
+                <button class="option" type="button" data-field="route" data-value="Image to video">
+                  <b>Image to video</b>
+                  <span>Best for controlled characters, products, posters, or branded scenes.</span>
+                </button>
+                <button class="option" type="button" data-field="route" data-value="Frame to video">
+                  <b>Frame to video</b>
+                  <span>Best when you need story continuity across key moments.</span>
+                </button>
+                <button class="option" type="button" data-field="route" data-value="Edit with AI">
+                  <b>Edit with AI</b>
+                  <span>Best when you already have clips and need captions, music, and polish.</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="step" data-title="Pick a free or trial-friendly tool">
+              <div class="tools-grid">
+                <button class="tool selected" type="button" data-field="tool" data-value="Adobe Firefly">
+                  <small>Creative suite</small>
+                  <b>Adobe Firefly</b>
+                  <span>Free plan includes limited credits for trying video, image, audio, and design features.</span>
+                </button>
+                <button class="tool" type="button" data-field="tool" data-value="Runway">
+                  <small>Cinematic AI</small>
+                  <b>Runway</b>
+                  <span>Free plan has one-time credits and watermarked generations, good for testing quality.</span>
+                </button>
+                <button class="tool" type="button" data-field="tool" data-value="Google Vids">
+                  <small>Workspace video</small>
+                  <b>Google Vids</b>
+                  <span>Useful for prompt or image based clips, voiceover, script help, and collaborative edits.</span>
+                </button>
+                <button class="tool" type="button" data-field="tool" data-value="YouTube Create">
+                  <small>Mobile shorts</small>
+                  <b>YouTube Create</b>
+                  <span>Free editor with AI features in selected countries, including India, for vertical clips.</span>
+                </button>
+                <button class="tool" type="button" data-field="tool" data-value="Pika">
+                  <small>Image motion</small>
+                  <b>Pika</b>
+                  <span>Free/basic credits are useful for short image-to-video tests and creative effects.</span>
+                </button>
+                <button class="tool" type="button" data-field="tool" data-value="Seedance">
+                  <small>Multi-shot</small>
+                  <b>Seedance</b>
+                  <span>Good to discuss for cinematic text or image to video, especially multi-scene prompts.</span>
+                </button>
+                <button class="tool" type="button" data-field="tool" data-value="Luma Dream Machine">
+                  <small>Trial credits</small>
+                  <b>Luma Dream Machine</b>
+                  <span>Strong motion quality; check current trial and paid-generation availability before demo.</span>
+                </button>
+                <button class="tool" type="button" data-field="tool" data-value="CapCut">
+                  <small>Editor</small>
+                  <b>CapCut</b>
+                  <span>Useful as a free finishing layer for captions, music, trims, templates, and exports.</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="step" data-title="Build the video prompt">
+              <div class="form-grid">
+                <label>
+                  Subject
+                  <input id="subject" value="A presenter introducing AI video tools" />
+                </label>
+                <label>
+                  Action
+                  <input id="action" value="walks through a simple five step creation workflow" />
+                </label>
+                <label>
+                  Scene
+                  <input id="scene" value="modern classroom with a large screen showing video thumbnails" />
+                </label>
+                <label>
+                  Camera
+                  <select id="camera">
+                    <option>slow push-in</option>
+                    <option>smooth side tracking shot</option>
+                    <option>locked tripod shot</option>
+                    <option>handheld documentary shot</option>
+                  </select>
+                </label>
+                <label>
+                  Style
+                  <select id="style">
+                    <option>realistic professional tutorial</option>
+                    <option>cinematic product demo</option>
+                    <option>clean social media reel</option>
+                    <option>animated explainer</option>
+                  </select>
+                </label>
+                <label>
+                  Format
+                  <select id="format">
+                    <option>8 seconds, 16:9 landscape</option>
+                    <option>8 seconds, 9:16 vertical</option>
+                    <option>5 seconds, 1:1 square</option>
+                    <option>10 seconds, 16:9 landscape</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="prompt-card">
+                <b>Generated prompt</b>
+                <pre id="generatedPrompt"></pre>
+                <button class="copy-btn" type="button" id="copyPrompt">Copy prompt</button>
+              </div>
+            </section>
+
+            <section class="step" data-title="Present the production checklist">
+              <div class="summary-card">
+                <b>Your session setup</b>
+                <p id="summaryText" class="mini-note"></p>
+              </div>
+              <div class="checklist">
+                <div class="check">
+                  <div class="box">1</div>
+                  <div>
+                    <strong>Write one-line story</strong>
+                    <span>Clarify the audience, outcome, and one key message before generating.</span>
+                  </div>
+                </div>
+                <div class="check">
+                  <div class="box">2</div>
+                  <div>
+                    <strong>Split into three scenes</strong>
+                    <span>Opening hook, main action, and final takeaway keep the clip coherent.</span>
+                  </div>
+                </div>
+                <div class="check">
+                  <div class="box">3</div>
+                  <div>
+                    <strong>Generate stills first</strong>
+                    <span>Images are cheaper to iterate than videos and help lock composition.</span>
+                  </div>
+                </div>
+                <div class="check">
+                  <div class="box">4</div>
+                  <div>
+                    <strong>Animate the best frame</strong>
+                    <span>Use image-to-video or frame-to-video for more consistent results.</span>
+                  </div>
+                </div>
+                <div class="check">
+                  <div class="box">5</div>
+                  <div>
+                    <strong>Finish with edit tools</strong>
+                    <span>Add captions, voiceover, music, trim, disclosure label, and export.</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="wizard-foot">
+            <button class="nav-btn" type="button" id="prevBtn">Back</button>
+            <button class="nav-btn primary" type="button" id="nextBtn">Next</button>
+          </div>
+        </article>
+      </section>
+
+      <div class="modal-shell" id="compareModal" aria-hidden="true">
+        <div class="modal-backdrop" id="compareBackdrop"></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="compareTitle">
+          <div class="modal-head">
+            <div>
+              <div class="eyebrow">Available tools and models</div>
+              <h2 id="compareTitle">Choose the right generator before you write the prompt.</h2>
+              <p>
+                Compare tools, then switch to the flow tab for the end-to-end production architecture.
+              </p>
+              <div class="modal-tabs" role="tablist" aria-label="Popup sections">
+                <button class="modal-tab active" type="button" id="toolsTab" data-panel="toolsPanel" role="tab" aria-selected="true">Available tools &amp; models</button>
+                <button class="modal-tab" type="button" id="flowTab" data-panel="flowPanel" role="tab" aria-selected="false">Pipeline flow diagram</button>
+                <button class="modal-tab" type="button" id="codeTab" data-panel="codePanel" role="tab" aria-selected="false">Python pipeline sample</button>
+              </div>
+            </div>
+            <button class="modal-close" type="button" id="closeCompareButton" aria-label="Close model comparison">Close</button>
+          </div>
+          <section class="compare-section modal-panel active" id="toolsPanel" aria-label="Available tools and model comparison" role="tabpanel">
+            <div class="compare-head">
+              <div class="session-chip">6 models compared</div>
+            </div>
+
+            <div class="compare-cards" aria-label="How to read the comparison">
+              <div class="compare-card">
+                <strong>Budget testing</strong>
+                <span>MiniMax Hailuo Fast and lower-resolution Runway-style tests are better when you need fast learning loops without burning credits.</span>
+              </div>
+              <div class="compare-card">
+                <strong>Premium motion</strong>
+                <span>Runway Gen-4 and Veo-class models are stronger when you care about polished motion, composition, and presentation quality.</span>
+              </div>
+              <div class="compare-card">
+                <strong>Storyboard continuity</strong>
+                <span>Seedance and Kling-style models are useful when the script depends on multi-shot flow, stylized control, or stronger cinematic continuity.</span>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tool / Model</th>
+                    <th>Best for</th>
+                    <th>Strengths</th>
+                    <th>Pricing signal</th>
+                    <th>Watch-outs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <strong>Runway Gen-4 Turbo</strong>
+                      <span class="tag api">API priced</span>
+                    </td>
+                    <td>Fast concept videos, short explainers, image-to-video demos</td>
+                    <td>Good balance of quality, automation friendliness, and predictable API billing for short clips.</td>
+                    <td>About <strong>$0.05/sec</strong><br />8s clip: about <strong>$0.40</strong></td>
+                    <td>Can flatten subtle acting unless prompts are very performance-aware.</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Runway Gen-4</strong>
+                      <span class="tag api">API priced</span>
+                    </td>
+                    <td>Higher-end product demos, cinematic classroom or brand scenes</td>
+                    <td>Better visual polish than the Turbo tier and easier to justify for hero shots.</td>
+                    <td>About <strong>$0.08/sec</strong><br />8s clip: about <strong>$0.64</strong></td>
+                    <td>Costs rise quickly across multiple scenes, so it is best for selective premium moments.</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Pika 2.2</strong>
+                      <span class="tag credit">Credit based</span>
+                    </td>
+                    <td>Creative effects, quick motion tests, social-first experiments</td>
+                    <td>Easy to use for image-to-video and playful short-form outputs.</td>
+                    <td>About <strong>40 credits</strong> for 10s 720p<br />roughly <strong>$1.60</strong> depending on plan</td>
+                    <td>Usually better for fun or stylized outputs than rigorous scene continuity.</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>MiniMax Hailuo 2.3 Fast</strong>
+                      <span class="tag api">API priced</span>
+                    </td>
+                    <td>Budget-friendly video prototyping and rapid iteration</td>
+                    <td>One of the clearest low-cost API options for short prompt-to-video or image-to-video tests.</td>
+                    <td><strong>$0.19</strong> for 768p 6s<br /><strong>$0.32</strong> for 768p 10s</td>
+                    <td>Good value, but not always the first choice for premium character performance.</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Kling 3.0</strong>
+                      <span class="tag credit">Credit based</span>
+                    </td>
+                    <td>Multi-character scenes, cinematic continuity, stronger movement staging</td>
+                    <td>Often considered strong for narrative motion and richer scene blocking.</td>
+                    <td><strong>6 credits/sec</strong> at 720p no-audio<br /><strong>9 credits/sec</strong> at 720p native-audio</td>
+                    <td>Public money pricing is less transparent than some API-first tools.</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Seedance 2.0</strong>
+                      <span class="tag note">Premium / access varies</span>
+                    </td>
+                    <td>Presentation-worthy multi-shot storytelling and premium visuals</td>
+                    <td>Strong positioning for cinematic text-to-video and structured multi-shot narratives.</td>
+                    <td>Pricing varies by access route<br />treat as premium tier</td>
+                    <td>Great to discuss in strategy decks, but availability and pricing can depend on region or platform route.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p class="sources">
+              Pricing signals summarize public guidance commonly used in creator planning: Runway API per-second pricing,
+              Pika credit usage, MiniMax Hailuo pay-as-you-go tiers, and Kling credit-per-second guidance. Always verify
+              the latest provider docs before quoting live budgets in a customer meeting.
+            </p>
+          </section>
+          <section class="compare-section modal-panel" id="flowPanel" aria-label="Pipeline flow diagram" role="tabpanel">
+            <div class="compare-head">
+              <div>
+                <div class="eyebrow">Pipeline flow</div>
+                <h2>From brief to rendered delivery.</h2>
+                <p>
+                  This is the compact flow sequence used by the production pipeline, including narrative planning,
+                  prompt composition, image creation, video generation, and delivery outputs.
+                </p>
+              </div>
+            </div>
+            <div class="diagram-wrap">
+              <div class="flow-chart">
+                <div class="flow-sequence">
+                  <div class="flow-box flow-warm"><div><strong>Ideation</strong>Creative Brief</div></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-box flow-green"><div><strong>Narrative Engineering</strong>Series / Episode Design</div></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-box flow-green"><div><strong>Scene Planning</strong>Structure, Dialogue, Camera, SFX</div></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-box flow-green"><div><strong>Prompt System</strong>Character Lock, Consistency, Rules</div></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-box flow-blue"><div><strong>Image Creation</strong>Prompt-to-image and reference-driven stills</div></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-box flow-blue"><div><strong>Video Creation</strong>Animate scenes from prompts and anchor images</div></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-box flow-yellow"><div><strong>Delivery</strong>JSON, prompts, images, videos, logs</div></div>
+                </div>
+                <div class="flow-support">
+                  <div class="flow-stack">
+                    <div class="flow-caption">Execution control</div>
+                    <div class="flow-box flow-purple"><div><strong>Modes</strong>Package, image, full, range-based reruns, retry, reuse</div></div>
+                  </div>
+                  <div class="flow-stack">
+                    <div class="flow-caption">Story + image provider</div>
+                    <div class="flow-box flow-pink"><div><strong>OpenAI</strong>Story generation, prompt generation, image creation</div></div>
+                  </div>
+                  <div class="flow-stack">
+                    <div class="flow-caption">Video providers</div>
+                    <div class="flow-box flow-pink"><div><strong>Runway / Pika / Veo</strong>Swappable routing based on budget, access, and motion quality</div></div>
+                  </div>
+                </div>
+                <div class="flow-join">Execution control and provider routing feed the production stages above.</div>
+              </div>
+            </div>
+            <p class="diagram-note">
+              Provider routing is flexible: OpenAI powers story and image generation, while Runway, Pika, or Veo can
+              be swapped in for video generation depending on budget, access, and motion quality needs.
+            </p>
+          </section>
+          <section class="compare-section modal-panel" id="codePanel" aria-label="Python pipeline sample" role="tabpanel">
+            <div class="compare-head">
+              <div>
+                <div class="eyebrow">Python pipeline sample</div>
+                <h2>Sample pipeline code from the series orchestrator.</h2>
+                <p>
+                  This sample is pulled from the main episode-generation pipeline file and shows the shape of the real
+                  Python orchestration used for package generation, image generation, provider routing, and delivery.
+                </p>
+              </div>
+            </div>
+            <div class="script-list">
+              <article class="script-card">
+                <h3>series_pipeline.py</h3>
+                <p>Main series orchestrator for a 10-episode production flow with environment loading, JSON packaging, OpenAI text generation, image generation, and pluggable video providers.</p>
+                <pre class="script-code">import argparse
+import base64
+import json
+import logging
+import mimetypes
+import os
+import re
+import shlex
+import subprocess
+import textwrap
+import time
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1"
+DEFAULT_TEXT_MODEL = "gpt-5.4"
+DEFAULT_IMAGE_MODEL = "gpt-image-1"
+DEFAULT_IMAGE_SIZE = "1536x1024"
+DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent / "output"
+DEFAULT_EPISODE_COUNT = 10
+DEFAULT_CORE_SCENE_COUNT = 15
+DEFAULT_SCENES_PER_EPISODE = DEFAULT_CORE_SCENE_COUNT + 2
+RUN_MODES = {"package", "package-image", "full", "image-only", "video-only"}
+DEFAULT_CHARACTER_NAMES = ["Aarav", "Aadi", "Eclip"]
+LOGGER = logging.getLogger("eclip_series")
+
+def load_default_env() -> Path | None:
+    candidates = [
+        Path(__file__).resolve().parent / '.env',
+        Path.cwd() / '.env',
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            load_dotenv(candidate)
+            return candidate
+    return None
+
+class OpenAIResponsesClient:
+    def generate_series_bible(self, brief: dict[str, Any]) -> dict[str, Any]:
+        ...
+
+    def generate_episode_package(self, brief: dict[str, Any], bible: dict[str, Any], episode_number: int) -> dict[str, Any]:
+        ...
+
+class OpenAIImageClient:
+    ...
+
+class CommandTemplateRunner:
+    ...
+
+def main() -> int:
+    ...</pre>
+              </article>
+
+              <article class="script-card">
+                <h3>Key pipeline layers in code</h3>
+                <p>The file is structured like an orchestrator, not a single generator call. It separates planning, media generation, and execution controls into reusable blocks.</p>
+                <pre class="script-code">1. Environment + config
+   - load_default_env()
+   - getenv_int()
+   - configure_logging()
+
+2. Brief normalization
+   - get_character_names()
+   - get_main_character_names()
+   - get_provided_master_character_prompts()
+   - get_character_reference_images()
+
+3. Narrative generation
+   - OpenAIResponsesClient.generate_series_bible()
+   - OpenAIResponsesClient.generate_episode_package()
+
+4. Media generation
+   - OpenAIImageClient
+   - CommandTemplateRunner
+   - provider routing for Runway / Pika / Veo
+
+5. Execution modes
+   - package
+   - package-image
+   - full
+   - image-only
+   - video-only
+
+6. Delivery
+   - episode JSON
+   - scene JSON
+   - prompts
+   - rendered image/video outputs
+   - logs and reports</pre>
+              </article>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const state = {
+        goal: "Tutorial",
+        route: "Prompt to video",
+        tool: "Adobe Firefly"
+      };
+
+      const steps = [...document.querySelectorAll(".step")];
+      const dots = [...document.querySelectorAll(".step-dot")];
+      const stepKicker = document.getElementById("stepKicker");
+      const stepTitle = document.getElementById("stepTitle");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const promptEl = document.getElementById("generatedPrompt");
+      const summaryText = document.getElementById("summaryText");
+      const compareModal = document.getElementById("compareModal");
+      const openCompareButton = document.getElementById("openCompareButton");
+      const closeCompareButton = document.getElementById("closeCompareButton");
+      const compareBackdrop = document.getElementById("compareBackdrop");
+      const modalTabs = [...document.querySelectorAll(".modal-tab")];
+      const modalPanels = [...document.querySelectorAll(".modal-panel")];
+      let current = 0;
+
+      function setCompareModal(open) {
+        compareModal.classList.toggle("open", open);
+        compareModal.setAttribute("aria-hidden", String(!open));
+        document.body.style.overflow = open ? "hidden" : "";
+      }
+
+      function showModalPanel(panelId) {
+        modalTabs.forEach((tab) => {
+          const isActive = tab.dataset.panel === panelId;
+          tab.classList.toggle("active", isActive);
+          tab.setAttribute("aria-selected", String(isActive));
+        });
+        modalPanels.forEach((panel) => {
+          panel.classList.toggle("active", panel.id === panelId);
+        });
+      }
+
+      function selectedText(id) {
+        return document.getElementById(id).value.trim();
+      }
+
+      function buildPrompt() {
+        const prompt = `${selectedText("subject")} ${selectedText("action")} in a ${selectedText("scene")}. Camera: ${selectedText("camera")}. Style: ${selectedText("style")}. Lighting: bright natural studio light. Format: ${selectedText("format")}. Keep the motion clear, avoid extra text on screen, and make it suitable for a short presentation demo.`;
+        promptEl.textContent = prompt;
+        return prompt;
+      }
+
+      function updateSummary() {
+        summaryText.textContent = `Goal: ${state.goal}. Route: ${state.route}. Suggested tool: ${state.tool}. Use the generated prompt as the live example, then show how the same concept can move from still frame to final edited video.`;
+      }
+
+      function showStep(index) {
+        current = Math.max(0, Math.min(index, steps.length - 1));
+        steps.forEach((step, i) => step.classList.toggle("active", i === current));
+        dots.forEach((dot, i) => {
+          dot.classList.toggle("active", i === current);
+          dot.classList.toggle("done", i < current);
+        });
+        stepKicker.textContent = `Step ${current + 1} of ${steps.length}`;
+        stepTitle.textContent = steps[current].dataset.title;
+        prevBtn.disabled = current === 0;
+        nextBtn.textContent = current === steps.length - 1 ? "Restart" : "Next";
+        buildPrompt();
+        updateSummary();
+      }
+
+      document.querySelectorAll("[data-field]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const field = button.dataset.field;
+          state[field] = button.dataset.value;
+          document.querySelectorAll(`[data-field="${field}"]`).forEach((item) => item.classList.remove("selected"));
+          button.classList.add("selected");
+          updateSummary();
+        });
+      });
+
+      ["subject", "action", "scene", "camera", "style", "format"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", buildPrompt);
+      });
+
+      dots.forEach((dot) => {
+        dot.addEventListener("click", () => showStep(Number(dot.dataset.goto)));
+      });
+
+      prevBtn.addEventListener("click", () => showStep(current - 1));
+      nextBtn.addEventListener("click", () => {
+        if (current === steps.length - 1) {
+          showStep(0);
+          return;
+        }
+        showStep(current + 1);
+      });
+
+      document.getElementById("copyPrompt").addEventListener("click", async () => {
+        const text = buildPrompt();
+        try {
+          await navigator.clipboard.writeText(text);
+          document.getElementById("copyPrompt").textContent = "Copied";
+          setTimeout(() => (document.getElementById("copyPrompt").textContent = "Copy prompt"), 1200);
+        } catch {
+          document.getElementById("copyPrompt").textContent = "Select prompt";
+        }
+      });
+
+      openCompareButton.addEventListener("click", () => setCompareModal(true));
+      closeCompareButton.addEventListener("click", () => setCompareModal(false));
+      compareBackdrop.addEventListener("click", () => setCompareModal(false));
+      modalTabs.forEach((tab) => {
+        tab.addEventListener("click", () => showModalPanel(tab.dataset.panel));
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && compareModal.classList.contains("open")) {
+          setCompareModal(false);
+        }
+      });
+
+      showStep(0);
+    </script>
+  </body>
+</html>
