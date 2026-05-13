@@ -41,6 +41,10 @@
           #f7fafc;
       }
 
+      body.overlay-active {
+        overflow: hidden;
+      }
+
       button,
       input,
       select,
@@ -912,6 +916,70 @@
         word-break: break-word;
       }
 
+      .intro-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 120;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 20% 20%, rgba(81, 160, 255, 0.22), transparent 28%),
+          radial-gradient(circle at 80% 30%, rgba(81, 160, 255, 0.14), transparent 24%),
+          linear-gradient(180deg, #001e40 0%, #003366 100%);
+        transition: opacity 500ms ease, visibility 500ms ease;
+      }
+
+      .intro-overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .particle-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .overlay-copy {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: #ffffff;
+        pointer-events: none;
+      }
+
+      .overlay-copy small {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        opacity: 0.76;
+      }
+
+      .overlay-copy h2 {
+        margin: 0;
+        font-family: Inter, sans-serif;
+        font-size: clamp(2.4rem, 6vw, 5.8rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 0.96;
+        text-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+      }
+
+      .overlay-copy p {
+        margin: 18px 0 0;
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        opacity: 0.82;
+      }
+
       @media (max-width: 940px) {
         .hero {
           grid-template-columns: 1fr;
@@ -967,6 +1035,15 @@
     </style>
   </head>
   <body>
+    <div class="intro-overlay" id="introOverlay" aria-hidden="true">
+      <canvas class="particle-canvas" id="particleCanvas"></canvas>
+      <div class="overlay-copy">
+        <small>Interactive presentation</small>
+        <h2>Team Fake Intelligence</h2>
+        <p>Move the cursor to reveal the dashboard</p>
+      </div>
+    </div>
+
     <main class="page">
       <header class="topbar" aria-label="Session header">
         <div class="brand">
@@ -1624,7 +1701,117 @@ GET /v1/tasks/17f20503-6c24-4c16-946b-35dbbce2af2f
       const compareBackdrop = document.getElementById("compareBackdrop");
       const modalTabs = [...document.querySelectorAll(".modal-tab")];
       const modalPanels = [...document.querySelectorAll(".modal-panel")];
+      const introOverlay = document.getElementById("introOverlay");
+      const particleCanvas = document.getElementById("particleCanvas");
+      const particleContext = particleCanvas.getContext("2d");
       let current = 0;
+      let overlayVisible = true;
+      let isDissolving = false;
+      let inactivityTimer = null;
+      let particles = [];
+      let animationFrame = null;
+
+      function resizeCanvas() {
+        const ratio = window.devicePixelRatio || 1;
+        particleCanvas.width = window.innerWidth * ratio;
+        particleCanvas.height = window.innerHeight * ratio;
+        particleCanvas.style.width = `${window.innerWidth}px`;
+        particleCanvas.style.height = `${window.innerHeight}px`;
+        particleContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+      }
+
+      function createParticles() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const density = Math.max(110, Math.floor((width * height) / 14000));
+        particles = Array.from({ length: density }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: 1 + Math.random() * 3.6,
+          alpha: 0.22 + Math.random() * 0.58,
+          speedX: (Math.random() - 0.5) * 0.25,
+          speedY: (Math.random() - 0.5) * 0.25,
+          drift: 0.2 + Math.random() * 0.55,
+        }));
+      }
+
+      function drawOverlay() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        particleContext.clearRect(0, 0, width, height);
+
+        for (const particle of particles) {
+          particleContext.beginPath();
+          particleContext.fillStyle = `rgba(167, 200, 255, ${particle.alpha})`;
+          particleContext.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          particleContext.fill();
+
+          particle.x += particle.speedX;
+          particle.y += particle.speedY;
+
+          if (particle.x < -20) particle.x = width + 20;
+          if (particle.x > width + 20) particle.x = -20;
+          if (particle.y < -20) particle.y = height + 20;
+          if (particle.y > height + 20) particle.y = -20;
+        }
+
+        animationFrame = requestAnimationFrame(drawOverlay);
+      }
+
+      function resetOverlayScene() {
+        cancelAnimationFrame(animationFrame);
+        resizeCanvas();
+        createParticles();
+        drawOverlay();
+      }
+
+      function showOverlay() {
+        overlayVisible = true;
+        isDissolving = false;
+        document.body.classList.add("overlay-active");
+        introOverlay.classList.remove("hidden");
+        resetOverlayScene();
+      }
+
+      function dissolveOverlay() {
+        if (!overlayVisible || isDissolving) return;
+        isDissolving = true;
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        for (const particle of particles) {
+          const dx = particle.x - width / 2;
+          const dy = particle.y - height / 2;
+          const distance = Math.max(80, Math.hypot(dx, dy));
+          particle.speedX = (dx / distance) * (2.2 + Math.random() * 2.8);
+          particle.speedY = (dy / distance) * (2.2 + Math.random() * 2.8);
+          particle.alpha *= 0.96;
+        }
+
+        introOverlay.classList.add("hidden");
+        setTimeout(() => {
+          overlayVisible = false;
+          isDissolving = false;
+          document.body.classList.remove("overlay-active");
+          cancelAnimationFrame(animationFrame);
+        }, 520);
+      }
+
+      function resetInactivityTimer() {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+          if (!overlayVisible) {
+            showOverlay();
+          }
+        }, 45000);
+      }
+
+      function registerActivity() {
+        resetInactivityTimer();
+        if (overlayVisible) {
+          dissolveOverlay();
+        }
+      }
 
       function setCompareModal(open) {
         compareModal.classList.toggle("open", open);
@@ -1716,12 +1903,26 @@ GET /v1/tasks/17f20503-6c24-4c16-946b-35dbbce2af2f
       modalTabs.forEach((tab) => {
         tab.addEventListener("click", () => showModalPanel(tab.dataset.panel));
       });
+
+      ["mousemove", "touchstart", "pointerdown", "keydown", "scroll"].forEach((eventName) => {
+        window.addEventListener(eventName, registerActivity, { passive: true });
+      });
+
+      window.addEventListener("resize", () => {
+        if (overlayVisible) {
+          resetOverlayScene();
+        }
+      });
+
       window.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && compareModal.classList.contains("open")) {
           setCompareModal(false);
         }
       });
 
+      document.body.classList.add("overlay-active");
+      resetOverlayScene();
+      resetInactivityTimer();
       showStep(0);
     </script>
   </body>
