@@ -928,7 +928,7 @@
           radial-gradient(circle at 20% 20%, rgba(81, 160, 255, 0.22), transparent 28%),
           radial-gradient(circle at 80% 30%, rgba(81, 160, 255, 0.14), transparent 24%),
           linear-gradient(180deg, #001e40 0%, #003366 100%);
-        transition: opacity 500ms ease, visibility 500ms ease;
+        transition: opacity 900ms ease, visibility 900ms ease;
       }
 
       .intro-overlay.hidden {
@@ -950,6 +950,33 @@
         text-align: center;
         color: #ffffff;
         pointer-events: none;
+      }
+
+      .overlay-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .overlay-mark {
+        display: grid;
+        width: 72px;
+        height: 72px;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 14px;
+        color: #ffffff;
+        font-family: Inter, sans-serif;
+        font-size: 1.9rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        background: linear-gradient(135deg, rgba(81, 160, 255, 0.26), rgba(0, 95, 174, 0.52));
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.16);
+        backdrop-filter: blur(10px);
+      }
+
+      .overlay-title-group {
+        text-align: left;
       }
 
       .overlay-copy small {
@@ -1038,8 +1065,13 @@
     <div class="intro-overlay" id="introOverlay" aria-hidden="true">
       <canvas class="particle-canvas" id="particleCanvas"></canvas>
       <div class="overlay-copy">
-        <small>Interactive presentation</small>
-        <h2>Team Fake Intelligence</h2>
+        <div class="overlay-brand">
+          <div class="overlay-mark">FI</div>
+          <div class="overlay-title-group">
+            <small>TEAM</small>
+            <h2>Fake Intelligence</h2>
+          </div>
+        </div>
         <p>Move the cursor to reveal the dashboard</p>
       </div>
     </div>
@@ -1788,13 +1820,15 @@ GET /v1/tasks/17f20503-6c24-4c16-946b-35dbbce2af2f
           particle.alpha *= 0.96;
         }
 
-        introOverlay.classList.add("hidden");
         setTimeout(() => {
-          overlayVisible = false;
-          isDissolving = false;
-          document.body.classList.remove("overlay-active");
-          cancelAnimationFrame(animationFrame);
-        }, 520);
+          introOverlay.classList.add("hidden");
+          setTimeout(() => {
+            overlayVisible = false;
+            isDissolving = false;
+            document.body.classList.remove("overlay-active");
+            cancelAnimationFrame(animationFrame);
+          }, 920);
+        }, 280);
       }
 
       function resetInactivityTimer() {
